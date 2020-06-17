@@ -5,22 +5,23 @@ USE test_db;
 DROP TABLE IF EXISTS users;
 CREATE TABLE users
 (
-  user_id VARCHAR(10) NOT NULL PRIMARY KEY,
-  user_name VARCHAR(50) NOT NULL,
-  user_mail VARCHAR(50) NOT NULL
+  id VARCHAR(10) NOT NULL PRIMARY KEY,
+  name VARCHAR(50) NOT NULL,
+  email VARCHAR(50) NOT NULL,
+  password TEXT NOT NULL
 );
 
 INSERT INTO users
-  (user_id, user_name, user_mail)
+  (id, name, email, password)
 VALUES
-  ('tati1', '館 ひろし', 'tati@developer.com');
+  ('tati1', '館ひろし', 'tati@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu');
 
 INSERT INTO users
-  (user_id, user_name, user_mail)
+  (id, name, email, password)
 VALUES
-  ('go2', '郷 ひろみ', 'go@developer.com');
+  ('go2', '郷ひろみ', 'go@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu');
 
 INSERT INTO users
-  (user_id, user_name, user_mail)
+  (id, name, email, password)
 VALUES
-  ('saigo3', '西郷 隆盛', 'saigo@developer.com');
+  ('saigo3', '西郷隆盛', 'saigo@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu');
