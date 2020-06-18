@@ -83,8 +83,8 @@ func UserValidate(user *User) *ErrorMsg {
 
 func checkForUniqueID(h *sqlHandler, user *User) *ErrorMsg {
 	var errorMsg ErrorMsg
-	var db_id string
-	if err := h.db.QueryRowx("SELECT id FROM users WHERE id = ?", user.ID).Scan(&db_id); err != nil {
+	var dbID string
+	if err := h.db.QueryRowx("SELECT id FROM users WHERE id = ?", user.ID).Scan(&dbID); err != nil {
 		if err == sql.ErrNoRows {
 			return nil
 		} else if err != nil {
