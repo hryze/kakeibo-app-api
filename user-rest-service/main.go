@@ -62,23 +62,24 @@ func InitDB() *sqlx.DB {
 func UserValidate(user *User) *ErrorMsg {
 	var errorMsg ErrorMsg
 	validate := validator.New()
-	if err := validate.Struct(user); err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			fieldName := err.Field()
-			switch fieldName {
-			case "ID":
-				errorMsg.ID = "ユーザーIDが正しくありません"
-			case "Name":
-				errorMsg.Name = "ユーザーネームが正しくありません"
-			case "Email":
-				errorMsg.Email = "ユーザーメールが正しくありません"
-			case "Password":
-				errorMsg.Password = "パスワードが正しくありません"
-			}
-		}
-		return &errorMsg
+	err := validate.Struct(user)
+	if err == nil {
+		return nil
 	}
-	return nil
+	for _, err := range err.(validator.ValidationErrors) {
+		fieldName := err.Field()
+		switch fieldName {
+		case "ID":
+			errorMsg.ID = "ユーザーIDが正しくありません"
+		case "Name":
+			errorMsg.Name = "ユーザーネームが正しくありません"
+		case "Email":
+			errorMsg.Email = "ユーザーメールが正しくありません"
+		case "Password":
+			errorMsg.Password = "パスワードが正しくありません"
+		}
+	}
+	return &errorMsg
 }
 
 func checkForUniqueID(h *sqlHandler, user *User) (*ErrorMsg, error) {
