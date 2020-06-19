@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -34,9 +35,12 @@ type sqlHandler struct {
 }
 
 func main() {
-	db := InitDB()
+	db, err := InitDB()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 	h := NewSqlHandler(db)
-
 	router := mux.NewRouter()
 	router.HandleFunc("/user", h.SignUp).Methods("POST")
 	log.Print(http.ListenAndServe(":8080", router))
@@ -46,17 +50,16 @@ func NewSqlHandler(db *sqlx.DB) *sqlHandler {
 	return &sqlHandler{db: db}
 }
 
-func InitDB() *sqlx.DB {
-	err := godotenv.Load()
-	if err != nil {
-		log.Printf("failed to load the .env: %v", err)
+func InitDB() (*sqlx.DB, error) {
+	if err := godotenv.Load(); err != nil {
+		return nil, err
 	}
 	dsn := os.Getenv("DSN")
 	db, err := sqlx.Open("mysql", dsn)
 	if err != nil {
-		log.Printf("failed to open the DB: %v", err)
+		return nil, err
 	}
-	return db
+	return db, nil
 }
 
 func UserValidate(user *User) *ErrorMsg {
