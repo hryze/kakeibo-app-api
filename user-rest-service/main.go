@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -35,15 +34,24 @@ type sqlHandler struct {
 }
 
 func main() {
-	db, err := InitDB()
-	if err != nil {
+	if err := Run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
+	}
+}
+
+func Run() error {
+	db, err := InitDB()
+	if err != nil {
+		return err
 	}
 	h := NewSqlHandler(db)
 	router := mux.NewRouter()
 	router.HandleFunc("/user", h.SignUp).Methods("POST")
-	log.Print(http.ListenAndServe(":8080", router))
+	if err := http.ListenAndServe(":8080", router); err != nil {
+		return err
+	}
+	return nil
 }
 
 func NewSqlHandler(db *sqlx.DB) *sqlHandler {
