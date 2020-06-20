@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -20,6 +21,11 @@ type User struct {
 	Name     string `json:"name"               db:"name"     validate:"required,min=1,max=50,excludesall= "`
 	Email    string `json:"email"              db:"email"    validate:"required,email,min=5,max=50,excludesall= "`
 	Password string `json:"password,omitempty" db:"password" validate:"required,min=8,max=50,excludesall= "`
+}
+
+type HTTPError struct {
+	Status  int       `json:"-"`
+	Message *ErrorMsg `json:"message"`
 }
 
 type ErrorMsg struct {
@@ -45,16 +51,17 @@ func Run() error {
 	if err != nil {
 		return err
 	}
-	h := NewSqlHandler(db)
+	h := NewSQLHandler(db)
 	router := mux.NewRouter()
-	router.HandleFunc("/user", h.SignUp).Methods("POST")
+	router.HandleFunc("/user", ErrorCheckHandler(h.SignUp)).Methods("POST")
 	if err := http.ListenAndServe(":8080", router); err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func NewSqlHandler(db *sqlx.DB) *sqlHandler {
+func NewSQLHandler(db *sqlx.DB) *sqlHandler {
 	return &sqlHandler{db: db}
 }
 
@@ -67,7 +74,19 @@ func InitDB() (*sqlx.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return db, nil
+}
+
+func (e *HTTPError) Error() string {
+	return fmt.Sprintln("HTTPError")
+}
+
+func NewHTTPError(status int, message *ErrorMsg) error {
+	return &HTTPError{
+		Status:  status,
+		Message: message,
+	}
 }
 
 func UserValidate(user *User) *ErrorMsg {
@@ -90,6 +109,7 @@ func UserValidate(user *User) *ErrorMsg {
 			errorMsg.Password = "パスワードが正しくありません"
 		}
 	}
+
 	return &errorMsg
 }
 
@@ -97,51 +117,74 @@ func checkForUniqueID(h *sqlHandler, user *User) (*ErrorMsg, error) {
 	var errorMsg ErrorMsg
 	var dbID string
 	if err := h.db.QueryRowx("SELECT id FROM users WHERE id = ?", user.ID).Scan(&dbID); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		} else if err != nil {
 			return nil, err
 		}
 	}
 	errorMsg.ID = "このユーザーIDは登録できません"
+
 	return &errorMsg, nil
 }
 
-func responseByJson(w http.ResponseWriter, status int, data interface{}) {
+func responseByJSON(w http.ResponseWriter, status int, data interface{}) error {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(data)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (h *sqlHandler) SignUp(w http.ResponseWriter, r *http.Request) {
+func ErrorCheckHandler(fn func(http.ResponseWriter, *http.Request) (*User, error)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := fn(w, r)
+		if err == nil {
+			if err := responseByJSON(w, http.StatusOK, user); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			return
+		}
+		httpError, ok := err.(*HTTPError)
+		if !ok {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if err := responseByJSON(w, httpError.Status, httpError); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (h *sqlHandler) SignUp(w http.ResponseWriter, r *http.Request) (*User, error) {
 	var user User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 	if errorMsg := UserValidate(&user); errorMsg != nil {
-		responseByJson(w, http.StatusBadRequest, errorMsg)
-		return
+		return nil, NewHTTPError(http.StatusBadRequest, errorMsg)
 	}
 	errorMsg, err := checkForUniqueID(h, &user)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 	if errorMsg != nil {
-		responseByJson(w, http.StatusConflict, errorMsg)
-		return
+		return nil, NewHTTPError(http.StatusConflict, errorMsg)
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 	user.Password = string(hash)
 	if _, err := h.db.Exec("INSERT INTO users(id, name, email, password) VALUES(?,?,?,?)", user.ID, user.Name, user.Email, user.Password); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 	user.Password = ""
-	responseByJson(w, http.StatusOK, user)
+
+	return &user, nil
 }
