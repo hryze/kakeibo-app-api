@@ -1,26 +1,20 @@
-package main
+package handler
 
 import (
-	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
-	"os"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
 
 	"github.com/go-playground/validator"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
-	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type User struct {
-	ID       string `json:"id"                 db:"id"       validate:"required,min=1,max=10,excludesall= "`
-	Name     string `json:"name"               db:"name"     validate:"required,min=1,max=50,excludesall= "`
-	Email    string `json:"email"              db:"email"    validate:"required,email,min=5,max=50,excludesall= "`
-	Password string `json:"password,omitempty" db:"password" validate:"required,min=8,max=50,excludesall= "`
+type UserHandler struct {
+	userRepo repository.UserRepository
 }
 
 type HTTPError struct {
@@ -35,51 +29,9 @@ type ErrorMsg struct {
 	Password string `json:"error_password"`
 }
 
-type sqlHandler struct {
-	db *sqlx.DB
-}
-
-func main() {
-	if err := Run(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-}
-
-func Run() error {
-	db, err := InitDB()
-	if err != nil {
-		return err
-	}
-	h := NewSQLHandler(db)
-	router := mux.NewRouter()
-	router.HandleFunc("/user", ErrorCheckHandler(h.SignUp)).Methods("POST")
-	if err := http.ListenAndServe(":8080", router); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func NewSQLHandler(db *sqlx.DB) *sqlHandler {
-	return &sqlHandler{db: db}
-}
-
-func InitDB() (*sqlx.DB, error) {
-	if err := godotenv.Load(); err != nil {
-		return nil, err
-	}
-	dsn := os.Getenv("DSN")
-	db, err := sqlx.Open("mysql", dsn)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
-}
-
-func (e *HTTPError) Error() string {
-	return fmt.Sprintln("HTTPError")
+func NewUserHandler(userRepo repository.UserRepository) UserHandler {
+	userHandler := UserHandler{userRepo: userRepo}
+	return userHandler
 }
 
 func NewHTTPError(status int, message *ErrorMsg) error {
@@ -89,7 +41,11 @@ func NewHTTPError(status int, message *ErrorMsg) error {
 	}
 }
 
-func UserValidate(user *User) *ErrorMsg {
+func (e *HTTPError) Error() string {
+	return fmt.Sprintln("HTTPError")
+}
+
+func UserValidate(user *model.User) *ErrorMsg {
 	var errorMsg ErrorMsg
 	validate := validator.New()
 	err := validate.Struct(user)
@@ -113,15 +69,14 @@ func UserValidate(user *User) *ErrorMsg {
 	return &errorMsg
 }
 
-func checkForUniqueID(h *sqlHandler, user *User) (*ErrorMsg, error) {
+func checkForUniqueID(h *UserHandler, user *model.User) (*ErrorMsg, error) {
 	var errorMsg ErrorMsg
-	var dbID string
-	if err := h.db.QueryRowx("SELECT id FROM users WHERE id = ?", user.ID).Scan(&dbID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		} else if err != nil {
-			return nil, err
-		}
+	find, err := h.userRepo.FindID(user)
+	if find == true {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
 	}
 	errorMsg.ID = "このユーザーIDは登録できません"
 
@@ -138,7 +93,7 @@ func responseByJSON(w http.ResponseWriter, status int, data interface{}) error {
 	return nil
 }
 
-func ErrorCheckHandler(fn func(http.ResponseWriter, *http.Request) (*User, error)) http.HandlerFunc {
+func ErrorCheckHandler(fn func(http.ResponseWriter, *http.Request) (*model.User, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, err := fn(w, r)
 		if err == nil {
@@ -161,8 +116,8 @@ func ErrorCheckHandler(fn func(http.ResponseWriter, *http.Request) (*User, error
 	}
 }
 
-func (h *sqlHandler) SignUp(w http.ResponseWriter, r *http.Request) (*User, error) {
-	var user User
+func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) (*model.User, error) {
+	var user model.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		return nil, err
 	}
@@ -181,7 +136,7 @@ func (h *sqlHandler) SignUp(w http.ResponseWriter, r *http.Request) (*User, erro
 		return nil, err
 	}
 	user.Password = string(hash)
-	if _, err := h.db.Exec("INSERT INTO users(id, name, email, password) VALUES(?,?,?,?)", user.ID, user.Name, user.Email, user.Password); err != nil {
+	if err := h.userRepo.CreateUser(&user); err != nil {
 		return nil, err
 	}
 	user.Password = ""
