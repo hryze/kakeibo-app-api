@@ -17,16 +17,16 @@ func NewUserRepository(sqlHandler SQLHandler) repository.UserRepository {
 	return &userRepository
 }
 
-func (u *UserRepository) FindID(user *model.User) (bool, error) {
+func (u *UserRepository) FindID(user *model.User) (string, error) {
 	var dbID string
 	if err := u.SQLHandler.DB.QueryRowx("SELECT id FROM users WHERE id = ?", user.ID).Scan(&dbID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return false, nil
+			return dbID, nil
 		} else if err != nil {
-			return true, err
+			return dbID, err
 		}
 	}
-	return true, nil
+	return dbID, nil
 }
 
 func (u *UserRepository) CreateUser(user *model.User) error {
