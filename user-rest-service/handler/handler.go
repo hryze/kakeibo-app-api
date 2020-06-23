@@ -72,7 +72,7 @@ func UserValidate(user *model.User) *ErrorMsg {
 func checkForUniqueID(h *UserHandler, user *model.User) (*ErrorMsg, error) {
 	var errorMsg ErrorMsg
 	find, err := h.userRepo.FindID(user)
-	if find == true {
+	if find != true {
 		return nil, nil
 	}
 	if err != nil {

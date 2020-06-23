@@ -7,13 +7,13 @@ import (
 )
 
 func InjectDB() (infrastructure.SQLHandler, error) {
-	sqlhandler, err := infrastructure.NewSQLHandler()
-	return *sqlhandler, err
+	SQLHandler, err := infrastructure.NewSQLHandler()
+	return *SQLHandler, err
 }
 
 func InjectUserRepository() (repository.UserRepository, error) {
-	sqlHandler, err := InjectDB()
-	return infrastructure.NewUserRepository(sqlHandler), err
+	SQLHandler, err := InjectDB()
+	return infrastructure.NewUserRepository(SQLHandler), err
 }
 
 func InjectUserHandler() (handler.UserHandler, error) {

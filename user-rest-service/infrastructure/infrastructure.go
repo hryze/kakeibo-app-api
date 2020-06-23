@@ -21,12 +21,12 @@ func (u *UserRepository) FindID(user *model.User) (bool, error) {
 	var dbID string
 	if err := u.SQLHandler.DB.QueryRowx("SELECT id FROM users WHERE id = ?", user.ID).Scan(&dbID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return true, nil
+			return false, nil
 		} else if err != nil {
-			return false, err
+			return true, err
 		}
 	}
-	return false, nil
+	return true, nil
 }
 
 func (u *UserRepository) CreateUser(user *model.User) error {
