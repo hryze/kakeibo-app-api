@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
+	"strings"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
@@ -42,7 +44,17 @@ func NewHTTPError(status int, message *ErrorMsg) error {
 }
 
 func (e *HTTPError) Error() string {
-	return fmt.Sprintln("HTTPError")
+	var messages []string
+	rt := reflect.TypeOf(*e.Message)
+	elem := reflect.ValueOf(e.Message).Elem()
+	for i := 0; i < rt.NumField(); i++ {
+		if elem.Field(i).Len() == 0 {
+			continue
+		}
+		messages = append(messages, fmt.Sprintf("%s: %s", rt.Field(i).Name, elem.Field(i).String()))
+	}
+	errorMsg := strings.Join(messages, "\n")
+	return fmt.Sprintf(errorMsg)
 }
 
 func UserValidate(user *model.User) *ErrorMsg {
