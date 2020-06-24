@@ -1,22 +1,28 @@
 package injector
 
 import (
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
+	"fmt"
+	"os"
+
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/handler"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure"
 )
 
-func InjectDB() (infrastructure.SQLHandler, error) {
+func InjectDB() infrastructure.SQLHandler {
 	SQLHandler, err := infrastructure.NewSQLHandler()
-	return *SQLHandler, err
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	return *SQLHandler
 }
 
-func InjectUserRepository() (repository.UserRepository, error) {
-	SQLHandler, err := InjectDB()
-	return infrastructure.NewUserRepository(SQLHandler), err
+func InjectUserRepository() *infrastructure.UserRepository {
+	SQLHandler := InjectDB()
+	return infrastructure.NewUserRepository(SQLHandler)
 }
 
-func InjectUserHandler() (handler.UserHandler, error) {
-	userRepository, err := InjectUserRepository()
-	return handler.NewUserHandler(userRepository), err
+func InjectUserHandler() *handler.UserHandler {
+	userRepository := InjectUserRepository()
+	return handler.NewUserHandler(userRepository)
 }

@@ -9,10 +9,8 @@ import (
 )
 
 func Run() error {
-	h, err := injector.InjectUserHandler()
-	if err != nil {
-		return err
-	}
+	h := injector.InjectUserHandler()
+
 	router := mux.NewRouter()
 	router.HandleFunc("/user", handler.ErrorCheckHandler(h.SignUp)).Methods("POST")
 	if err := http.ListenAndServe(":8080", router); err != nil {

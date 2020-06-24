@@ -31,9 +31,9 @@ type ErrorMsg struct {
 	Password string `json:"error_password"`
 }
 
-func NewUserHandler(userRepo repository.UserRepository) UserHandler {
+func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
 	userHandler := UserHandler{userRepo: userRepo}
-	return userHandler
+	return &userHandler
 }
 
 func NewHTTPError(status int, message *ErrorMsg) error {

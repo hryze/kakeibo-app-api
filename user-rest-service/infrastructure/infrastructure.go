@@ -5,14 +5,13 @@ import (
 	"errors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
 )
 
 type UserRepository struct {
 	SQLHandler
 }
 
-func NewUserRepository(sqlHandler SQLHandler) repository.UserRepository {
+func NewUserRepository(sqlHandler SQLHandler) *UserRepository {
 	userRepository := UserRepository{sqlHandler}
 	return &userRepository
 }
