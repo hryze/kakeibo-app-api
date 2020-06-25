@@ -42,19 +42,19 @@ func NewHTTPError(status int, message *ErrorMsg) error {
 }
 
 func (e *HTTPError) Error() string {
-	byte, err := json.Marshal(e)
+	b, err := json.Marshal(e)
 	if err != nil {
 		log.Println(err)
 	}
-	return string(byte)
+	return string(b)
 }
 
 func (e *ErrorMsg) Error() string {
-	byte, err := json.Marshal(e)
+	b, err := json.Marshal(e)
 	if err != nil {
 		log.Println(err)
 	}
-	return string(byte)
+	return string(b)
 }
 
 func UserValidate(user *model.User) *ErrorMsg {
