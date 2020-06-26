@@ -77,7 +77,7 @@ func (e *InternalServerErrorMsg) Error() string {
 	return string(b)
 }
 
-func UserValidate(user *model.User) *ValidationErrorMsg {
+func UserValidate(user *model.User) error {
 	var validationErrorMsg ValidationErrorMsg
 	validate := validator.New()
 	err := validate.Struct(user)
