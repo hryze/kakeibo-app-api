@@ -101,18 +101,18 @@ func UserValidate(user *model.User) error {
 	return &validationErrorMsg
 }
 
-func checkForUniqueID(h *UserHandler, user *model.User) (*ValidationErrorMsg, error) {
+func checkForUniqueID(h *UserHandler, user *model.User) error {
 	var validationErrorMsg ValidationErrorMsg
 	dbID, err := h.userRepo.FindID(user)
 	if len(dbID) == 0 {
-		return nil, nil
+		return nil
 	}
 	if err != nil {
-		return nil, err
+		return err
 	}
 	validationErrorMsg.ID = "このユーザーIDは登録できません"
 
-	return &validationErrorMsg, nil
+	return &validationErrorMsg
 }
 
 func responseByJSON(w http.ResponseWriter, status int, data interface{}) error {
@@ -156,11 +156,11 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) (*model.Use
 	if validationErrorMsg := UserValidate(&user); validationErrorMsg != nil {
 		return nil, NewHTTPError(http.StatusBadRequest, validationErrorMsg)
 	}
-	validationErrorMsg, err := checkForUniqueID(h, &user)
-	if err != nil {
-		return nil, NewHTTPError(http.StatusInternalServerError, err)
-	}
-	if validationErrorMsg != nil {
+	if err := checkForUniqueID(h, &user); err != nil {
+		validationErrorMsg, ok := err.(*ValidationErrorMsg)
+		if !ok {
+			return nil, NewHTTPError(http.StatusInternalServerError, err)
+		}
 		return nil, NewHTTPError(http.StatusConflict, validationErrorMsg)
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
