@@ -9,7 +9,6 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
 
 	"github.com/go-playground/validator"
-	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,15 +17,20 @@ type UserHandler struct {
 }
 
 type HTTPError struct {
-	Status  int       `json:"-"`
-	Message *ErrorMsg `json:"message"`
+	Status              int                     `json:"status"`
+	ValidationError     *ValidationErrorMsg     `json:"errors,omitempty"`
+	InternalServerError *InternalServerErrorMsg `json:"error,omitempty"`
 }
 
-type ErrorMsg struct {
-	ID       string `json:"error_id"`
-	Name     string `json:"error_name"`
-	Email    string `json:"error_email"`
-	Password string `json:"error_password"`
+type ValidationErrorMsg struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type InternalServerErrorMsg struct {
+	Message string `json:"message"`
 }
 
 func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
@@ -34,10 +38,18 @@ func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
 	return &userHandler
 }
 
-func NewHTTPError(status int, message *ErrorMsg) error {
-	return &HTTPError{
-		Status:  status,
-		Message: message,
+func NewHTTPError(status int, err interface{}) error {
+	switch err := err.(type) {
+	case *ValidationErrorMsg:
+		return &HTTPError{
+			Status:          status,
+			ValidationError: err,
+		}
+	default:
+		return &HTTPError{
+			Status:              status,
+			InternalServerError: &InternalServerErrorMsg{"500 Internal Server Error"},
+		}
 	}
 }
 
@@ -49,7 +61,7 @@ func (e *HTTPError) Error() string {
 	return string(b)
 }
 
-func (e *ErrorMsg) Error() string {
+func (e *ValidationErrorMsg) Error() string {
 	b, err := json.Marshal(e)
 	if err != nil {
 		log.Println(err)
@@ -57,8 +69,16 @@ func (e *ErrorMsg) Error() string {
 	return string(b)
 }
 
-func UserValidate(user *model.User) *ErrorMsg {
-	var errorMsg ErrorMsg
+func (e *InternalServerErrorMsg) Error() string {
+	b, err := json.Marshal(e)
+	if err != nil {
+		log.Println(err)
+	}
+	return string(b)
+}
+
+func UserValidate(user *model.User) *ValidationErrorMsg {
+	var validationErrorMsg ValidationErrorMsg
 	validate := validator.New()
 	err := validate.Struct(user)
 	if err == nil {
@@ -68,21 +88,21 @@ func UserValidate(user *model.User) *ErrorMsg {
 		fieldName := err.Field()
 		switch fieldName {
 		case "ID":
-			errorMsg.ID = "ユーザーIDが正しくありません"
+			validationErrorMsg.ID = "ユーザーIDが正しくありません"
 		case "Name":
-			errorMsg.Name = "ユーザーネームが正しくありません"
+			validationErrorMsg.Name = "ユーザーネームが正しくありません"
 		case "Email":
-			errorMsg.Email = "ユーザーメールが正しくありません"
+			validationErrorMsg.Email = "ユーザーメールが正しくありません"
 		case "Password":
-			errorMsg.Password = "パスワードが正しくありません"
+			validationErrorMsg.Password = "パスワードが正しくありません"
 		}
 	}
 
-	return &errorMsg
+	return &validationErrorMsg
 }
 
-func checkForUniqueID(h *UserHandler, user *model.User) (*ErrorMsg, error) {
-	var errorMsg ErrorMsg
+func checkForUniqueID(h *UserHandler, user *model.User) (*ValidationErrorMsg, error) {
+	var validationErrorMsg ValidationErrorMsg
 	dbID, err := h.userRepo.FindID(user)
 	if len(dbID) == 0 {
 		return nil, nil
@@ -90,9 +110,9 @@ func checkForUniqueID(h *UserHandler, user *model.User) (*ErrorMsg, error) {
 	if err != nil {
 		return nil, err
 	}
-	errorMsg.ID = "このユーザーIDは登録できません"
+	validationErrorMsg.ID = "このユーザーIDは登録できません"
 
-	return &errorMsg, nil
+	return &validationErrorMsg, nil
 }
 
 func responseByJSON(w http.ResponseWriter, status int, data interface{}) error {
@@ -131,25 +151,25 @@ func ErrorCheckHandler(fn func(http.ResponseWriter, *http.Request) (*model.User,
 func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) (*model.User, error) {
 	var user model.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		return nil, err
+		return nil, NewHTTPError(http.StatusInternalServerError, err)
 	}
-	if errorMsg := UserValidate(&user); errorMsg != nil {
-		return nil, NewHTTPError(http.StatusBadRequest, errorMsg)
+	if validationErrorMsg := UserValidate(&user); validationErrorMsg != nil {
+		return nil, NewHTTPError(http.StatusBadRequest, validationErrorMsg)
 	}
-	errorMsg, err := checkForUniqueID(h, &user)
+	validationErrorMsg, err := checkForUniqueID(h, &user)
 	if err != nil {
-		return nil, err
+		return nil, NewHTTPError(http.StatusInternalServerError, err)
 	}
-	if errorMsg != nil {
-		return nil, NewHTTPError(http.StatusConflict, errorMsg)
+	if validationErrorMsg != nil {
+		return nil, NewHTTPError(http.StatusConflict, validationErrorMsg)
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	if err != nil {
-		return nil, err
+		return nil, NewHTTPError(http.StatusInternalServerError, err)
 	}
 	user.Password = string(hash)
 	if err := h.userRepo.CreateUser(&user); err != nil {
-		return nil, err
+		return nil, NewHTTPError(http.StatusInternalServerError, err)
 	}
 	user.Password = ""
 
