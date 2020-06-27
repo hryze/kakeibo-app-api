@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -115,12 +117,12 @@ func UserValidate(user interface{}) error {
 
 func checkForUniqueID(h *UserHandler, signUpUser *model.SignUpUser) error {
 	var validationErrorMsg ValidationErrorMsg
-	dbID, err := h.userRepo.FindID(signUpUser)
-	if len(dbID) == 0 {
-		return nil
-	}
-	if err != nil {
-		return err
+	if err := h.userRepo.FindID(signUpUser); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		} else if err != nil {
+			return err
+		}
 	}
 	validationErrorMsg.ID = "このIDは登録できません"
 
