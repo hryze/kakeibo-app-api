@@ -12,7 +12,8 @@ func Run() error {
 	h := injector.InjectUserHandler()
 
 	router := mux.NewRouter()
-	router.HandleFunc("/user", handler.ErrorCheckHandler(h.SignUp)).Methods("POST")
+	router.HandleFunc("/signup", handler.ResponseByJSONMiddleware(h.SignUp)).Methods("POST")
+	router.HandleFunc("/login", handler.ResponseByJSONMiddleware(h.Login)).Methods("POST")
 	if err := http.ListenAndServe(":8080", router); err != nil {
 		return err
 	}
