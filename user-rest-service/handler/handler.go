@@ -206,18 +206,19 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) (*model.Logi
 		return nil, NewHTTPError(http.StatusBadRequest, err)
 	}
 	password := loginUser.Password
-	dbLoginUser, err := h.userRepo.FindUser(&loginUser)
+	dbUser, err := h.userRepo.FindUser(&loginUser)
 	if err != nil {
-		return nil, NewHTTPError(http.StatusInternalServerError, nil)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, NewHTTPError(http.StatusUnauthorized, nil)
+		} else if err != nil {
+			return nil, NewHTTPError(http.StatusInternalServerError, nil)
+		}
 	}
-	if dbLoginUser == nil {
-		return nil, NewHTTPError(http.StatusUnauthorized, nil)
-	}
-	hashedPassword := dbLoginUser.Password
+	hashedPassword := dbUser.Password
 	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
 		return nil, NewHTTPError(http.StatusUnauthorized, nil)
 	}
-	dbLoginUser.Password = ""
+	loginUser.Password = ""
 
-	return dbLoginUser, nil
+	return &loginUser, nil
 }

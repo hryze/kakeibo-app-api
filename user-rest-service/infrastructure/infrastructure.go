@@ -1,9 +1,6 @@
 package infrastructure
 
 import (
-	"database/sql"
-	"errors"
-
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 )
 
@@ -36,11 +33,7 @@ func (u *UserRepository) CreateUser(signUpUser *model.SignUpUser) error {
 func (u *UserRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUser, error) {
 	query := "SELECT id, name, email, password FROM users WHERE email = ?"
 	if err := u.SQLHandler.DB.QueryRowx(query, loginUser.Email).StructScan(loginUser); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		} else if err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
 	return loginUser, nil
 }
