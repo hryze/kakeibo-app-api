@@ -18,15 +18,11 @@ type UserHandler struct {
 	userRepo repository.UserRepository
 }
 
-type responseHandler struct {
-	userHandler *UserHandler
-}
-
 type HTTPError struct {
 	Status              int                     `json:"status"`
 	ValidationError     *ValidationErrorMsg     `json:"errors,omitempty"`
-	AuthenticationError *AuthenticationErrorMsg `json:"auth_error,omitempty"`
-	InternalServerError *InternalServerErrorMsg `json:"error,omitempty"`
+	AuthenticationError *AuthenticationErrorMsg `json:"error,omitempty"`
+	InternalServerError *InternalServerErrorMsg `json:"internal_error,omitempty"`
 }
 
 type ValidationErrorMsg struct {
@@ -47,12 +43,6 @@ type AuthenticationErrorMsg struct {
 func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
 	userHandler := UserHandler{userRepo: userRepo}
 	return &userHandler
-}
-
-func NewResponseHandler(h *UserHandler) *responseHandler {
-	responseHandler := new(responseHandler)
-	responseHandler.userHandler = h
-	return responseHandler
 }
 
 func NewHTTPError(status int, err interface{}) error {
@@ -162,69 +152,67 @@ func responseByJSON(w http.ResponseWriter, user interface{}, err error) {
 
 }
 
-func (h *responseHandler) ResponseByJSONHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.URL.Path {
-	case "/signup":
-		signUpUser, err := h.userHandler.SignUp(w, r)
-		responseByJSON(w, signUpUser, err)
-	case "/login":
-		loginUser, err := h.userHandler.Login(w, r)
-		responseByJSON(w, loginUser, err)
-	default:
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-}
-
-func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) (*model.SignUpUser, error) {
+func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var signUpUser model.SignUpUser
 	if err := json.NewDecoder(r.Body).Decode(&signUpUser); err != nil {
-		return nil, NewHTTPError(http.StatusInternalServerError, nil)
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
 	}
 	if err := UserValidate(&signUpUser); err != nil {
-		return nil, NewHTTPError(http.StatusBadRequest, err)
+		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, err))
+		return
 	}
 	if err := checkForUniqueID(h, &signUpUser); err != nil {
 		validationErrorMsg, ok := err.(*ValidationErrorMsg)
 		if !ok {
-			return nil, NewHTTPError(http.StatusInternalServerError, nil)
+			responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+			return
 		}
-		return nil, NewHTTPError(http.StatusConflict, validationErrorMsg)
+		responseByJSON(w, nil, NewHTTPError(http.StatusConflict, validationErrorMsg))
+		return
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(signUpUser.Password), 10)
 	if err != nil {
-		return nil, NewHTTPError(http.StatusInternalServerError, nil)
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
 	}
 	signUpUser.Password = string(hash)
 	if err := h.userRepo.CreateUser(&signUpUser); err != nil {
-		return nil, NewHTTPError(http.StatusInternalServerError, nil)
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
 	}
 	signUpUser.Password = ""
 
-	return &signUpUser, nil
+	responseByJSON(w, &signUpUser, nil)
 }
 
-func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) (*model.LoginUser, error) {
+func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var loginUser model.LoginUser
 	if err := json.NewDecoder(r.Body).Decode(&loginUser); err != nil {
-		return nil, NewHTTPError(http.StatusInternalServerError, nil)
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
 	}
 	if err := UserValidate(&loginUser); err != nil {
-		return nil, NewHTTPError(http.StatusBadRequest, err)
+		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, err))
+		return
 	}
 	password := loginUser.Password
 	dbUser, err := h.userRepo.FindUser(&loginUser)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, NewHTTPError(http.StatusUnauthorized, nil)
+			responseByJSON(w, nil, NewHTTPError(http.StatusUnauthorized, nil))
+			return
 		} else if err != nil {
-			return nil, NewHTTPError(http.StatusInternalServerError, nil)
+			responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+			return
 		}
 	}
 	hashedPassword := dbUser.Password
 	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
-		return nil, NewHTTPError(http.StatusUnauthorized, nil)
+		responseByJSON(w, nil, NewHTTPError(http.StatusUnauthorized, nil))
+		return
 	}
 	loginUser.Password = ""
 
-	return &loginUser, nil
+	responseByJSON(w, &loginUser, nil)
 }
