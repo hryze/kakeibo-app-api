@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -17,6 +16,10 @@ import (
 
 type UserHandler struct {
 	userRepo repository.UserRepository
+}
+
+type responseHandler struct {
+	userHandler *UserHandler
 }
 
 type HTTPError struct {
@@ -43,8 +46,13 @@ type AuthenticationErrorMsg struct {
 
 func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
 	userHandler := UserHandler{userRepo: userRepo}
-	fmt.Println()
 	return &userHandler
+}
+
+func NewResponseHandler(h *UserHandler) *responseHandler {
+	responseHandler := new(responseHandler)
+	responseHandler.userHandler = h
+	return responseHandler
 }
 
 func NewHTTPError(status int, err interface{}) error {
@@ -154,18 +162,16 @@ func responseByJSON(w http.ResponseWriter, user interface{}, err error) {
 
 }
 
-func ResponseByJSONMiddleware(fn interface{}) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		switch fn := fn.(type) {
-		case func(http.ResponseWriter, *http.Request) (*model.SignUpUser, error):
-			signUpUser, err := fn(w, r)
-			responseByJSON(w, signUpUser, err)
-		case func(http.ResponseWriter, *http.Request) (*model.LoginUser, error):
-			loginUser, err := fn(w, r)
-			responseByJSON(w, loginUser, err)
-		default:
-			w.WriteHeader(http.StatusInternalServerError)
-		}
+func (h *responseHandler) ResponseByJSONHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.URL.Path {
+	case "/signup":
+		signUpUser, err := h.userHandler.SignUp(w, r)
+		responseByJSON(w, signUpUser, err)
+	case "/login":
+		loginUser, err := h.userHandler.Login(w, r)
+		responseByJSON(w, loginUser, err)
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
