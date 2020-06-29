@@ -25,4 +25,3 @@ services:
       - 6379:6379
     volumes:
       - ./docker/redis/conf.d/redis.conf:/usr/local/etc/redis/redis.conf
-      - ./docker/redis/data:/data

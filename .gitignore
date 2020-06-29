@@ -15,4 +15,3 @@
 .DS_Store
 *.env
 /.idea/
-/user-rest-service/docker/redis/data/
