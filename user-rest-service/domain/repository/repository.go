@@ -5,6 +5,7 @@ import (
 )
 
 type UserRepository interface {
-	FindID(user *model.User) (string, error)
-	CreateUser(user *model.User) error
+	FindID(signUpUser *model.SignUpUser) error
+	CreateUser(user *model.SignUpUser) error
+	FindUser(user *model.LoginUser) (*model.LoginUser, error)
 }
