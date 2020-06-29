@@ -11,5 +11,18 @@ services:
     ports:
       - 3306:3306
     volumes:
-      - ./mysql/initdb.d:/docker-entrypoint-initdb.d
-      - ./mysql/conf.d:/etc/mysql/conf.d
+      - ./docker/mysql/initdb.d:/docker-entrypoint-initdb.d
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d
+
+  redis:
+    image: redis:alpine3.12
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_AUTH}
+    restart: always
+    env_file: .env
+    environment:
+      TZ: "Asia/Tokyo"
+    ports:
+      - 6379:6379
+    volumes:
+      - ./docker/redis/conf.d/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./docker/redis/data:/data
