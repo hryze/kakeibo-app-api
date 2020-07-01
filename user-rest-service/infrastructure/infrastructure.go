@@ -39,9 +39,9 @@ func (u *UserRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUser,
 	return loginUser, nil
 }
 
-func (u *UserRepository) SetSessionID(email string, sessionID string, expiration int) error {
+func (u *UserRepository) SetSessionID(sessionID string, expiration int) error {
 	conn := u.RedisHandler.pool.Get()
 	defer conn.Close()
-	_, err := conn.Do("SET", email, sessionID, "EX", expiration)
+	_, err := conn.Do("SET", sessionID, "ok", "EX", expiration)
 	return err
 }
