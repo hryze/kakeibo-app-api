@@ -8,18 +8,28 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure"
 )
 
-func InjectDB() infrastructure.SQLHandler {
-	SQLHandler, err := infrastructure.NewSQLHandler()
+func InjectMySQL() *infrastructure.MySQLHandler {
+	mySQLHandler, err := infrastructure.NewMySQLHandler()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	return *SQLHandler
+	return mySQLHandler
+}
+
+func InjectRedis() *infrastructure.RedisHandler {
+	redisHandler, err := infrastructure.NewRedisHandler()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	return redisHandler
 }
 
 func InjectUserRepository() *infrastructure.UserRepository {
-	SQLHandler := InjectDB()
-	return infrastructure.NewUserRepository(SQLHandler)
+	mySQLHandler := InjectMySQL()
+	redisHandler := InjectRedis()
+	return infrastructure.NewUserRepository(mySQLHandler, redisHandler)
 }
 
 func InjectUserHandler() *handler.UserHandler {
