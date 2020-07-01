@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
@@ -221,6 +222,13 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    sessionID,
+		Expires:  time.Now().Add(time.Duration(expiration) * time.Second),
+		HttpOnly: true,
+	})
 
 	responseByJSON(w, &loginUser, nil)
 }
