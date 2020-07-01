@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
 
@@ -213,6 +214,13 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	loginUser.Password = ""
+
+	sessionID := uuid.New().String()
+	expiration := 86400 * 30
+	if err := h.userRepo.SetSessionID(loginUser.Email, sessionID, expiration); err != nil {
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
 
 	responseByJSON(w, &loginUser, nil)
 }
