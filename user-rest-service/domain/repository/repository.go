@@ -9,4 +9,5 @@ type UserRepository interface {
 	CreateUser(user *model.SignUpUser) error
 	FindUser(user *model.LoginUser) (*model.LoginUser, error)
 	SetSessionID(sessionID string, expiration int) error
+	DeleteSessionID(sessionID string) error
 }
