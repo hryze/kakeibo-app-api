@@ -21,10 +21,8 @@ type UserHandler struct {
 }
 
 type HTTPError struct {
-	Status              int                     `json:"status"`
-	ValidationError     *ValidationErrorMsg     `json:"errors,omitempty"`
-	AuthenticationError *AuthenticationErrorMsg `json:"error,omitempty"`
-	InternalServerError *InternalServerErrorMsg `json:"internal_error,omitempty"`
+	Status    int     `json:"status"`
+	ErrorList []error `json:"errors"`
 }
 
 type ValidationErrorMsg struct {
@@ -34,11 +32,15 @@ type ValidationErrorMsg struct {
 	Password string `json:"password"`
 }
 
-type InternalServerErrorMsg struct {
+type AuthenticationErrorMsg struct {
 	Message string `json:"message"`
 }
 
-type AuthenticationErrorMsg struct {
+type BadRequestErrorMsg struct {
+	Message string `json:"message"`
+}
+
+type InternalServerErrorMsg struct {
 	Message string `json:"message"`
 }
 
@@ -49,20 +51,33 @@ func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
 
 func NewHTTPError(status int, err interface{}) error {
 	switch status {
-	case http.StatusBadRequest, http.StatusConflict:
+	case http.StatusBadRequest:
+		switch err := err.(type) {
+		case *ValidationErrorMsg:
+			return &HTTPError{
+				Status:    status,
+				ErrorList: []error{err},
+			}
+		default:
+			return &HTTPError{
+				Status:    status,
+				ErrorList: []error{&BadRequestErrorMsg{"ログアウト済みです"}},
+			}
+		}
+	case http.StatusConflict:
 		return &HTTPError{
-			Status:          status,
-			ValidationError: err.(*ValidationErrorMsg),
+			Status:    status,
+			ErrorList: []error{err.(*ValidationErrorMsg)},
 		}
 	case http.StatusUnauthorized:
 		return &HTTPError{
-			Status:              status,
-			AuthenticationError: &AuthenticationErrorMsg{"認証に失敗しました"},
+			Status:    status,
+			ErrorList: []error{&AuthenticationErrorMsg{"認証に失敗しました"}},
 		}
 	default:
 		return &HTTPError{
-			Status:              status,
-			InternalServerError: &InternalServerErrorMsg{"500 Internal Server Error"},
+			Status:    status,
+			ErrorList: []error{&InternalServerErrorMsg{"500 Internal Server Error"}},
 		}
 	}
 }
@@ -83,12 +98,16 @@ func (e *ValidationErrorMsg) Error() string {
 	return string(b)
 }
 
+func (e *AuthenticationErrorMsg) Error() string {
+	return e.Message
+}
+
+func (e *BadRequestErrorMsg) Error() string {
+	return e.Message
+}
+
 func (e *InternalServerErrorMsg) Error() string {
-	b, err := json.Marshal(e)
-	if err != nil {
-		log.Println(err)
-	}
-	return string(b)
+	return e.Message
 }
 
 func UserValidate(user interface{}) error {
@@ -151,7 +170,6 @@ func responseByJSON(w http.ResponseWriter, user interface{}, err error) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
@@ -231,4 +249,23 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	})
 
 	responseByJSON(w, &loginUser, nil)
+}
+
+func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if errors.Is(err, http.ErrNoCookie) {
+		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, nil))
+		return
+	}
+	sessionID := cookie.Value
+	if err := h.userRepo.DeleteSessionID(sessionID); err != nil {
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    "",
+		Expires:  time.Now(),
+		HttpOnly: true,
+	})
 }

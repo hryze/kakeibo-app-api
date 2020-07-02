@@ -14,6 +14,8 @@ func Run() error {
 	router := mux.NewRouter()
 	router.Handle("/signup", http.HandlerFunc(h.SignUp)).Methods("POST")
 	router.Handle("/login", http.HandlerFunc(h.Login)).Methods("POST")
+	router.Handle("/logout", http.HandlerFunc(h.Logout)).Methods("DELETE")
+
 	if err := http.ListenAndServe(":8080", router); err != nil {
 		return err
 	}

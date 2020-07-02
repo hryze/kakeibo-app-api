@@ -45,3 +45,10 @@ func (u *UserRepository) SetSessionID(sessionID string, expiration int) error {
 	_, err := conn.Do("SET", sessionID, "ok", "EX", expiration)
 	return err
 }
+
+func (u *UserRepository) DeleteSessionID(sessionID string) error {
+	conn := u.RedisHandler.pool.Get()
+	defer conn.Close()
+	_, err := conn.Do("DEL", sessionID)
+	return err
+}
