@@ -23,6 +23,15 @@ func (u *UserRepository) FindID(signUpUser *model.SignUpUser) error {
 	return nil
 }
 
+func (u *UserRepository) FindEmail(signUpUser *model.SignUpUser) error {
+	var dbEmail string
+	query := "SELECT email FROM users WHERE email = ?"
+	if err := u.MySQLHandler.conn.QueryRowx(query, signUpUser.Email).Scan(&dbEmail); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (u *UserRepository) CreateUser(signUpUser *model.SignUpUser) error {
 	query := "INSERT INTO users(id, name, email, password) VALUES(?,?,?,?)"
 	if _, err := u.MySQLHandler.conn.Exec(query, signUpUser.ID, signUpUser.Name, signUpUser.Email, signUpUser.Password); err != nil {

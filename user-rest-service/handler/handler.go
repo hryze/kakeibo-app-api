@@ -125,7 +125,7 @@ func UserValidate(user interface{}) error {
 		case "Name":
 			validationErrorMsg.Name = "名前を正しく入力してください"
 		case "Email":
-			validationErrorMsg.Email = "Eメールを正しく入力してください"
+			validationErrorMsg.Email = "メールアドレスを正しく入力してください"
 		case "Password":
 			validationErrorMsg.Password = "パスワードを正しく入力してください"
 		}
@@ -134,17 +134,35 @@ func UserValidate(user interface{}) error {
 	return &validationErrorMsg
 }
 
-func checkForUniqueID(h *UserHandler, signUpUser *model.SignUpUser) error {
+func checkForUniqueUser(h *UserHandler, signUpUser *model.SignUpUser) error {
 	var validationErrorMsg ValidationErrorMsg
-	if err := h.userRepo.FindID(signUpUser); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil
-		} else if err != nil {
-			return err
-		}
-	}
-	validationErrorMsg.ID = "このIDは登録できません"
 
+	errID := h.userRepo.FindID(signUpUser)
+	if errID != nil && errID != sql.ErrNoRows {
+		return errID
+	}
+
+	errEmail := h.userRepo.FindEmail(signUpUser)
+	if errEmail != nil && errEmail != sql.ErrNoRows {
+		return errEmail
+	}
+
+	if errors.Is(errID, sql.ErrNoRows) && errors.Is(errEmail, sql.ErrNoRows) {
+		return nil
+	}
+
+	if errID == nil && errEmail != nil {
+		validationErrorMsg.ID = "このIDは既に利用されています"
+		return &validationErrorMsg
+	}
+
+	if errEmail == nil && errID != nil {
+		validationErrorMsg.Email = "このメールアドレスは既に利用されています"
+		return &validationErrorMsg
+	}
+
+	validationErrorMsg.ID = "このIDは既に利用されています"
+	validationErrorMsg.Email = "このメールアドレスは既に利用されています"
 	return &validationErrorMsg
 }
 
@@ -182,7 +200,7 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
-	if err := checkForUniqueID(h, &signUpUser); err != nil {
+	if err := checkForUniqueUser(h, &signUpUser); err != nil {
 		validationErrorMsg, ok := err.(*ValidationErrorMsg)
 		if !ok {
 			responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
