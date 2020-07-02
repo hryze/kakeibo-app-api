@@ -22,7 +22,7 @@ type UserHandler struct {
 
 type HTTPError struct {
 	Status    int     `json:"status"`
-	ErrorList []error `json:"error"`
+	ErrorList []error `json:"errors"`
 }
 
 type ValidationErrorMsg struct {
@@ -99,27 +99,15 @@ func (e *ValidationErrorMsg) Error() string {
 }
 
 func (e *AuthenticationErrorMsg) Error() string {
-	b, err := json.Marshal(e)
-	if err != nil {
-		log.Println(err)
-	}
-	return string(b)
+	return e.Message
 }
 
 func (e *BadRequestErrorMsg) Error() string {
-	b, err := json.Marshal(e)
-	if err != nil {
-		log.Println(err)
-	}
-	return string(b)
+	return e.Message
 }
 
 func (e *InternalServerErrorMsg) Error() string {
-	b, err := json.Marshal(e)
-	if err != nil {
-		log.Println(err)
-	}
-	return string(b)
+	return e.Message
 }
 
 func UserValidate(user interface{}) error {
