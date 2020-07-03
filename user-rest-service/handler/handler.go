@@ -254,7 +254,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	sessionID := uuid.New().String()
 	expiration := 86400 * 30
-	if err := h.userRepo.SetSessionID(sessionID, expiration); err != nil {
+	if err := h.userRepo.SetSessionID(sessionID, loginUser.ID, expiration); err != nil {
 		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
