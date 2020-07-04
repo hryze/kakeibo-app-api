@@ -16,7 +16,7 @@ func NewUserRepository(mysqlHandler *MySQLHandler, redisHandler *RedisHandler) *
 
 func (u *UserRepository) FindID(signUpUser *model.SignUpUser) error {
 	var dbID string
-	query := "SELECT id FROM users WHERE id = ?"
+	query := "SELECT user_id FROM users WHERE user_id = ?"
 	if err := u.MySQLHandler.conn.QueryRowx(query, signUpUser.ID).Scan(&dbID); err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (u *UserRepository) FindEmail(signUpUser *model.SignUpUser) error {
 }
 
 func (u *UserRepository) CreateUser(signUpUser *model.SignUpUser) error {
-	query := "INSERT INTO users(id, name, email, password) VALUES(?,?,?,?)"
+	query := "INSERT INTO users(user_id, name, email, password) VALUES(?,?,?,?)"
 	if _, err := u.MySQLHandler.conn.Exec(query, signUpUser.ID, signUpUser.Name, signUpUser.Email, signUpUser.Password); err != nil {
 		return err
 	}
@@ -41,17 +41,17 @@ func (u *UserRepository) CreateUser(signUpUser *model.SignUpUser) error {
 }
 
 func (u *UserRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUser, error) {
-	query := "SELECT id, name, email, password FROM users WHERE email = ?"
+	query := "SELECT user_id, name, email, password FROM users WHERE email = ?"
 	if err := u.MySQLHandler.conn.QueryRowx(query, loginUser.Email).StructScan(loginUser); err != nil {
 		return nil, err
 	}
 	return loginUser, nil
 }
 
-func (u *UserRepository) SetSessionID(sessionID string, expiration int) error {
+func (u *UserRepository) SetSessionID(sessionID string, loginUserID string, expiration int) error {
 	conn := u.RedisHandler.pool.Get()
 	defer conn.Close()
-	_, err := conn.Do("SET", sessionID, "ok", "EX", expiration)
+	_, err := conn.Do("SET", sessionID, loginUserID, "EX", expiration)
 	return err
 }
 
