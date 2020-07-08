@@ -20,9 +20,13 @@ type UserHandler struct {
 	userRepo repository.UserRepository
 }
 
+type LogoutMsg struct {
+	Message string `json:"message"`
+}
+
 type HTTPError struct {
-	Status    int     `json:"status"`
-	ErrorList []error `json:"errors"`
+	Status       int   `json:"status"`
+	ErrorMessage error `json:"error"`
 }
 
 type ValidationErrorMsg struct {
@@ -55,29 +59,29 @@ func NewHTTPError(status int, err interface{}) error {
 		switch err := err.(type) {
 		case *ValidationErrorMsg:
 			return &HTTPError{
-				Status:    status,
-				ErrorList: []error{err},
+				Status:       status,
+				ErrorMessage: err,
 			}
 		default:
 			return &HTTPError{
-				Status:    status,
-				ErrorList: []error{&BadRequestErrorMsg{"ログアウト済みです"}},
+				Status:       status,
+				ErrorMessage: &BadRequestErrorMsg{"ログアウト済みです"},
 			}
 		}
 	case http.StatusConflict:
 		return &HTTPError{
-			Status:    status,
-			ErrorList: []error{err.(*ValidationErrorMsg)},
+			Status:       status,
+			ErrorMessage: err.(*ValidationErrorMsg),
 		}
 	case http.StatusUnauthorized:
 		return &HTTPError{
-			Status:    status,
-			ErrorList: []error{&AuthenticationErrorMsg{"認証に失敗しました"}},
+			Status:       status,
+			ErrorMessage: &AuthenticationErrorMsg{"認証に失敗しました"},
 		}
 	default:
 		return &HTTPError{
-			Status:    status,
-			ErrorList: []error{&InternalServerErrorMsg{"500 Internal Server Error"}},
+			Status:       status,
+			ErrorMessage: &InternalServerErrorMsg{"500 Internal Server Error"},
 		}
 	}
 }
@@ -286,4 +290,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now(),
 		HttpOnly: true,
 	})
+
+	logoutMsg := LogoutMsg{"ログアウトしました"}
+	responseByJSON(w, &logoutMsg, nil)
 }
