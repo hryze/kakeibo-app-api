@@ -30,7 +30,7 @@ type CustomCategory struct {
 }
 
 type AssociatedCategory interface {
-	showCategory() string
+	showCategory() (string, error)
 }
 
 func (c MediumCategory) showCategory() (string, error) {
