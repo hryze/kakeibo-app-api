@@ -2,7 +2,6 @@ package model
 
 import (
 	"encoding/json"
-	"log"
 )
 
 type CategoriesList struct {
@@ -34,20 +33,20 @@ type AssociatedCategory interface {
 	showCategory() string
 }
 
-func (c MediumCategory) showCategory() string {
+func (c MediumCategory) showCategory() (string, error) {
 	b, err := json.Marshal(c)
 	if err != nil {
-		log.Println(err)
+		return string(b), err
 	}
-	return string(b)
+	return string(b), nil
 }
 
-func (c CustomCategory) showCategory() string {
+func (c CustomCategory) showCategory() (string, error) {
 	b, err := json.Marshal(c)
 	if err != nil {
-		log.Println(err)
+		return string(b), err
 	}
-	return string(b)
+	return string(b), nil
 }
 
 func NewCategoriesList(bigCategoriesList []BigCategory) CategoriesList {
