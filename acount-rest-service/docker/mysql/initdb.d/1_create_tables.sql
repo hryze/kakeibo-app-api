@@ -30,7 +30,7 @@ CREATE TABLE custom_categories
   FOREIGN KEY fk_big_category_id(big_category_id)
     REFERENCES big_categories(id)
     ON DELETE RESTRICT ON UPDATE CASCADE,
-  INDEX idx_user_id(user_id)
+  INDEX idx_user_id(user_id, id)
 );
 
 CREATE TABLE expenses
