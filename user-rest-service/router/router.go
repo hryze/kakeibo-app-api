@@ -3,9 +3,9 @@ package router
 import (
 	"net/http"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/injector"
-
 	"github.com/gorilla/mux"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/injector"
+	"github.com/rs/cors"
 )
 
 func Run() error {
@@ -16,7 +16,14 @@ func Run() error {
 	router.Handle("/login", http.HandlerFunc(h.Login)).Methods("POST")
 	router.Handle("/logout", http.HandlerFunc(h.Logout)).Methods("DELETE")
 
-	if err := http.ListenAndServe(":8080", router); err != nil {
+	corsWrapper := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{"POST", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Accept-Language"},
+		AllowCredentials: true,
+	})
+
+	if err := http.ListenAndServe(":8080", corsWrapper.Handler(router)); err != nil {
 		return err
 	}
 
