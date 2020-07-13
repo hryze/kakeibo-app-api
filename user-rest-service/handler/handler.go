@@ -53,7 +53,7 @@ func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
 	return &userHandler
 }
 
-func NewHTTPError(status int, err interface{}) error {
+func NewHTTPError(status int, err error) error {
 	switch status {
 	case http.StatusBadRequest:
 		switch err := err.(type) {
@@ -114,7 +114,7 @@ func (e *InternalServerErrorMsg) Error() string {
 	return e.Message
 }
 
-func UserValidate(user interface{}) error {
+func validateUser(user interface{}) error {
 	var validationErrorMsg ValidationErrorMsg
 	validate := validator.New()
 	err := validate.Struct(user)
@@ -200,7 +200,7 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	if err := UserValidate(&signUpUser); err != nil {
+	if err := validateUser(&signUpUser); err != nil {
 		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
@@ -234,7 +234,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	if err := UserValidate(&loginUser); err != nil {
+	if err := validateUser(&loginUser); err != nil {
 		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
