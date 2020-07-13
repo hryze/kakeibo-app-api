@@ -110,13 +110,6 @@ func validateCustomCategory(customCategory *model.CustomCategory) error {
 	return nil
 }
 
-func checkForUniqueCustomCategory(h *DBHandler, customCategory *model.CustomCategory, userID string) error {
-	if err := h.DBRepo.FindCustomCategory(customCategory, userID); err != nil {
-		return err
-	}
-	return nil
-}
-
 func responseByJSON(w http.ResponseWriter, data interface{}, err error) {
 	if err != nil {
 		httpError, ok := err.(*HTTPError)
@@ -216,7 +209,7 @@ func (h *DBHandler) PostCustomCategory(w http.ResponseWriter, r *http.Request) {
 		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
-	if err := checkForUniqueCustomCategory(h, &customCategory, userID); err != sql.ErrNoRows {
+	if err := h.DBRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
 		if err == nil {
 			responseByJSON(w, nil, NewHTTPError(http.StatusConflict, nil))
 			return
@@ -257,7 +250,7 @@ func (h *DBHandler) PutCustomCategory(w http.ResponseWriter, r *http.Request) {
 		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
-	if err := checkForUniqueCustomCategory(h, &customCategory, userID); err != sql.ErrNoRows {
+	if err := h.DBRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
 		if err == nil {
 			responseByJSON(w, nil, NewHTTPError(http.StatusConflict, nil))
 			return
