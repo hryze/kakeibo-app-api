@@ -3,7 +3,6 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 	"strings"
@@ -113,9 +112,6 @@ func validateCustomCategory(customCategory *model.CustomCategory) error {
 
 func checkForUniqueCustomCategory(h *DBHandler, customCategory *model.CustomCategory, userID string) error {
 	if err := h.DBRepo.FindCustomCategory(customCategory, userID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return err
-		}
 		return err
 	}
 	return nil
