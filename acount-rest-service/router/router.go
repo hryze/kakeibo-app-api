@@ -15,10 +15,11 @@ func Run() error {
 	router.HandleFunc("/categories", h.GetCategories).Methods("GET")
 	router.HandleFunc("/custom-category", h.PostCustomCategory).Methods("POST")
 	router.HandleFunc("/custom-category", h.PutCustomCategory).Methods("PUT")
+	router.HandleFunc("/custom-category", h.DeleteCustomCategory).Methods("DELETE")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Accept-Language"},
 		AllowCredentials: true,
 	})

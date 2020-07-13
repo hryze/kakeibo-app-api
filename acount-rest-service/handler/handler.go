@@ -275,3 +275,25 @@ func (h *DBHandler) PutCustomCategory(w http.ResponseWriter, r *http.Request) {
 	}
 	responseByJSON(w, &customCategory, nil)
 }
+
+func (h *DBHandler) DeleteCustomCategory(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			responseByJSON(w, nil, NewHTTPError(http.StatusUnauthorized, nil))
+			return
+		}
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+	customCategory := model.NewCustomCategory()
+	if err := json.NewDecoder(r.Body).Decode(&customCategory); err != nil {
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+	if err := h.DBRepo.DeleteCustomCategory(&customCategory, userID); err != nil {
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+	responseByJSON(w, &DeleteCustomCategoryMsg{"カスタムカテゴリーを削除しました。"}, nil)
+}
