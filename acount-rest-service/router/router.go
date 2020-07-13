@@ -13,10 +13,11 @@ func Run() error {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/categories", h.GetCategories).Methods("GET")
+	router.HandleFunc("/custom-category", h.PostCustomCategory).Methods("POST")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowedMethods:   []string{"GET"},
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Accept-Language"},
 		AllowCredentials: true,
 	})
