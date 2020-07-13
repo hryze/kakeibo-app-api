@@ -17,4 +17,5 @@ type CategoriesRepository interface {
 	GetCustomCategoriesList(userID string) ([]model.CustomCategory, error)
 	FindCustomCategory(customCategory *model.CustomCategory, userID string) error
 	PostCustomCategory(customCategory *model.CustomCategory, userID string) (sql.Result, error)
+	PutCustomCategory(customCategory *model.CustomCategory, userID string) error
 }

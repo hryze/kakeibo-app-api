@@ -20,6 +20,10 @@ type DBHandler struct {
 	DBRepo repository.DBRepository
 }
 
+type DeleteCustomCategoryMsg struct {
+	Message string `json:"message"`
+}
+
 type HTTPError struct {
 	Status       int   `json:"status"`
 	ErrorMessage error `json:"error"`
@@ -235,5 +239,39 @@ func (h *DBHandler) PostCustomCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	customCategory.ID = int(lastInsertId)
+	responseByJSON(w, &customCategory, nil)
+}
+
+func (h *DBHandler) PutCustomCategory(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			responseByJSON(w, nil, NewHTTPError(http.StatusUnauthorized, nil))
+			return
+		}
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+	customCategory := model.NewCustomCategory()
+	if err := json.NewDecoder(r.Body).Decode(&customCategory); err != nil {
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+	if err := validateCustomCategory(&customCategory); err != nil {
+		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, err))
+		return
+	}
+	if err := checkForUniqueCustomCategory(h, &customCategory, userID); err != sql.ErrNoRows {
+		if err == nil {
+			responseByJSON(w, nil, NewHTTPError(http.StatusConflict, nil))
+			return
+		}
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+	if err := h.DBRepo.PutCustomCategory(&customCategory, userID); err != nil {
+		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
 	responseByJSON(w, &customCategory, nil)
 }

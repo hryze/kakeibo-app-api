@@ -116,3 +116,12 @@ func (r *CategoriesRepository) PostCustomCategory(customCategory *model.CustomCa
 	}
 	return result, nil
 }
+
+func (r *CategoriesRepository) PutCustomCategory(customCategory *model.CustomCategory, userID string) error {
+	query := "UPDATE custom_categories SET category_name = ? WHERE user_id = ? AND id = ?"
+	_, err := r.MySQLHandler.conn.Exec(query, customCategory.Name, userID, customCategory.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
