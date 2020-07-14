@@ -34,7 +34,7 @@ func (r *CategoriesRepository) GetUserID(sessionID string) (string, error) {
 }
 
 func (r *CategoriesRepository) GetBigCategoriesList() ([]model.BigCategory, error) {
-	query := "SELECT id, category_name FROM big_categories"
+	query := "SELECT id, category_name, transaction_type FROM big_categories"
 	rows, err := r.MySQLHandler.conn.Queryx(query)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (r *CategoriesRepository) GetBigCategoriesList() ([]model.BigCategory, erro
 
 	var bigCategoriesList []model.BigCategory
 	for rows.Next() {
-		bigCategory := model.NewBigCategory()
+		var bigCategory model.BigCategory
 		if err := rows.StructScan(&bigCategory); err != nil {
 			return nil, err
 		}

@@ -6,6 +6,7 @@ CREATE TABLE big_categories
 (
   id INT NOT NULL AUTO_INCREMENT,
   category_name VARCHAR(10) NOT NULL,
+  transaction_type ENUM('expense', 'income') NOT NULL,
   PRIMARY KEY(id)
 );
 
@@ -33,13 +34,14 @@ CREATE TABLE custom_categories
   INDEX idx_user_id(user_id, id)
 );
 
-CREATE TABLE expenses
+CREATE TABLE transactions
 (
   id INT NOT NULL AUTO_INCREMENT,
+  transaction_type ENUM('expense', 'income') NOT NULL,
   posted_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  payment_date DATE NOT NULL,
-  payment_shop VARCHAR(20) DEFAULT NULL,
+  transaction_date DATE NOT NULL,
+  shop VARCHAR(20) DEFAULT NULL,
   memo VARCHAR(50) DEFAULT NULL,
   amount INT NOT NULL,
   user_id VARCHAR(10) NOT NULL,
