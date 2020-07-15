@@ -3,34 +3,11 @@ package infrastructure
 import (
 	"database/sql"
 
-	"github.com/garyburd/redigo/redis"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
 )
 
-type DBRepository struct {
-	*CategoriesRepository
-}
-
 type CategoriesRepository struct {
 	*MySQLHandler
-	*RedisHandler
-}
-
-func NewDBRepository(mysqlHandler *MySQLHandler, redisHandler *RedisHandler) *DBRepository {
-	DBRepository := &DBRepository{
-		&CategoriesRepository{mysqlHandler, redisHandler},
-	}
-	return DBRepository
-}
-
-func (r *CategoriesRepository) GetUserID(sessionID string) (string, error) {
-	conn := r.RedisHandler.pool.Get()
-	defer conn.Close()
-	userID, err := redis.String(conn.Do("GET", sessionID))
-	if err != nil {
-		return userID, err
-	}
-	return userID, nil
 }
 
 func (r *CategoriesRepository) GetBigCategoriesList() ([]model.BigCategory, error) {

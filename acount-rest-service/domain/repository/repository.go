@@ -7,11 +7,15 @@ import (
 )
 
 type DBRepository interface {
+	AuthRepository
 	CategoriesRepository
 }
 
-type CategoriesRepository interface {
+type AuthRepository interface {
 	GetUserID(sessionID string) (string, error)
+}
+
+type CategoriesRepository interface {
 	GetBigCategoriesList() ([]model.BigCategory, error)
 	GetMediumCategoriesList() ([]model.MediumCategory, error)
 	GetCustomCategoriesList(userID string) ([]model.CustomCategory, error)
