@@ -174,20 +174,31 @@ func (h *DBHandler) GetCategories(w http.ResponseWriter, r *http.Request) {
 	}
 	for i, bigCategory := range bigCategoriesList {
 		for _, customCategory := range customCategoriesList {
-			if bigCategory.ID == customCategory.BigCategoryID {
-				bigCategoriesList[i].AssociatedCategoriesList = append(bigCategoriesList[i].AssociatedCategoriesList, customCategory)
+			if bigCategory.TransactionType == "income" && bigCategory.ID == customCategory.BigCategoryID {
+				bigCategoriesList[i].IncomeAssociatedCategoriesList = append(bigCategoriesList[i].IncomeAssociatedCategoriesList, customCategory)
+			} else if bigCategory.TransactionType == "expense" && bigCategory.ID == customCategory.BigCategoryID {
+				bigCategoriesList[i].ExpenseAssociatedCategoriesList = append(bigCategoriesList[i].ExpenseAssociatedCategoriesList, customCategory)
 			}
 		}
 	}
 	for i, bigCategory := range bigCategoriesList {
 		for _, mediumCategory := range mediumCategoriesList {
-			if bigCategory.ID == mediumCategory.BigCategoryID {
-				bigCategoriesList[i].AssociatedCategoriesList = append(bigCategoriesList[i].AssociatedCategoriesList, mediumCategory)
+			if bigCategory.TransactionType == "income" && bigCategory.ID == mediumCategory.BigCategoryID {
+				bigCategoriesList[i].IncomeAssociatedCategoriesList = append(bigCategoriesList[i].IncomeAssociatedCategoriesList, mediumCategory)
+			} else if bigCategory.TransactionType == "expense" && bigCategory.ID == mediumCategory.BigCategoryID {
+				bigCategoriesList[i].ExpenseAssociatedCategoriesList = append(bigCategoriesList[i].ExpenseAssociatedCategoriesList, mediumCategory)
 			}
 		}
 	}
-	CategoriesList := model.NewCategoriesList(bigCategoriesList)
-	responseByJSON(w, CategoriesList, nil)
+	var categoriesList model.CategoriesList
+	for _, bigCategory := range bigCategoriesList {
+		if bigCategory.TransactionType == "income" {
+			categoriesList.IncomeBigCategoriesList = append(categoriesList.IncomeBigCategoriesList, model.NewIncomeBigCategory(&bigCategory))
+		} else if bigCategory.TransactionType == "expense" {
+			categoriesList.ExpenseBigCategoriesList = append(categoriesList.ExpenseBigCategoriesList, model.NewExpenseBigCategory(&bigCategory))
+		}
+	}
+	responseByJSON(w, &categoriesList, nil)
 }
 
 func (h *DBHandler) PostCustomCategory(w http.ResponseWriter, r *http.Request) {
