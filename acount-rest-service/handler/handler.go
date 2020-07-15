@@ -61,7 +61,7 @@ func NewHTTPError(status int, err error) error {
 	case http.StatusConflict:
 		return &HTTPError{
 			Status:       status,
-			ErrorMessage: &ConflictErrorMsg{"中カテゴリーの登録に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"},
+			ErrorMessage: err.(*ConflictErrorMsg),
 		}
 	case http.StatusUnauthorized:
 		return &HTTPError{
@@ -100,16 +100,27 @@ func (e *InternalServerErrorMsg) Error() string {
 	return e.Message
 }
 
-func validateCustomCategory(customCategory *model.CustomCategory) error {
+func validateCustomCategory(r *http.Request, customCategory *model.CustomCategory) error {
 	if strings.HasPrefix(customCategory.Name, " ") || strings.HasPrefix(customCategory.Name, "　") {
-		return &ValidationErrorMsg{"中カテゴリーの登録に失敗しました。 文字列先頭に空白がないか確認してください。"}
+		if r.Method == http.MethodPost {
+			return &ValidationErrorMsg{"中カテゴリーの登録に失敗しました。 文字列先頭に空白がないか確認してください。"}
+		}
+
+		return &ValidationErrorMsg{"中カテゴリーの更新に失敗しました。 文字列先頭に空白がないか確認してください。"}
 	}
+
 	if strings.HasSuffix(customCategory.Name, " ") || strings.HasSuffix(customCategory.Name, "　") {
-		return &ValidationErrorMsg{"中カテゴリーの登録に失敗しました。 文字列末尾に空白がないか確認してください。"}
+		if r.Method == http.MethodPost {
+			return &ValidationErrorMsg{"中カテゴリーの登録に失敗しました。 文字列末尾に空白がないか確認してください。"}
+		}
+
+		return &ValidationErrorMsg{"中カテゴリーの更新に失敗しました。 文字列末尾に空白がないか確認してください。"}
 	}
+
 	if utf8.RuneCountInString(customCategory.Name) > 9 {
 		return &ValidationErrorMsg{"カテゴリー名は9文字以下で入力してください。"}
 	}
+
 	return nil
 }
 
@@ -230,13 +241,13 @@ func (h *DBHandler) PostCustomCategory(w http.ResponseWriter, r *http.Request) {
 		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	if err := validateCustomCategory(&customCategory); err != nil {
+	if err := validateCustomCategory(r, &customCategory); err != nil {
 		responseByJSON(w, r, nil, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 	if err := h.DBRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
 		if err == nil {
-			responseByJSON(w, r, nil, NewHTTPError(http.StatusConflict, nil))
+			responseByJSON(w, r, nil, NewHTTPError(http.StatusConflict, &ConflictErrorMsg{"中カテゴリーの登録に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
 		}
 		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
@@ -276,8 +287,16 @@ func (h *DBHandler) PutCustomCategory(w http.ResponseWriter, r *http.Request) {
 		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	if err := validateCustomCategory(&customCategory); err != nil {
+	if err := validateCustomCategory(r, &customCategory); err != nil {
 		responseByJSON(w, r, nil, NewHTTPError(http.StatusBadRequest, err))
+		return
+	}
+	if err := h.DBRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
+		if err == nil {
+			responseByJSON(w, r, nil, NewHTTPError(http.StatusConflict, &ConflictErrorMsg{"中カテゴリーの更新に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
+			return
+		}
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	if err := h.DBRepo.PutCustomCategory(&customCategory, userID); err != nil {
