@@ -102,35 +102,24 @@ func (r *CategoriesRepository) GetCustomCategoriesList(userID string) ([]model.C
 func (r *CategoriesRepository) FindCustomCategory(customCategory *model.CustomCategory, userID string) error {
 	var dbCustomCategoryName string
 	query := "SELECT category_name FROM custom_categories WHERE user_id = ? AND big_category_id = ? AND category_name = ?"
-	if err := r.MySQLHandler.conn.QueryRowx(query, userID, customCategory.BigCategoryID, customCategory.Name).Scan(&dbCustomCategoryName); err != nil {
-		return err
-	}
-	return nil
+	err := r.MySQLHandler.conn.QueryRowx(query, userID, customCategory.BigCategoryID, customCategory.Name).Scan(&dbCustomCategoryName)
+	return err
 }
 
 func (r *CategoriesRepository) PostCustomCategory(customCategory *model.CustomCategory, userID string) (sql.Result, error) {
 	query := "INSERT INTO custom_categories(category_name, big_category_id, user_id) VALUES(?,?,?)"
 	result, err := r.MySQLHandler.conn.Exec(query, customCategory.Name, customCategory.BigCategoryID, userID)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
+	return result, err
 }
 
 func (r *CategoriesRepository) PutCustomCategory(customCategory *model.CustomCategory, userID string) error {
 	query := "UPDATE custom_categories SET category_name = ? WHERE user_id = ? AND id = ?"
 	_, err := r.MySQLHandler.conn.Exec(query, customCategory.Name, userID, customCategory.ID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
-func (r *CategoriesRepository) DeleteCustomCategory(customCategory *model.CustomCategory, userID string) error {
+func (r *CategoriesRepository) DeleteCustomCategory(customCategoryID int, userID string) error {
 	query := "DELETE FROM custom_categories WHERE user_id = ? AND id = ?"
-	_, err := r.MySQLHandler.conn.Exec(query, userID, customCategory.ID)
-	if err != nil {
-		return err
-	}
-	return nil
+	_, err := r.MySQLHandler.conn.Exec(query, userID, customCategoryID)
+	return err
 }

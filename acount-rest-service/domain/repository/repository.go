@@ -18,5 +18,5 @@ type CategoriesRepository interface {
 	FindCustomCategory(customCategory *model.CustomCategory, userID string) error
 	PostCustomCategory(customCategory *model.CustomCategory, userID string) (sql.Result, error)
 	PutCustomCategory(customCategory *model.CustomCategory, userID string) error
-	DeleteCustomCategory(customCategory *model.CustomCategory, userID string) error
+	DeleteCustomCategory(customCategoryID int, userID string) error
 }

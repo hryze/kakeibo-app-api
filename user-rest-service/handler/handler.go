@@ -170,7 +170,7 @@ func checkForUniqueUser(h *UserHandler, signUpUser *model.SignUpUser) error {
 	return &validationErrorMsg
 }
 
-func responseByJSON(w http.ResponseWriter, user interface{}, err error) {
+func responseByJSON(w http.ResponseWriter, r *http.Request, user interface{}, err error) {
 	if err != nil {
 		httpError, ok := err.(*HTTPError)
 		if !ok {
@@ -181,6 +181,17 @@ func responseByJSON(w http.ResponseWriter, user interface{}, err error) {
 		w.WriteHeader(httpError.Status)
 		if err := json.NewEncoder(w).Encode(httpError); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusCreated)
+		if err := json.NewEncoder(w).Encode(user); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 		return
@@ -197,61 +208,61 @@ func responseByJSON(w http.ResponseWriter, user interface{}, err error) {
 func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var signUpUser model.SignUpUser
 	if err := json.NewDecoder(r.Body).Decode(&signUpUser); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	if err := validateUser(&signUpUser); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, err))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 	if err := checkForUniqueUser(h, &signUpUser); err != nil {
 		validationErrorMsg, ok := err.(*ValidationErrorMsg)
 		if !ok {
-			responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+			responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
-		responseByJSON(w, nil, NewHTTPError(http.StatusConflict, validationErrorMsg))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusConflict, validationErrorMsg))
 		return
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(signUpUser.Password), 10)
 	if err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	signUpUser.Password = string(hash)
 	if err := h.userRepo.CreateUser(&signUpUser); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	signUpUser.Password = ""
 
-	responseByJSON(w, &signUpUser, nil)
+	responseByJSON(w, r, &signUpUser, nil)
 }
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var loginUser model.LoginUser
 	if err := json.NewDecoder(r.Body).Decode(&loginUser); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	if err := validateUser(&loginUser); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, err))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 	password := loginUser.Password
 	dbUser, err := h.userRepo.FindUser(&loginUser)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			responseByJSON(w, nil, NewHTTPError(http.StatusUnauthorized, nil))
+			responseByJSON(w, r, nil, NewHTTPError(http.StatusUnauthorized, nil))
 			return
 		} else if err != nil {
-			responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+			responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
 	}
 	hashedPassword := dbUser.Password
 	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusUnauthorized, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusUnauthorized, nil))
 		return
 	}
 	loginUser.Password = ""
@@ -259,7 +270,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	sessionID := uuid.New().String()
 	expiration := 86400 * 30
 	if err := h.userRepo.SetSessionID(sessionID, loginUser.ID, expiration); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
@@ -270,18 +281,18 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 
-	responseByJSON(w, &loginUser, nil)
+	responseByJSON(w, r, &loginUser, nil)
 }
 
 func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_id")
 	if errors.Is(err, http.ErrNoCookie) {
-		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusBadRequest, nil))
 		return
 	}
 	sessionID := cookie.Value
 	if err := h.userRepo.DeleteSessionID(sessionID); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	http.SetCookie(w, &http.Cookie{
@@ -292,5 +303,5 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	})
 
 	logoutMsg := LogoutMsg{"ログアウトしました"}
-	responseByJSON(w, &logoutMsg, nil)
+	responseByJSON(w, r, &logoutMsg, nil)
 }

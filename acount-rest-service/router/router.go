@@ -12,10 +12,10 @@ func Run() error {
 	h := injector.InjectDBHandler()
 
 	router := mux.NewRouter()
-	router.HandleFunc("/categories", h.GetCategories).Methods("GET")
-	router.HandleFunc("/custom-category", h.PostCustomCategory).Methods("POST")
-	router.HandleFunc("/custom-category", h.PutCustomCategory).Methods("PUT")
-	router.HandleFunc("/custom-category", h.DeleteCustomCategory).Methods("DELETE")
+	router.HandleFunc("/categories", h.GetCategoriesList).Methods("GET")
+	router.HandleFunc("/categories/custom-categories", h.PostCustomCategory).Methods("POST")
+	router.HandleFunc("/categories/custom-categories/{id:[0-9]+}", h.PutCustomCategory).Methods("PUT")
+	router.HandleFunc("/categories/custom-categories/{id:[0-9]+}", h.DeleteCustomCategory).Methods("DELETE")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},

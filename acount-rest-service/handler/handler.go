@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/gorilla/mux"
 
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
 
@@ -110,7 +113,7 @@ func validateCustomCategory(customCategory *model.CustomCategory) error {
 	return nil
 }
 
-func responseByJSON(w http.ResponseWriter, data interface{}, err error) {
+func responseByJSON(w http.ResponseWriter, r *http.Request, data interface{}, err error) {
 	if err != nil {
 		httpError, ok := err.(*HTTPError)
 		if !ok {
@@ -121,6 +124,17 @@ func responseByJSON(w http.ResponseWriter, data interface{}, err error) {
 		w.WriteHeader(httpError.Status)
 		if err := json.NewEncoder(w).Encode(httpError); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusCreated)
+		if err := json.NewEncoder(w).Encode(data); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 		return
@@ -147,29 +161,29 @@ func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (stri
 	return userID, nil
 }
 
-func (h *DBHandler) GetCategories(w http.ResponseWriter, r *http.Request) {
+func (h *DBHandler) GetCategoriesList(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			responseByJSON(w, nil, NewHTTPError(http.StatusUnauthorized, nil))
+			responseByJSON(w, r, nil, NewHTTPError(http.StatusUnauthorized, nil))
 			return
 		}
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	bigCategoriesList, err := h.DBRepo.GetBigCategoriesList()
 	if err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	mediumCategoriesList, err := h.DBRepo.GetMediumCategoriesList()
 	if err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	customCategoriesList, err := h.DBRepo.GetCustomCategoriesList(userID)
 	if err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	for i, bigCategory := range bigCategoriesList {
@@ -198,102 +212,99 @@ func (h *DBHandler) GetCategories(w http.ResponseWriter, r *http.Request) {
 			categoriesList.ExpenseBigCategoriesList = append(categoriesList.ExpenseBigCategoriesList, model.NewExpenseBigCategory(&bigCategory))
 		}
 	}
-	responseByJSON(w, &categoriesList, nil)
+	responseByJSON(w, r, &categoriesList, nil)
 }
 
 func (h *DBHandler) PostCustomCategory(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			responseByJSON(w, nil, NewHTTPError(http.StatusUnauthorized, nil))
+			responseByJSON(w, r, nil, NewHTTPError(http.StatusUnauthorized, nil))
 			return
 		}
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	customCategory := model.NewCustomCategory()
 	if err := json.NewDecoder(r.Body).Decode(&customCategory); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	if err := validateCustomCategory(&customCategory); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, err))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 	if err := h.DBRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
 		if err == nil {
-			responseByJSON(w, nil, NewHTTPError(http.StatusConflict, nil))
+			responseByJSON(w, r, nil, NewHTTPError(http.StatusConflict, nil))
 			return
 		}
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	result, err := h.DBRepo.PostCustomCategory(&customCategory, userID)
 	if err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	lastInsertId, err := result.LastInsertId()
 	if err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	customCategory.ID = int(lastInsertId)
-	responseByJSON(w, &customCategory, nil)
+	responseByJSON(w, r, &customCategory, nil)
 }
 
 func (h *DBHandler) PutCustomCategory(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			responseByJSON(w, nil, NewHTTPError(http.StatusUnauthorized, nil))
+			responseByJSON(w, r, nil, NewHTTPError(http.StatusUnauthorized, nil))
 			return
 		}
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	customCategory := model.NewCustomCategory()
 	if err := json.NewDecoder(r.Body).Decode(&customCategory); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+	customCategory.ID, err = strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	if err := validateCustomCategory(&customCategory); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusBadRequest, err))
-		return
-	}
-	if err := h.DBRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
-		if err == nil {
-			responseByJSON(w, nil, NewHTTPError(http.StatusConflict, nil))
-			return
-		}
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 	if err := h.DBRepo.PutCustomCategory(&customCategory, userID); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	responseByJSON(w, &customCategory, nil)
+	responseByJSON(w, r, &customCategory, nil)
 }
 
 func (h *DBHandler) DeleteCustomCategory(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			responseByJSON(w, nil, NewHTTPError(http.StatusUnauthorized, nil))
+			responseByJSON(w, r, nil, NewHTTPError(http.StatusUnauthorized, nil))
 			return
 		}
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	customCategory := model.NewCustomCategory()
-	if err := json.NewDecoder(r.Body).Decode(&customCategory); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+	customCategoryID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	if err := h.DBRepo.DeleteCustomCategory(&customCategory, userID); err != nil {
-		responseByJSON(w, nil, NewHTTPError(http.StatusInternalServerError, nil))
+	if err := h.DBRepo.DeleteCustomCategory(customCategoryID, userID); err != nil {
+		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	responseByJSON(w, &DeleteCustomCategoryMsg{"カスタムカテゴリーを削除しました。"}, nil)
+	responseByJSON(w, r, &DeleteCustomCategoryMsg{"カスタムカテゴリーを削除しました。"}, nil)
 }
