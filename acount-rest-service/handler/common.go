@@ -87,6 +87,19 @@ func (e *InternalServerErrorMsg) Error() string {
 	return e.Message
 }
 
+func errorResponseByJSON(w http.ResponseWriter, err error) {
+	httpError, ok := err.(*HTTPError)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(httpError.Status)
+	if err := json.NewEncoder(w).Encode(httpError); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
 func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (string, error) {
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
@@ -98,39 +111,4 @@ func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (stri
 		return "", err
 	}
 	return userID, nil
-}
-
-func responseByJSON(w http.ResponseWriter, r *http.Request, data interface{}, err error) {
-	if err != nil {
-		httpError, ok := err.(*HTTPError)
-		if !ok {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(httpError.Status)
-		if err := json.NewEncoder(w).Encode(httpError); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-
-		return
-	}
-
-	if r.Method == http.MethodPost {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(data); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 }

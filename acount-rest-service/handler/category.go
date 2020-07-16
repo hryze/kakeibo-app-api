@@ -47,25 +47,25 @@ func (h *DBHandler) GetCategoriesList(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			responseByJSON(w, r, nil, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
 			return
 		}
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	bigCategoriesList, err := h.DBRepo.GetBigCategoriesList()
 	if err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	mediumCategoriesList, err := h.DBRepo.GetMediumCategoriesList()
 	if err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	customCategoriesList, err := h.DBRepo.GetCustomCategoriesList(userID)
 	if err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	for i, bigCategory := range bigCategoriesList {
@@ -94,107 +94,131 @@ func (h *DBHandler) GetCategoriesList(w http.ResponseWriter, r *http.Request) {
 			categoriesList.ExpenseBigCategoriesList = append(categoriesList.ExpenseBigCategoriesList, model.NewExpenseBigCategory(&bigCategory))
 		}
 	}
-	responseByJSON(w, r, &categoriesList, nil)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&categoriesList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *DBHandler) PostCustomCategory(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			responseByJSON(w, r, nil, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
 			return
 		}
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	customCategory := model.NewCustomCategory()
 	if err := json.NewDecoder(r.Body).Decode(&customCategory); err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	if err := validateCustomCategory(r, &customCategory); err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusBadRequest, err))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 	if err := h.DBRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
 		if err == nil {
-			responseByJSON(w, r, nil, NewHTTPError(http.StatusConflict, &ConflictErrorMsg{"中カテゴリーの登録に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
+			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &ConflictErrorMsg{"中カテゴリーの登録に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
 		}
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	result, err := h.DBRepo.PostCustomCategory(&customCategory, userID)
 	if err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	lastInsertId, err := result.LastInsertId()
 	if err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	customCategory.ID = int(lastInsertId)
-	responseByJSON(w, r, &customCategory, nil)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(&customCategory); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *DBHandler) PutCustomCategory(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			responseByJSON(w, r, nil, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
 			return
 		}
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	customCategory := model.NewCustomCategory()
 	if err := json.NewDecoder(r.Body).Decode(&customCategory); err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	customCategory.ID, err = strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	if err := validateCustomCategory(r, &customCategory); err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusBadRequest, err))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 	if err := h.DBRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
 		if err == nil {
-			responseByJSON(w, r, nil, NewHTTPError(http.StatusConflict, &ConflictErrorMsg{"中カテゴリーの更新に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
+			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &ConflictErrorMsg{"中カテゴリーの更新に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
 		}
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	if err := h.DBRepo.PutCustomCategory(&customCategory, userID); err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	responseByJSON(w, r, &customCategory, nil)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&customCategory); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *DBHandler) DeleteCustomCategory(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			responseByJSON(w, r, nil, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
 			return
 		}
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	customCategoryID, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 	if err := h.DBRepo.DeleteCustomCategory(customCategoryID, userID); err != nil {
-		responseByJSON(w, r, nil, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	responseByJSON(w, r, &DeleteCustomCategoryMsg{"カスタムカテゴリーを削除しました。"}, nil)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&DeleteCustomCategoryMsg{"カスタムカテゴリーを削除しました。"}); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
