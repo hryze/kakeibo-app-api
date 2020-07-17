@@ -86,8 +86,11 @@ func (d *Date) MarshalJSON() ([]byte, error) {
 func (d *Date) UnmarshalJSON(data []byte) error {
 	trimData := strings.Trim(string(data), "\"")[:10]
 	date, err := time.Parse("2006-01-02", trimData)
+	if err != nil {
+		return err
+	}
 	d.Time = date
-	return err
+	return nil
 }
 
 func (ns *NullString) MarshalJSON() ([]byte, error) {
