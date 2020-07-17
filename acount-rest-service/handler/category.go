@@ -182,7 +182,7 @@ func (h *DBHandler) PutCustomCategory(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	if err := h.DBRepo.PutCustomCategory(&customCategory, userID); err != nil {
+	if err := h.DBRepo.PutCustomCategory(&customCategory); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}

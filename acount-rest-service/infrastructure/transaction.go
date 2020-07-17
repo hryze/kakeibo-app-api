@@ -116,7 +116,7 @@ func (r *TransactionsRepository) PostTransaction(transaction *model.TransactionR
 	return result, err
 }
 
-func (r *TransactionsRepository) PutTransaction(transaction *model.TransactionReceiver, transactionID int, userID string) error {
+func (r *TransactionsRepository) PutTransaction(transaction *model.TransactionReceiver, transactionID int) error {
 	query := `
         UPDATE
             transactions
@@ -130,10 +130,8 @@ func (r *TransactionsRepository) PutTransaction(transaction *model.TransactionRe
             medium_category_id = ?,
             custom_category_id = ?
         WHERE
-            user_id = ?
-        AND
             id = ?`
-	_, err := r.MySQLHandler.conn.Exec(query, transaction.TransactionType, transaction.TransactionDate, transaction.Shop, transaction.Memo, transaction.Amount, transaction.BigCategoryID, transaction.MediumCategoryID, transaction.CustomCategoryID, userID, transactionID)
+	_, err := r.MySQLHandler.conn.Exec(query, transaction.TransactionType, transaction.TransactionDate, transaction.Shop, transaction.Memo, transaction.Amount, transaction.BigCategoryID, transaction.MediumCategoryID, transaction.CustomCategoryID, transactionID)
 	return err
 }
 
