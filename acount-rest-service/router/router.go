@@ -16,6 +16,7 @@ func Run() error {
 	router.HandleFunc("/categories/custom-categories", h.PostCustomCategory).Methods("POST")
 	router.HandleFunc("/categories/custom-categories/{id:[0-9]+}", h.PutCustomCategory).Methods("PUT")
 	router.HandleFunc("/categories/custom-categories/{id:[0-9]+}", h.DeleteCustomCategory).Methods("DELETE")
+	router.HandleFunc("/transactions", h.GetMonthlyTransactionsList).Methods("GET")
 	router.HandleFunc("/transactions", h.PostTransaction).Methods("POST")
 
 	corsWrapper := cors.New(cors.Options{

@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+type TransactionsList struct {
+	TransactionsList []TransactionSender `json:"transactions_list"`
+}
+
 type TransactionSender struct {
 	ID                 int        `json:"id"                   db:"id"`
 	TransactionType    string     `json:"transaction_type"     db:"transaction_type"`
@@ -48,6 +52,10 @@ type NullString struct {
 
 type NullInt64 struct {
 	sql.NullInt64
+}
+
+func NewTransactionsList(transactionsList []TransactionSender) TransactionsList {
+	return TransactionsList{TransactionsList: transactionsList}
 }
 
 func (dt *DateTime) Scan(value interface{}) error {
