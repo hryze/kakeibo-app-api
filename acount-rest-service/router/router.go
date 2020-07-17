@@ -19,6 +19,7 @@ func Run() error {
 	router.HandleFunc("/transactions", h.GetMonthlyTransactionsList).Methods("GET")
 	router.HandleFunc("/transactions", h.PostTransaction).Methods("POST")
 	router.HandleFunc("/transactions/{id:[0-9]+}", h.PutTransaction).Methods("PUT")
+	router.HandleFunc("/transactions/{id:[0-9]+}", h.DeleteTransaction).Methods("DELETE")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},

@@ -23,7 +23,7 @@ type CategoriesRepository interface {
 	FindCustomCategory(customCategory *model.CustomCategory, userID string) error
 	PostCustomCategory(customCategory *model.CustomCategory, userID string) (sql.Result, error)
 	PutCustomCategory(customCategory *model.CustomCategory, userID string) error
-	DeleteCustomCategory(customCategoryID int, userID string) error
+	DeleteCustomCategory(customCategoryID int) error
 }
 
 type TransactionsRepository interface {
@@ -31,4 +31,5 @@ type TransactionsRepository interface {
 	GetMonthlyTransactionsList(userID string) ([]model.TransactionSender, error)
 	PostTransaction(transaction *model.TransactionReceiver, userID string) (sql.Result, error)
 	PutTransaction(transaction *model.TransactionReceiver, transactionID int, userID string) error
+	DeleteTransaction(transactionID int) error
 }

@@ -95,8 +95,8 @@ func (r *CategoriesRepository) PutCustomCategory(customCategory *model.CustomCat
 	return err
 }
 
-func (r *CategoriesRepository) DeleteCustomCategory(customCategoryID int, userID string) error {
-	query := "DELETE FROM custom_categories WHERE user_id = ? AND id = ?"
-	_, err := r.MySQLHandler.conn.Exec(query, userID, customCategoryID)
+func (r *CategoriesRepository) DeleteCustomCategory(customCategoryID int) error {
+	query := "DELETE FROM custom_categories WHERE id = ?"
+	_, err := r.MySQLHandler.conn.Exec(query, customCategoryID)
 	return err
 }

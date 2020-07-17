@@ -196,7 +196,7 @@ func (h *DBHandler) PutCustomCategory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *DBHandler) DeleteCustomCategory(w http.ResponseWriter, r *http.Request) {
-	userID, err := verifySessionID(h, w, r)
+	_, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
@@ -210,7 +210,7 @@ func (h *DBHandler) DeleteCustomCategory(w http.ResponseWriter, r *http.Request)
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	if err := h.DBRepo.DeleteCustomCategory(customCategoryID, userID); err != nil {
+	if err := h.DBRepo.DeleteCustomCategory(customCategoryID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
