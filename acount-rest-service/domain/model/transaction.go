@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 )
@@ -50,7 +51,11 @@ type NullInt64 struct {
 }
 
 func (dt *DateTime) Scan(value interface{}) error {
-	dt.Time = value.(time.Time)
+	dateTime, ok := value.(time.Time)
+	if !ok {
+		return fmt.Errorf("type assertion error")
+	}
+	dt.Time = dateTime
 	return nil
 }
 
@@ -59,7 +64,11 @@ func (dt DateTime) Value() (driver.Value, error) {
 }
 
 func (d *Date) Scan(value interface{}) error {
-	d.Time = value.(time.Time)
+	date, ok := value.(time.Time)
+	if !ok {
+		return fmt.Errorf("type assertion error")
+	}
+	d.Time = date
 	return nil
 }
 
