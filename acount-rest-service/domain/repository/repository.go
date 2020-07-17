@@ -28,6 +28,7 @@ type CategoriesRepository interface {
 
 type TransactionsRepository interface {
 	GetTransaction(transactionSender *model.TransactionSender, transactionID int) (*model.TransactionSender, error)
-	PostTransaction(transaction *model.TransactionReceiver, userID string) (sql.Result, error)
 	GetMonthlyTransactionsList(userID string) ([]model.TransactionSender, error)
+	PostTransaction(transaction *model.TransactionReceiver, userID string) (sql.Result, error)
+	PutTransaction(transaction *model.TransactionReceiver, transactionID int, userID string) error
 }

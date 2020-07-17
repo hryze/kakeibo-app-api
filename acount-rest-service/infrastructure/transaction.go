@@ -14,7 +14,7 @@ type TransactionsRepository struct {
 func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string) ([]model.TransactionSender, error) {
 	now := time.Now()
 	firstDay := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
-	lastDay := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, now.Location()).AddDate(0, 0, -1)
+	lastDay := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, now.Location()).Add(-1 * time.Second)
 
 	query := `
         SELECT
@@ -114,4 +114,25 @@ func (r *TransactionsRepository) PostTransaction(transaction *model.TransactionR
             (?,?,?,?,?,?,?,?,?)`
 	result, err := r.MySQLHandler.conn.Exec(query, transaction.TransactionType, transaction.TransactionDate, transaction.Shop, transaction.Memo, transaction.Amount, userID, transaction.BigCategoryID, transaction.MediumCategoryID, transaction.CustomCategoryID)
 	return result, err
+}
+
+func (r *TransactionsRepository) PutTransaction(transaction *model.TransactionReceiver, transactionID int, userID string) error {
+	query := `
+        UPDATE
+            transactions
+        SET 
+            transaction_type = ?,
+            transaction_date = ?,
+            shop = ?,
+            memo = ?,
+            amount = ?,
+            big_category_id = ?,
+            medium_category_id = ?,
+            custom_category_id = ?
+        WHERE
+            user_id = ?
+        AND
+            id = ?`
+	_, err := r.MySQLHandler.conn.Exec(query, transaction.TransactionType, transaction.TransactionDate, transaction.Shop, transaction.Memo, transaction.Amount, transaction.BigCategoryID, transaction.MediumCategoryID, transaction.CustomCategoryID, userID, transactionID)
+	return err
 }
