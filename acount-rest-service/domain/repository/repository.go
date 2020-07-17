@@ -9,6 +9,7 @@ import (
 type DBRepository interface {
 	AuthRepository
 	CategoriesRepository
+	TransactionsRepository
 }
 
 type AuthRepository interface {
@@ -23,4 +24,9 @@ type CategoriesRepository interface {
 	PostCustomCategory(customCategory *model.CustomCategory, userID string) (sql.Result, error)
 	PutCustomCategory(customCategory *model.CustomCategory, userID string) error
 	DeleteCustomCategory(customCategoryID int, userID string) error
+}
+
+type TransactionsRepository interface {
+	GetTransaction(transactionSender *model.TransactionSender, transactionID int) (*model.TransactionSender, error)
+	PostTransaction(transaction *model.TransactionReceiver, userID string) (sql.Result, error)
 }
