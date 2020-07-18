@@ -89,14 +89,14 @@ func (r *CategoriesRepository) PostCustomCategory(customCategory *model.CustomCa
 	return result, err
 }
 
-func (r *CategoriesRepository) PutCustomCategory(customCategory *model.CustomCategory, userID string) error {
-	query := "UPDATE custom_categories SET category_name = ? WHERE user_id = ? AND id = ?"
-	_, err := r.MySQLHandler.conn.Exec(query, customCategory.Name, userID, customCategory.ID)
+func (r *CategoriesRepository) PutCustomCategory(customCategory *model.CustomCategory) error {
+	query := "UPDATE custom_categories SET category_name = ? WHERE id = ?"
+	_, err := r.MySQLHandler.conn.Exec(query, customCategory.Name, customCategory.ID)
 	return err
 }
 
-func (r *CategoriesRepository) DeleteCustomCategory(customCategoryID int, userID string) error {
-	query := "DELETE FROM custom_categories WHERE user_id = ? AND id = ?"
-	_, err := r.MySQLHandler.conn.Exec(query, userID, customCategoryID)
+func (r *CategoriesRepository) DeleteCustomCategory(customCategoryID int) error {
+	query := "DELETE FROM custom_categories WHERE id = ?"
+	_, err := r.MySQLHandler.conn.Exec(query, customCategoryID)
 	return err
 }

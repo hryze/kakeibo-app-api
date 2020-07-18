@@ -17,11 +17,15 @@ type HTTPError struct {
 	ErrorMessage error `json:"error"`
 }
 
-type AuthenticationErrorMsg struct {
+type ValidationErrorMsg struct {
 	Message string `json:"message"`
 }
 
-type ValidationErrorMsg struct {
+type BadRequestErrorMsg struct {
+	Message string `json:"message"`
+}
+
+type AuthenticationErrorMsg struct {
 	Message string `json:"message"`
 }
 
@@ -41,9 +45,17 @@ func NewDBHandler(DBRepo repository.DBRepository) *DBHandler {
 func NewHTTPError(status int, err error) error {
 	switch status {
 	case http.StatusBadRequest:
-		return &HTTPError{
-			Status:       status,
-			ErrorMessage: err.(*ValidationErrorMsg),
+		switch err := err.(type) {
+		case *ValidationErrorMsg:
+			return &HTTPError{
+				Status:       status,
+				ErrorMessage: err,
+			}
+		default:
+			return &HTTPError{
+				Status:       status,
+				ErrorMessage: &BadRequestErrorMsg{"トランザクションを取得できませんでした。"},
+			}
 		}
 	case http.StatusConflict:
 		return &HTTPError{
@@ -53,7 +65,7 @@ func NewHTTPError(status int, err error) error {
 	case http.StatusUnauthorized:
 		return &HTTPError{
 			Status:       status,
-			ErrorMessage: &AuthenticationErrorMsg{"このページを表示するにはログインが必要です"},
+			ErrorMessage: &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"},
 		}
 	default:
 		return &HTTPError{
@@ -75,11 +87,15 @@ func (e *ValidationErrorMsg) Error() string {
 	return e.Message
 }
 
-func (e *ConflictErrorMsg) Error() string {
+func (e *BadRequestErrorMsg) Error() string {
 	return e.Message
 }
 
 func (e *AuthenticationErrorMsg) Error() string {
+	return e.Message
+}
+
+func (e *ConflictErrorMsg) Error() string {
 	return e.Message
 }
 
