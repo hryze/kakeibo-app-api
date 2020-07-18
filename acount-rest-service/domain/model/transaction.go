@@ -103,7 +103,7 @@ func (d *Date) UnmarshalJSON(data []byte) error {
 
 func (ns *NullString) MarshalJSON() ([]byte, error) {
 	if !ns.Valid {
-		return json.Marshal(nil)
+		return []byte("null"), nil
 	}
 	return json.Marshal(ns.String)
 }
