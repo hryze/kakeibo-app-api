@@ -17,10 +17,6 @@ type HTTPError struct {
 	ErrorMessage error `json:"error"`
 }
 
-type ValidationErrorMsg struct {
-	Message string `json:"message"`
-}
-
 type BadRequestErrorMsg struct {
 	Message string `json:"message"`
 }
@@ -46,7 +42,12 @@ func NewHTTPError(status int, err error) error {
 	switch status {
 	case http.StatusBadRequest:
 		switch err := err.(type) {
-		case *ValidationErrorMsg:
+		case *CustomCategoryValidationErrorMsg:
+			return &HTTPError{
+				Status:       status,
+				ErrorMessage: err,
+			}
+		case *TransactionValidationErrorMsg:
 			return &HTTPError{
 				Status:       status,
 				ErrorMessage: err,
@@ -81,10 +82,6 @@ func (e *HTTPError) Error() string {
 		log.Println(err)
 	}
 	return string(b)
-}
-
-func (e *ValidationErrorMsg) Error() string {
-	return e.Message
 }
 
 func (e *BadRequestErrorMsg) Error() string {

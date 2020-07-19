@@ -28,14 +28,14 @@ type TransactionSender struct {
 }
 
 type TransactionReceiver struct {
-	TransactionType  string     `json:"transaction_type"   db:"transaction_type"`
-	TransactionDate  Date       `json:"transaction_date"   db:"transaction_date"`
-	Shop             NullString `json:"shop"               db:"shop"`
-	Memo             NullString `json:"memo"               db:"memo"`
-	Amount           int        `json:"amount"             db:"amount"`
-	BigCategoryID    int        `json:"big_category_id"    db:"big_category_id"`
-	MediumCategoryID NullInt64  `json:"medium_category_id" db:"medium_category_id"`
-	CustomCategoryID NullInt64  `json:"custom_category_id" db:"custom_category_id"`
+	TransactionType  string     `json:"transaction_type"   db:"transaction_type"   validate:"required,oneof=expense income"`
+	TransactionDate  Date       `json:"transaction_date"   db:"transaction_date"   validate:"required,date"`
+	Shop             NullString `json:"shop"               db:"shop"               validate:"omitempty,max=20,blank"`
+	Memo             NullString `json:"memo"               db:"memo"               validate:"omitempty,max=50,blank"`
+	Amount           int        `json:"amount"             db:"amount"             validate:"required"`
+	BigCategoryID    int        `json:"big_category_id"    db:"big_category_id"    validate:"required,min=1,max=17,either_id"`
+	MediumCategoryID NullInt64  `json:"medium_category_id" db:"medium_category_id" validate:"omitempty,min=1,max=99"`
+	CustomCategoryID NullInt64  `json:"custom_category_id" db:"custom_category_id" validate:"omitempty,min=1"`
 }
 
 type DateTime struct {
