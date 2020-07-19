@@ -19,25 +19,33 @@ type DeleteCustomCategoryMsg struct {
 	Message string `json:"message"`
 }
 
+type CustomCategoryValidationErrorMsg struct {
+	Message string `json:"message"`
+}
+
+func (e *CustomCategoryValidationErrorMsg) Error() string {
+	return e.Message
+}
+
 func validateCustomCategory(r *http.Request, customCategory *model.CustomCategory) error {
 	if strings.HasPrefix(customCategory.Name, " ") || strings.HasPrefix(customCategory.Name, "　") {
 		if r.Method == http.MethodPost {
-			return &ValidationErrorMsg{"中カテゴリーの登録に失敗しました。 文字列先頭に空白がないか確認してください。"}
+			return &CustomCategoryValidationErrorMsg{"中カテゴリーの登録に失敗しました。 文字列先頭に空白がないか確認してください。"}
 		}
 
-		return &ValidationErrorMsg{"中カテゴリーの更新に失敗しました。 文字列先頭に空白がないか確認してください。"}
+		return &CustomCategoryValidationErrorMsg{"中カテゴリーの更新に失敗しました。 文字列先頭に空白がないか確認してください。"}
 	}
 
 	if strings.HasSuffix(customCategory.Name, " ") || strings.HasSuffix(customCategory.Name, "　") {
 		if r.Method == http.MethodPost {
-			return &ValidationErrorMsg{"中カテゴリーの登録に失敗しました。 文字列末尾に空白がないか確認してください。"}
+			return &CustomCategoryValidationErrorMsg{"中カテゴリーの登録に失敗しました。 文字列末尾に空白がないか確認してください。"}
 		}
 
-		return &ValidationErrorMsg{"中カテゴリーの更新に失敗しました。 文字列末尾に空白がないか確認してください。"}
+		return &CustomCategoryValidationErrorMsg{"中カテゴリーの更新に失敗しました。 文字列末尾に空白がないか確認してください。"}
 	}
 
 	if utf8.RuneCountInString(customCategory.Name) > 9 {
-		return &ValidationErrorMsg{"カテゴリー名は9文字以下で入力してください。"}
+		return &CustomCategoryValidationErrorMsg{"カテゴリー名は9文字以下で入力してください。"}
 	}
 
 	return nil
