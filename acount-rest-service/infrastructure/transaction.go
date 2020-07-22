@@ -68,7 +68,6 @@ func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string) ([]mo
 		return nil, err
 	}
 	return transactionsList, nil
-
 }
 
 func (r *TransactionsRepository) GetTransaction(transactionSender *model.TransactionSender, transactionID int) (*model.TransactionSender, error) {
@@ -139,4 +138,25 @@ func (r *TransactionsRepository) DeleteTransaction(transactionID int) error {
 	query := `DELETE FROM transactions WHERE id = ?`
 	_, err := r.MySQLHandler.conn.Exec(query, transactionID)
 	return err
+}
+
+func (r *TransactionsRepository) SearchTransactionsList(query string) ([]model.TransactionSender, error) {
+	rows, err := r.MySQLHandler.conn.Queryx(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var transactionsList []model.TransactionSender
+	for rows.Next() {
+		var transactionSender model.TransactionSender
+		if err := rows.StructScan(&transactionSender); err != nil {
+			return nil, err
+		}
+		transactionsList = append(transactionsList, transactionSender)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return transactionsList, nil
 }

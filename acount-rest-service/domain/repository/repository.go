@@ -32,4 +32,5 @@ type TransactionsRepository interface {
 	PostTransaction(transaction *model.TransactionReceiver, userID string) (sql.Result, error)
 	PutTransaction(transaction *model.TransactionReceiver, transactionID int) error
 	DeleteTransaction(transactionID int) error
+	SearchTransactionsList(query string) ([]model.TransactionSender, error)
 }

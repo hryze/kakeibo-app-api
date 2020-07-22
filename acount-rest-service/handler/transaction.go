@@ -1,15 +1,18 @@
 package handler
 
 import (
+	"bytes"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/go-playground/validator"
@@ -20,6 +23,25 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 )
+
+type SearchQuery struct {
+	TransactionType string
+	BigCategoryID   string
+	Shop            string
+	Memo            string
+	LowAmount       string
+	HighAmount      string
+	StartDate       string
+	EndDate         string
+	Sort            string
+	SortType        string
+	Limit           string
+	UserID          string
+}
+
+type NoSearchContentMsg struct {
+	Message string `json:"message"`
+}
 
 type DeleteTransactionMsg struct {
 	Message string `json:"message"`
@@ -41,7 +63,7 @@ func validateTransaction(transactionReceiver *model.TransactionReceiver) error {
 	var transactionValidationErrorMsg TransactionValidationErrorMsg
 
 	validate := validator.New()
-	validate.RegisterCustomTypeFunc(ValidateValuer, model.Date{}, model.NullString{}, model.NullInt64{})
+	validate.RegisterCustomTypeFunc(validateValuer, model.Date{}, model.NullString{}, model.NullInt64{})
 	validate.RegisterValidation("blank", blankValidation)
 	validate.RegisterValidation("date", dateValidation)
 	validate.RegisterValidation("either_id", eitherIDValidation)
@@ -104,7 +126,7 @@ func validateTransaction(transactionReceiver *model.TransactionReceiver) error {
 	return &transactionValidationErrorMsg
 }
 
-func ValidateValuer(field reflect.Value) interface{} {
+func validateValuer(field reflect.Value) interface{} {
 	if valuer, ok := field.Interface().(driver.Valuer); ok {
 		val, err := valuer.Value()
 		if err == nil {
@@ -166,6 +188,145 @@ func eitherIDValidation(fl validator.FieldLevel) bool {
 	}
 
 	return false
+}
+
+func NewSearchQuery(urlQuery url.Values, userID string) SearchQuery {
+	if len(urlQuery.Get("start_date")) == 0 || len(urlQuery.Get("end_date")) == 0 {
+		now := time.Now()
+		firstDay := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location()).String()
+		lastDay := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, now.Location()).Add(-1 * time.Second).String()
+
+		return SearchQuery{
+			StartDate: firstDay,
+			EndDate:   lastDay,
+			UserID:    userID,
+		}
+	}
+
+	startDate := trimDate(urlQuery.Get("start_date"))
+	endDate := trimDate(urlQuery.Get("end_date"))
+
+	return SearchQuery{
+		TransactionType: urlQuery.Get("transaction_type"),
+		BigCategoryID:   urlQuery.Get("big_category_id"),
+		Shop:            urlQuery.Get("shop"),
+		Memo:            urlQuery.Get("memo"),
+		LowAmount:       urlQuery.Get("low_amount"),
+		HighAmount:      urlQuery.Get("high_amount"),
+		StartDate:       startDate,
+		EndDate:         endDate,
+		Sort:            urlQuery.Get("sort"),
+		SortType:        urlQuery.Get("sort_type"),
+		Limit:           urlQuery.Get("limit"),
+		UserID:          userID,
+	}
+}
+
+func trimDate(date string) string {
+	if len(date) == 0 {
+		return ""
+	}
+
+	return date[:10]
+}
+
+func generateSqlQuery(searchQuery SearchQuery) (string, error) {
+	query := `
+        SELECT
+            transactions.id id,
+            transactions.transaction_type transaction_type,
+            transactions.updated_date updated_date,
+            transactions.transaction_date transaction_date,
+            transactions.shop shop,
+            transactions.memo memo,
+            transactions.amount amount,
+            big_categories.category_name big_category_name,
+            medium_categories.category_name medium_category_name,
+            custom_categories.category_name custom_category_name
+        FROM
+            transactions
+        LEFT JOIN
+            big_categories
+        ON
+            transactions.big_category_id = big_categories.id
+        LEFT JOIN
+            medium_categories
+        ON
+            transactions.medium_category_id = medium_categories.id
+        LEFT JOIN
+            custom_categories
+        ON
+            transactions.custom_category_id = custom_categories.id
+        WHERE
+            transactions.user_id = "{{.UserID}}"
+        AND
+            transactions.transaction_date >= "{{ .StartDate }}"
+        AND
+            transactions.transaction_date <= "{{ .EndDate }}"
+        {{ with $TransactionType := .TransactionType }}
+        AND
+            transactions.transaction_type = "{{ $TransactionType }}"
+        {{ end }}
+
+        {{ with $BigCategoryID := .BigCategoryID }}
+        AND
+            transactions.big_category_id = "{{ $BigCategoryID }}"
+        {{ end }}
+
+        {{ with $LowAmount := .LowAmount }}
+        AND
+            transactions.amount >= "{{ $LowAmount }}"
+        {{ end }}
+
+        {{ with $HighAmount := .HighAmount }}
+        AND
+            transactions.amount <= "{{ $HighAmount }}"
+        {{ end }}
+
+        {{ with $Shop := .Shop }}
+        AND
+            transactions.shop
+        LIKE
+            "%{{ $Shop }}%"
+        {{ end }}
+
+        {{ with $Memo := .Memo }}
+        AND
+            transactions.memo
+        LIKE
+            "%{{ $Memo }}%"
+        {{ end }}
+
+        {{ with $Sort := .Sort}}
+        ORDER BY
+            transactions.{{ $Sort }}
+        {{ else }}
+        ORDER BY
+            transactions.transaction_date
+        {{ end }}
+
+        {{ with $SortType := .SortType}}
+        {{ $SortType }}
+        {{ else }}
+        DESC
+        {{ end }}
+
+        {{ with $Limit := .Limit}}
+        LIMIT
+        {{ $Limit }}
+        {{ end }}`
+
+	var buffer bytes.Buffer
+	queryTemplate, err := template.New("queryTemplate").Parse(query)
+	if err != nil {
+		return "", err
+	}
+
+	if err := queryTemplate.Execute(&buffer, searchQuery); err != nil {
+		return "", err
+	}
+
+	return buffer.String(), nil
 }
 
 func (h *DBHandler) GetMonthlyTransactionsList(w http.ResponseWriter, r *http.Request) {
@@ -319,6 +480,54 @@ func (h *DBHandler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&DeleteTransactionMsg{"トランザクションを削除しました。"}); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) SearchTransactionsList(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	urlQuery := r.URL.Query()
+
+	searchQuery := NewSearchQuery(urlQuery, userID)
+
+	query, err := generateSqlQuery(searchQuery)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	dbTransactionsList, err := h.DBRepo.SearchTransactionsList(query)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(dbTransactionsList) == 0 {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		return
+	}
+
+	transactionsList := model.NewTransactionsList(dbTransactionsList)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&transactionsList); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
