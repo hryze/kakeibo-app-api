@@ -11,11 +11,7 @@ type TransactionsRepository struct {
 	*MySQLHandler
 }
 
-func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string) ([]model.TransactionSender, error) {
-	now := time.Now()
-	firstDay := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
-	lastDay := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, now.Location()).Add(-1 * time.Second)
-
+func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string, firstDay time.Time, lastDay time.Time) ([]model.TransactionSender, error) {
 	query := `
         SELECT
             transactions.id id,

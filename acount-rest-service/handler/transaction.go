@@ -191,18 +191,6 @@ func eitherIDValidation(fl validator.FieldLevel) bool {
 }
 
 func NewSearchQuery(urlQuery url.Values, userID string) SearchQuery {
-	if len(urlQuery.Get("start_date")) == 0 || len(urlQuery.Get("end_date")) == 0 {
-		now := time.Now()
-		firstDay := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location()).String()
-		lastDay := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, now.Location()).Add(-1 * time.Second).String()
-
-		return SearchQuery{
-			StartDate: firstDay,
-			EndDate:   lastDay,
-			UserID:    userID,
-		}
-	}
-
 	startDate := trimDate(urlQuery.Get("start_date"))
 	endDate := trimDate(urlQuery.Get("end_date"))
 
@@ -259,10 +247,17 @@ func generateSqlQuery(searchQuery SearchQuery) (string, error) {
             transactions.custom_category_id = custom_categories.id
         WHERE
             transactions.user_id = "{{.UserID}}"
+
+        {{ with $StartDate := .StartDate }}
         AND
-            transactions.transaction_date >= "{{ .StartDate }}"
+            transactions.transaction_date >= "{{ $StartDate }}"
+        {{ end }}
+
+        {{ with $EndDate := .EndDate }}
         AND
-            transactions.transaction_date <= "{{ .EndDate }}"
+            transactions.transaction_date <= "{{ $EndDate }}"
+        {{ end }}
+
         {{ with $TransactionType := .TransactionType }}
         AND
             transactions.transaction_type = "{{ $TransactionType }}"
@@ -340,9 +335,27 @@ func (h *DBHandler) GetMonthlyTransactionsList(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	dbTransactionsList, err := h.DBRepo.GetMonthlyTransactionsList(userID)
+	firstDay, err := time.Parse("2006-01", mux.Vars(r)["month"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		return
+	}
+	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
+
+	dbTransactionsList, err := h.DBRepo.GetMonthlyTransactionsList(userID, firstDay, lastDay)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(dbTransactionsList) == 0 {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		return
 	}
 
