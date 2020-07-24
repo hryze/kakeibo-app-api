@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
 )
@@ -28,8 +29,9 @@ type CategoriesRepository interface {
 
 type TransactionsRepository interface {
 	GetTransaction(transactionSender *model.TransactionSender, transactionID int) (*model.TransactionSender, error)
-	GetMonthlyTransactionsList(userID string) ([]model.TransactionSender, error)
+	GetMonthlyTransactionsList(userID string, firstDay time.Time, lastDay time.Time) ([]model.TransactionSender, error)
 	PostTransaction(transaction *model.TransactionReceiver, userID string) (sql.Result, error)
 	PutTransaction(transaction *model.TransactionReceiver, transactionID int) error
 	DeleteTransaction(transactionID int) error
+	SearchTransactionsList(query string) ([]model.TransactionSender, error)
 }
