@@ -241,6 +241,11 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := postInitStandardBudgets(signUpUser.ID); err != nil {
+		if err := h.userRepo.DeleteUser(&signUpUser); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
