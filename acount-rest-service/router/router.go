@@ -26,6 +26,7 @@ func Run() error {
 	router.HandleFunc("/standard-budgets", h.PutStandardBudgets).Methods("PUT")
 	router.HandleFunc("/custom-budgets/{year_month:[0-9]{4}-[0-9]{2}}", h.GetCustomBudgets).Methods("GET")
 	router.HandleFunc("/custom-budgets/{year_month:[0-9]{4}-[0-9]{2}}", h.PostCustomBudgets).Methods("POST")
+	router.HandleFunc("/custom-budgets/{year_month:[0-9]{4}-[0-9]{2}}", h.PutCustomBudgets).Methods("PUT")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},

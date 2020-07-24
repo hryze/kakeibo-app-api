@@ -77,7 +77,7 @@ func (r *BudgetsRepository) GetStandardBudgets(userID string) (*model.StandardBu
 }
 
 func (r *BudgetsRepository) PutStandardBudgets(standardBudgets *model.StandardBudgets, userID string) error {
-	for _, budget := range standardBudgets.StandardBudgets {
+	for _, standardBudgetByCategory := range standardBudgets.StandardBudgets {
 		query := `
 	   UPDATE
 	       standard_budgets
@@ -88,7 +88,7 @@ func (r *BudgetsRepository) PutStandardBudgets(standardBudgets *model.StandardBu
 	   AND
 	       big_category_id = ?`
 
-		_, err := r.MySQLHandler.conn.Exec(query, budget.Budget, userID, budget.BigCategoryID)
+		_, err := r.MySQLHandler.conn.Exec(query, standardBudgetByCategory.Budget, userID, standardBudgetByCategory.BigCategoryID)
 		if err != nil {
 			return err
 		}
@@ -169,4 +169,27 @@ func (r *BudgetsRepository) PostCustomBudgets(customBudgets *model.CustomBudgets
 
 	_, err := r.MySQLHandler.conn.Exec(query, queryArgs...)
 	return err
+}
+
+func (r *BudgetsRepository) PutCustomBudgets(customBudgets *model.CustomBudgets, yearMonth time.Time, userID string) error {
+	for _, customBudgetByCategory := range customBudgets.CustomBudgets {
+		query := `
+	   UPDATE
+	       custom_budgets
+	   SET
+	       budget = ?
+	   WHERE
+	       user_id = ?
+       AND
+           years_months = ?
+	   AND
+	       big_category_id = ?`
+
+		_, err := r.MySQLHandler.conn.Exec(query, customBudgetByCategory.Budget, userID, yearMonth, customBudgetByCategory.BigCategoryID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

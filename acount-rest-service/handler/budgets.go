@@ -110,7 +110,7 @@ func (h *DBHandler) GetCustomBudgets(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&dbCustomBudgets); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -154,6 +154,42 @@ func (h *DBHandler) PostCustomBudgets(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&dbCustomBudgets); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) PutCustomBudgets(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	yearMonth, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		return
+	}
+
+	var customBudgets model.CustomBudgets
+	if err := json.NewDecoder(r.Body).Decode(&customBudgets); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := h.DBRepo.PutCustomBudgets(&customBudgets, yearMonth, userID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&customBudgets); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
