@@ -39,4 +39,5 @@ type TransactionsRepository interface {
 
 type BudgetsRepository interface {
 	PostInitStandardBudgets(userID string) error
+	GetStandardBudgetByCategoryList(userID string) ([]model.StandardBudgetByCategory, error)
 }

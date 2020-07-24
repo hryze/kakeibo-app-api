@@ -1,5 +1,7 @@
 package infrastructure
 
+import "github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
+
 type BudgetsRepository struct {
 	*MySQLHandler
 }
@@ -27,4 +29,43 @@ func (r *BudgetsRepository) PostInitStandardBudgets(userID string) error {
             (?,17)`
 	_, err := r.MySQLHandler.conn.Exec(query, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID)
 	return err
+}
+
+func (r *BudgetsRepository) GetStandardBudgetByCategoryList(userID string) ([]model.StandardBudgetByCategory, error) {
+	query := `
+        SELECT
+            standard_budgets.big_category_id big_category_id,
+            big_categories.category_name big_category_name,
+            standard_budgets.budget budget
+        FROM
+            standard_budgets
+        LEFT JOIN
+            big_categories
+        ON
+            standard_budgets.big_category_id = big_categories.id
+        WHERE
+            standard_budgets.user_id = ?
+        ORDER BY
+            standard_budgets.big_category_id`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var standardBudgetByCategoryList []model.StandardBudgetByCategory
+	for rows.Next() {
+		var standardBudgetByCategory model.StandardBudgetByCategory
+		if err := rows.StructScan(&standardBudgetByCategory); err != nil {
+			return nil, err
+		}
+		standardBudgetByCategoryList = append(standardBudgetByCategoryList, standardBudgetByCategory)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return standardBudgetByCategoryList, nil
 }
