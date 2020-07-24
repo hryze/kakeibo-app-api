@@ -11,6 +11,7 @@ type DBRepository interface {
 	AuthRepository
 	CategoriesRepository
 	TransactionsRepository
+	BudgetsRepository
 }
 
 type AuthRepository interface {
@@ -34,4 +35,10 @@ type TransactionsRepository interface {
 	PutTransaction(transaction *model.TransactionReceiver, transactionID int) error
 	DeleteTransaction(transactionID int) error
 	SearchTransactionsList(query string) ([]model.TransactionSender, error)
+}
+
+type BudgetsRepository interface {
+	PostInitStandardBudgets(userID string) error
+	GetStandardBudgets(userID string) (*model.StandardBudgets, error)
+	PutStandardBudgets(standardBudgets *model.StandardBudgets, userID string) error
 }

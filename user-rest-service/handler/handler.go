@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -183,6 +184,32 @@ func checkForUniqueUser(h *UserHandler, signUpUser *model.SignUpUser) error {
 	return &validationErrorMsg
 }
 
+func postInitStandardBudgets(userID string) error {
+	request, err := http.NewRequest(
+		"POST",
+		"http://localhost:8081/standard-budgets",
+		bytes.NewBuffer([]byte(`{"user_id":"`+userID+`"}`)),
+	)
+	if err != nil {
+		return err
+	}
+
+	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode == http.StatusCreated {
+		return nil
+	}
+
+	return errors.New("couldn't create a standard budget")
+}
+
 func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var signUpUser model.SignUpUser
 	if err := json.NewDecoder(r.Body).Decode(&signUpUser); err != nil {
@@ -212,8 +239,18 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	signUpUser.Password = ""
 
+	if err := postInitStandardBudgets(signUpUser.ID); err != nil {
+		if err := h.userRepo.DeleteUser(&signUpUser); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	signUpUser.Password = ""
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&signUpUser); err != nil {

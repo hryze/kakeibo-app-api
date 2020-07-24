@@ -40,6 +40,12 @@ func (u *UserRepository) CreateUser(signUpUser *model.SignUpUser) error {
 	return nil
 }
 
+func (u *UserRepository) DeleteUser(signUpUser *model.SignUpUser) error {
+	query := `DELETE FROM users WHERE user_id = ?`
+	_, err := u.MySQLHandler.conn.Exec(query, signUpUser.ID)
+	return err
+}
+
 func (u *UserRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUser, error) {
 	query := "SELECT user_id, name, email, password FROM users WHERE email = ?"
 	if err := u.MySQLHandler.conn.QueryRowx(query, loginUser.Email).StructScan(loginUser); err != nil {

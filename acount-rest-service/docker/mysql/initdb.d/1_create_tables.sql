@@ -59,3 +59,26 @@ CREATE TABLE transactions
     REFERENCES custom_categories(id)
     ON DELETE SET NULL ON UPDATE CASCADE
 );
+
+CREATE TABLE standard_budgets
+(
+  user_id VARCHAR(10) NOT NULL,
+  big_category_id INT NOT NULL,
+  budget INT NOT NULL DEFAULT 0,
+  PRIMARY KEY(user_id, big_category_id),
+  FOREIGN KEY fk_big_category_id(big_category_id)
+    REFERENCES big_categories(id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE custom_budgets
+(
+  user_id VARCHAR(10) NOT NULL,
+  years_months DATE NOT NULL,
+  big_category_id INT NOT NULL,
+  budget INT NOT NULL,
+  PRIMARY KEY(user_id, years_months, big_category_id),
+  FOREIGN KEY fk_big_category_id(big_category_id)
+    REFERENCES big_categories(id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+);
