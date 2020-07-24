@@ -31,7 +31,7 @@ func (r *BudgetsRepository) PostInitStandardBudgets(userID string) error {
 	return err
 }
 
-func (r *BudgetsRepository) GetStandardBudgetByCategoryList(userID string) ([]model.StandardBudgetByCategory, error) {
+func (r *BudgetsRepository) GetStandardBudgets(userID string) (*model.StandardBudgets, error) {
 	query := `
         SELECT
             standard_budgets.big_category_id big_category_id,
@@ -67,5 +67,28 @@ func (r *BudgetsRepository) GetStandardBudgetByCategoryList(userID string) ([]mo
 		return nil, err
 	}
 
-	return standardBudgetByCategoryList, nil
+	standardBudgets := model.NewStandardBudgets(standardBudgetByCategoryList)
+
+	return &standardBudgets, nil
+}
+
+func (r *BudgetsRepository) PutStandardBudgets(standardBudgets *model.StandardBudgets, userID string) error {
+	for _, budget := range standardBudgets.StandardBudgets {
+		query := `
+	   UPDATE
+	       standard_budgets
+	   SET
+	       budget = ?
+	   WHERE
+	       user_id = ?
+	   AND
+	       big_category_id = ?`
+
+		_, err := r.MySQLHandler.conn.Exec(query, budget.Budget, userID, budget.BigCategoryID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
