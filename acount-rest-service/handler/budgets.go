@@ -86,6 +86,37 @@ func (h *DBHandler) PutStandardBudgets(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *DBHandler) GetCustomBudgets(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	yearMonth, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		return
+	}
+
+	dbCustomBudgets, err := h.DBRepo.GetCustomBudgets(yearMonth, userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(&dbCustomBudgets); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
 func (h *DBHandler) PostCustomBudgets(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
