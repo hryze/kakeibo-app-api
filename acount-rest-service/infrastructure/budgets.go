@@ -1,6 +1,10 @@
 package infrastructure
 
-import "github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
+import (
+	"time"
+
+	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
+)
 
 type BudgetsRepository struct {
 	*MySQLHandler
@@ -91,4 +95,78 @@ func (r *BudgetsRepository) PutStandardBudgets(standardBudgets *model.StandardBu
 	}
 
 	return nil
+}
+
+func (r *BudgetsRepository) GetCustomBudgets(yearMonth time.Time, userID string) (*model.CustomBudgets, error) {
+	query := `
+        SELECT
+            custom_budgets.big_category_id big_category_id,
+            big_categories.category_name big_category_name,
+            custom_budgets.budget budget
+        FROM
+            custom_budgets
+        LEFT JOIN
+            big_categories
+        ON
+            custom_budgets.big_category_id = big_categories.id
+        WHERE
+            custom_budgets.user_id = ?
+        AND
+            custom_budgets.years_months = ?
+        ORDER BY
+            custom_budgets.big_category_id`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, userID, yearMonth)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var customBudgetByCategoryList []model.CustomBudgetByCategory
+	for rows.Next() {
+		var customBudgetByCategory model.CustomBudgetByCategory
+		if err := rows.StructScan(&customBudgetByCategory); err != nil {
+			return nil, err
+		}
+		customBudgetByCategoryList = append(customBudgetByCategoryList, customBudgetByCategory)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	customBudgets := model.NewCustomBudgets(customBudgetByCategoryList)
+
+	return &customBudgets, nil
+}
+
+func (r *BudgetsRepository) PostCustomBudgets(customBudgets *model.CustomBudgets, yearMonth time.Time, userID string) error {
+	query := `
+        INSERT INTO custom_budgets
+            (user_id, years_months, big_category_id, budget)
+        VALUES
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?)`
+
+	var queryArgs []interface{}
+	for _, customBudgetByCategory := range customBudgets.CustomBudgets {
+		queryArgs = append(queryArgs, userID, yearMonth, customBudgetByCategory.BigCategoryID, customBudgetByCategory.Budget)
+	}
+
+	_, err := r.MySQLHandler.conn.Exec(query, queryArgs...)
+	return err
 }
