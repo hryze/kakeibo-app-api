@@ -193,3 +193,16 @@ func (r *BudgetsRepository) PutCustomBudgets(customBudgets *model.CustomBudgets,
 
 	return nil
 }
+
+func (r *BudgetsRepository) DeleteCustomBudgets(yearMonth time.Time, userID string) error {
+	query := `
+        DELETE 
+        FROM
+            custom_budgets
+        WHERE
+            user_id = ?
+        AND
+            years_months = ?`
+	_, err := r.MySQLHandler.conn.Exec(query, userID, yearMonth)
+	return err
+}
