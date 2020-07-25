@@ -27,3 +27,23 @@ func NewStandardBudgets(standardBudgetByCategoryList []StandardBudgetByCategory)
 func NewCustomBudgets(customBudgetByCategoryList []CustomBudgetByCategory) CustomBudgets {
 	return CustomBudgets{CustomBudgets: customBudgetByCategoryList}
 }
+
+func (b StandardBudgets) ShowBudgetsList() []int {
+	var budgetsList []int
+
+	for i := 0; i < len(b.StandardBudgets); i++ {
+		budgetsList = append(budgetsList, b.StandardBudgets[i].Budget)
+	}
+
+	return budgetsList
+}
+
+func (b CustomBudgets) ShowBudgetsList() []int {
+	var budgetsList []int
+
+	for i := 0; i < len(b.CustomBudgets); i++ {
+		budgetsList = append(budgetsList, b.CustomBudgets[i].Budget)
+	}
+
+	return budgetsList
+}

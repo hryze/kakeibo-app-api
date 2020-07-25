@@ -52,6 +52,11 @@ func NewHTTPError(status int, err error) error {
 				Status:       status,
 				ErrorMessage: err,
 			}
+		case *BudgetValidationErrorMsg:
+			return &HTTPError{
+				Status:       status,
+				ErrorMessage: err,
+			}
 		default:
 			return &HTTPError{
 				Status:       status,

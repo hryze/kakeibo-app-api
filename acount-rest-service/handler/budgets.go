@@ -12,12 +12,36 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+type Budgets interface {
+	ShowBudgetsList() []int
+}
+
 type UserID struct {
 	UserID string `json:"user_id"`
 }
 
 type DeleteCustomBudgetsMsg struct {
 	Message string `json:"message"`
+}
+
+type BudgetValidationErrorMsg struct {
+	Message string `json:"message"`
+}
+
+func (e *BudgetValidationErrorMsg) Error() string {
+	return e.Message
+}
+
+func validateBudgets(budgets Budgets) error {
+	budgetsList := budgets.ShowBudgetsList()
+
+	for _, budget := range budgetsList {
+		if budget < 0 {
+			return &BudgetValidationErrorMsg{"予算は正の整数で入力してください。"}
+		}
+	}
+
+	return nil
 }
 
 func (h *DBHandler) PostInitStandardBudgets(w http.ResponseWriter, r *http.Request) {
@@ -74,6 +98,11 @@ func (h *DBHandler) PutStandardBudgets(w http.ResponseWriter, r *http.Request) {
 	var standardBudgets model.StandardBudgets
 	if err := json.NewDecoder(r.Body).Decode(&standardBudgets); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := validateBudgets(standardBudgets); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 
@@ -144,6 +173,11 @@ func (h *DBHandler) PostCustomBudgets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := validateBudgets(customBudgets); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		return
+	}
+
 	if err := h.DBRepo.PostCustomBudgets(&customBudgets, yearMonth, userID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -183,6 +217,11 @@ func (h *DBHandler) PutCustomBudgets(w http.ResponseWriter, r *http.Request) {
 	var customBudgets model.CustomBudgets
 	if err := json.NewDecoder(r.Body).Decode(&customBudgets); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := validateBudgets(customBudgets); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 
