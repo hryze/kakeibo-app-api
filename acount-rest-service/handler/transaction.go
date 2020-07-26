@@ -104,7 +104,13 @@ func validateTransaction(transactionReceiver *model.TransactionReceiver) error {
 				errorMessage = "メモの文字列先頭か末尾に空白がないか確認してください。"
 			}
 		case "Amount":
-			errorMessage = "金額が入力されていません。"
+			tagName := err.Tag()
+			switch tagName {
+			case "required":
+				errorMessage = "金額が入力されていません。 金額は1以上の正の整数を入力してください。"
+			case "min":
+				errorMessage = "金額は1以上の正の整数を入力してください。"
+			}
 		case "BigCategoryID":
 			tagName := err.Tag()
 			switch tagName {
@@ -435,6 +441,11 @@ func (h *DBHandler) PutTransaction(w http.ResponseWriter, r *http.Request) {
 	var transactionReceiver model.TransactionReceiver
 	if err := json.NewDecoder(r.Body).Decode(&transactionReceiver); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := validateTransaction(&transactionReceiver); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 

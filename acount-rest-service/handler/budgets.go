@@ -37,7 +37,7 @@ func validateBudgets(budgets Budgets) error {
 
 	for _, budget := range budgetsList {
 		if budget < 0 {
-			return &BudgetValidationErrorMsg{"予算は正の整数で入力してください。"}
+			return &BudgetValidationErrorMsg{"予算は0以上の整数を入力してください。"}
 		}
 	}
 

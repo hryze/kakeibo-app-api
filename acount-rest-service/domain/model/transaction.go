@@ -32,7 +32,7 @@ type TransactionReceiver struct {
 	TransactionDate  Date       `json:"transaction_date"   db:"transaction_date"   validate:"required,date"`
 	Shop             NullString `json:"shop"               db:"shop"               validate:"omitempty,max=20,blank"`
 	Memo             NullString `json:"memo"               db:"memo"               validate:"omitempty,max=50,blank"`
-	Amount           int        `json:"amount"             db:"amount"             validate:"required"`
+	Amount           int        `json:"amount"             db:"amount"             validate:"required,min=1"`
 	BigCategoryID    int        `json:"big_category_id"    db:"big_category_id"    validate:"required,min=1,max=17,either_id"`
 	MediumCategoryID NullInt64  `json:"medium_category_id" db:"medium_category_id" validate:"omitempty,min=1,max=99"`
 	CustomCategoryID NullInt64  `json:"custom_category_id" db:"custom_category_id" validate:"omitempty,min=1"`
