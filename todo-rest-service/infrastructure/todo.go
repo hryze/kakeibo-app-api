@@ -221,3 +221,15 @@ func (r *TodoRepository) PutTodo(todo *model.Todo, todoID int) error {
 
 	return err
 }
+
+func (r *TodoRepository) DeleteTodo(todoID int) error {
+	query := `
+        DELETE
+        FROM
+            todo_list
+        WHERE
+            id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, todoID)
+	return err
+}

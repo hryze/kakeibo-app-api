@@ -16,6 +16,7 @@ func Run() error {
 	router.HandleFunc("/todo-list/{year_month:[0-9]{4}-[0-9]{2}}", h.GetMonthlyTodoList).Methods("GET")
 	router.HandleFunc("/todo-list", h.PostTodo).Methods("POST")
 	router.HandleFunc("/todo-list/{id:[0-9]+}", h.PutTodo).Methods("PUT")
+	router.HandleFunc("/todo-list/{id:[0-9]+}", h.DeleteTodo).Methods("DELETE")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},

@@ -23,6 +23,10 @@ type NoContentMsg struct {
 	Message string `json:"message"`
 }
 
+type DeleteTodoMsg struct {
+	Message string `json:"message"`
+}
+
 type TodoValidationErrorMsg struct {
 	Message []string `json:"message"`
 }
@@ -307,6 +311,36 @@ func (h *DBHandler) PutTodo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(dbTodo); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
+	_, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	todoID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"todo ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := h.DBRepo.DeleteTodo(todoID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&DeleteTodoMsg{"todoを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
