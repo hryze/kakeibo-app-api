@@ -267,3 +267,71 @@ func (h *DBHandler) DeleteCustomBudgets(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 }
+
+func (h *DBHandler) GetYearlyBudgets(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	year, err := time.Parse("2006", mux.Vars(r)["year"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		return
+	}
+
+	monthlyStandardBudget, err := h.DBRepo.GetMonthlyStandardBudget(userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	monthlyCustomBudgets, err := h.DBRepo.GetMonthlyCustomBudgets(year, userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	yearlyBudget := model.NewYearlyBudget(year)
+
+	for i, j := 0, 0; i < len(yearlyBudget.MonthlyBudgets); i++ {
+
+		for j < len(monthlyCustomBudgets) {
+
+			if time.Month(i)+1 == monthlyCustomBudgets[j].Month.Month() {
+				yearlyBudget.YearlyTotalBudget += monthlyCustomBudgets[j].MonthlyTotalBudget
+				yearlyBudget.MonthlyBudgets[i] = monthlyCustomBudgets[j]
+				j++
+				break
+			}
+
+			monthlyStandardBudget.Month.Time = year.AddDate(0, i, 0)
+			yearlyBudget.YearlyTotalBudget += monthlyStandardBudget.MonthlyTotalBudget
+			yearlyBudget.MonthlyBudgets[i] = monthlyStandardBudget
+			break
+		}
+
+		if j == len(monthlyCustomBudgets) {
+			j++
+			continue
+		}
+
+		if j > len(monthlyCustomBudgets) {
+			monthlyStandardBudget.Month.Time = year.AddDate(0, i, 0)
+			yearlyBudget.YearlyTotalBudget += monthlyStandardBudget.MonthlyTotalBudget
+			yearlyBudget.MonthlyBudgets[i] = monthlyStandardBudget
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(yearlyBudget); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}

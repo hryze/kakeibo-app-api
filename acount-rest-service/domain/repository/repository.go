@@ -45,4 +45,6 @@ type BudgetsRepository interface {
 	PostCustomBudgets(customBudgets *model.CustomBudgets, yearMonth time.Time, userID string) error
 	PutCustomBudgets(customBudgets *model.CustomBudgets, yearMonth time.Time, userID string) error
 	DeleteCustomBudgets(yearMonth time.Time, userID string) error
+	GetMonthlyStandardBudget(userID string) (model.MonthlyBudget, error)
+	GetMonthlyCustomBudgets(year time.Time, userID string) ([]model.MonthlyBudget, error)
 }

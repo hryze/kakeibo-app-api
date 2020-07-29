@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"strings"
 	"time"
 )
@@ -61,7 +61,7 @@ func NewTransactionsList(transactionsList []TransactionSender) TransactionsList 
 func (dt *DateTime) Scan(value interface{}) error {
 	dateTime, ok := value.(time.Time)
 	if !ok {
-		return fmt.Errorf("type assertion error")
+		return errors.New("type assertion error")
 	}
 	dt.Time = dateTime
 	return nil
@@ -74,7 +74,7 @@ func (dt DateTime) Value() (driver.Value, error) {
 func (d *Date) Scan(value interface{}) error {
 	date, ok := value.(time.Time)
 	if !ok {
-		return fmt.Errorf("type assertion error")
+		return errors.New("type assertion error")
 	}
 	d.Time = date
 	return nil

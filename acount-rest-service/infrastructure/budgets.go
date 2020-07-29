@@ -206,3 +206,55 @@ func (r *BudgetsRepository) DeleteCustomBudgets(yearMonth time.Time, userID stri
 	_, err := r.MySQLHandler.conn.Exec(query, userID, yearMonth)
 	return err
 }
+
+func (r *BudgetsRepository) GetMonthlyStandardBudget(userID string) (model.MonthlyBudget, error) {
+	query := `
+        SELECT
+            SUM(budget) total_budget
+        FROM
+            standard_budgets
+        WHERE
+            user_id = ?`
+
+	monthlyStandardBudget := model.MonthlyBudget{BudgetType: "StandardBudget"}
+	if err := r.MySQLHandler.conn.QueryRowx(query, userID).StructScan(&monthlyStandardBudget); err != nil {
+		return monthlyStandardBudget, err
+	}
+	return monthlyStandardBudget, nil
+}
+
+func (r *BudgetsRepository) GetMonthlyCustomBudgets(year time.Time, userID string) ([]model.MonthlyBudget, error) {
+	query := `
+        SELECT
+            years_months,
+            SUM(budget) total_budget
+        FROM
+            custom_budgets
+        WHERE
+            user_id = ?
+        AND
+            years_months >= ?
+        AND
+            years_months < ?
+        GROUP BY
+            years_months`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, userID, year, year.AddDate(1, 0, 0))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var monthlyCustomBudgets []model.MonthlyBudget
+	for rows.Next() {
+		monthlyCustomBudget := model.MonthlyBudget{BudgetType: "CustomBudget"}
+		if err := rows.StructScan(&monthlyCustomBudget); err != nil {
+			return nil, err
+		}
+		monthlyCustomBudgets = append(monthlyCustomBudgets, monthlyCustomBudget)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return monthlyCustomBudgets, nil
+}
