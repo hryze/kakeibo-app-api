@@ -13,6 +13,7 @@ func Run() error {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/todo-list/{date:[0-9]{4}-[0-9]{2}-[0-9]{2}}", h.GetDailyTodoList).Methods("GET")
+	router.HandleFunc("/todo-list/{year_month:[0-9]{4}-[0-9]{2}}", h.GetMonthlyTodoList).Methods("GET")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},

@@ -18,4 +18,6 @@ type AuthRepository interface {
 type TodoRepository interface {
 	GetDailyImplementationTodoList(date time.Time, userID string) ([]model.Todo, error)
 	GetDailyDueTodoList(date time.Time, userID string) ([]model.Todo, error)
+	GetMonthlyImplementationTodoList(firstDay time.Time, lastDay time.Time, userID string) ([]model.Todo, error)
+	GetMonthlyDueTodoList(firstDay time.Time, lastDay time.Time, userID string) ([]model.Todo, error)
 }
