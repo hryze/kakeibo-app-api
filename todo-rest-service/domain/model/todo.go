@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql/driver"
 	"errors"
+	"strings"
 	"time"
 )
 
@@ -14,9 +15,9 @@ type TodoList struct {
 type Todo struct {
 	ID                 int       `json:"id"                  db:"id"`
 	PostedDate         time.Time `json:"posted_date"         db:"posted_date"`
-	ImplementationDate Date      `json:"implementation_date" db:"implementation_date"`
-	DueDate            Date      `json:"due_date"            db:"due_date"`
-	TodoContent        string    `json:"todo_content"        db:"todo_content"`
+	ImplementationDate Date      `json:"implementation_date" db:"implementation_date" validate:"required,date"`
+	DueDate            Date      `json:"due_date"            db:"due_date"            validate:"required,date"`
+	TodoContent        string    `json:"todo_content"        db:"todo_content"        validate:"required,max=100,blank"`
 	CompleteFlag       BitBool   `json:"complete_flag"       db:"complete_flag"`
 }
 
@@ -51,6 +52,16 @@ func (d *Date) MarshalJSON() ([]byte, error) {
 	dayOfWeeks := [...]string{"日", "月", "火", "水", "木", "金", "土"}
 	dayOfWeek := dayOfWeeks[d.Time.Weekday()]
 	return []byte(`"` + date + `(` + dayOfWeek + `)` + `"`), nil
+}
+
+func (d *Date) UnmarshalJSON(data []byte) error {
+	trimData := strings.Trim(string(data), "\"")[:10]
+	date, err := time.Parse("2006-01-02", trimData)
+	if err != nil {
+		return err
+	}
+	d.Time = date
+	return nil
 }
 
 func (b BitBool) Value() (driver.Value, error) {

@@ -37,11 +37,18 @@ func NewDBHandler(DBRepo repository.DBRepository) *DBHandler {
 func NewHTTPError(status int, err error) error {
 	switch status {
 	case http.StatusBadRequest:
-		return &HTTPError{
-			Status:       status,
-			ErrorMessage: err,
+		switch err := err.(type) {
+		case *TodoValidationErrorMsg:
+			return &HTTPError{
+				Status:       status,
+				ErrorMessage: err,
+			}
+		default:
+			return &HTTPError{
+				Status:       status,
+				ErrorMessage: err,
+			}
 		}
-
 	case http.StatusUnauthorized:
 		return &HTTPError{
 			Status:       status,
