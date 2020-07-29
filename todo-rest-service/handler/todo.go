@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -258,6 +259,53 @@ func (h *DBHandler) PostTodo(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(dbTodo); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) PutTodo(w http.ResponseWriter, r *http.Request) {
+	_, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	var todo model.Todo
+	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := validateTodo(&todo); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		return
+	}
+
+	todoID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"todo ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := h.DBRepo.PutTodo(&todo, todoID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	dbTodo, err := h.DBRepo.GetTodo(todoID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(dbTodo); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

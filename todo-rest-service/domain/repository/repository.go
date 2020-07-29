@@ -23,4 +23,5 @@ type TodoRepository interface {
 	GetMonthlyDueTodoList(firstDay time.Time, lastDay time.Time, userID string) ([]model.Todo, error)
 	GetTodo(todoId int) (*model.Todo, error)
 	PostTodo(todo *model.Todo, userID string) (sql.Result, error)
+	PutTodo(todo *model.Todo, todoID int) error
 }

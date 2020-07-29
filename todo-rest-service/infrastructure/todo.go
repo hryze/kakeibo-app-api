@@ -204,3 +204,20 @@ func (r *TodoRepository) PostTodo(todo *model.Todo, userID string) (sql.Result, 
 
 	return result, err
 }
+
+func (r *TodoRepository) PutTodo(todo *model.Todo, todoID int) error {
+	query := `
+        UPDATE
+            todo_list
+        SET 
+            implementation_date = ?,
+            due_date = ?,
+            todo_content = ?,
+            complete_flag = ?
+        WHERE
+            id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, todo.ImplementationDate, todo.DueDate, todo.TodoContent, todo.CompleteFlag, todoID)
+
+	return err
+}
