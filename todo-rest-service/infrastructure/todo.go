@@ -233,3 +233,25 @@ func (r *TodoRepository) DeleteTodo(todoID int) error {
 	_, err := r.MySQLHandler.conn.Exec(query, todoID)
 	return err
 }
+
+func (r *TodoRepository) SearchTodoList(query string) ([]model.Todo, error) {
+	rows, err := r.MySQLHandler.conn.Queryx(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var searchTodoList []model.Todo
+	for rows.Next() {
+		var searchTodo model.Todo
+		if err := rows.StructScan(&searchTodo); err != nil {
+			return nil, err
+		}
+		searchTodoList = append(searchTodoList, searchTodo)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return searchTodoList, nil
+}

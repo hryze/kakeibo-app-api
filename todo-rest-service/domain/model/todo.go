@@ -12,6 +12,10 @@ type TodoList struct {
 	DueTodoList            []Todo `json:"due_todo_list,omitempty"`
 }
 
+type SearchTodoList struct {
+	SearchTodoList []Todo `json:"search_todo_list"`
+}
+
 type Todo struct {
 	ID                 int       `json:"id"                  db:"id"`
 	PostedDate         time.Time `json:"posted_date"         db:"posted_date"`
@@ -31,6 +35,12 @@ func NewTodoList(implementationTodoListTodoList []Todo, dueTodoList []Todo) Todo
 	return TodoList{
 		ImplementationTodoList: implementationTodoListTodoList,
 		DueTodoList:            dueTodoList,
+	}
+}
+
+func NewSearchTodoList(searchTodoList []Todo) SearchTodoList {
+	return SearchTodoList{
+		SearchTodoList: searchTodoList,
 	}
 }
 

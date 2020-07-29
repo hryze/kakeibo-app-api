@@ -1,13 +1,16 @@
 package handler
 
 import (
+	"bytes"
 	"database/sql/driver"
 	"encoding/json"
 	"log"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/go-playground/validator"
@@ -18,6 +21,18 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 )
+
+type SearchQuery struct {
+	DateType     string
+	StartDate    string
+	EndDate      string
+	CompleteFlag string
+	TodoContent  string
+	Sort         string
+	SortType     string
+	Limit        string
+	UserID       string
+}
 
 type NoContentMsg struct {
 	Message string `json:"message"`
@@ -118,6 +133,128 @@ func blankValidation(fl validator.FieldLevel) bool {
 	}
 
 	return true
+}
+
+func NewSearchQuery(urlQuery url.Values, userID string) (*SearchQuery, error) {
+	startDate, err := generateStartDate(urlQuery.Get("start_date"))
+	if err != nil {
+		return nil, err
+	}
+
+	endDate, err := generateEndDate(urlQuery.Get("end_date"))
+	if err != nil {
+		return nil, err
+	}
+
+	return &SearchQuery{
+		DateType:     urlQuery.Get("date_type"),
+		StartDate:    startDate,
+		EndDate:      endDate,
+		CompleteFlag: urlQuery.Get("complete_flag"),
+		TodoContent:  urlQuery.Get("todo_content"),
+		Sort:         urlQuery.Get("sort"),
+		SortType:     urlQuery.Get("sort_type"),
+		Limit:        urlQuery.Get("limit"),
+		UserID:       userID,
+	}, nil
+}
+
+func generateStartDate(date string) (string, error) {
+	if len(date) == 0 {
+		return "", nil
+	}
+
+	startDate, err := time.Parse("2006-01-02", date[:10])
+	if err != nil {
+		return "", err
+	}
+
+	return startDate.String(), nil
+}
+
+func generateEndDate(date string) (string, error) {
+	if len(date) == 0 {
+		return "", nil
+	}
+
+	parseDate, err := time.Parse("2006-01-02", date[:10])
+	if err != nil {
+		return "", err
+	}
+
+	endDate := time.Date(parseDate.Year(), parseDate.Month(), parseDate.Day()+1, 0, 0, 0, 0, parseDate.Location()).Add(-1 * time.Second)
+
+	return endDate.String(), nil
+}
+
+func generateSqlQuery(searchQuery *SearchQuery) (string, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            implementation_date,
+            due_date,
+            todo_content,
+            complete_flag
+        FROM
+            todo_list
+        WHERE
+            user_id = "{{ .UserID }}"
+
+        {{ with $DateType := .DateType }}
+        AND
+            {{ $DateType }} >= "{{ $.StartDate }}"
+        AND
+            {{ $DateType }} <= "{{ $.EndDate }}"
+        {{ else }}
+        AND
+            implementation_date >= "{{ .StartDate }}"
+        AND
+            implementation_date <= "{{ .EndDate }}"
+        {{ end }}
+
+        {{ with $CompleteFlag := .CompleteFlag }}
+        AND
+            complete_flag = {{ $CompleteFlag }}
+        {{ end }}
+
+        {{ with $TodoContent := .TodoContent }}
+        AND
+            todo_content
+        LIKE
+            "%{{ $TodoContent }}%"
+        {{ end }}
+
+        {{ with $Sort := .Sort}}
+        ORDER BY
+            {{ $Sort }}
+        {{ else }}
+        ORDER BY
+            implementation_date
+        {{ end }}
+
+        {{ with $SortType := .SortType}}
+        {{ $SortType }}
+        {{ else }}
+        ASC
+        {{ end }}
+
+        {{ with $Limit := .Limit}}
+        LIMIT
+        {{ $Limit }}
+        {{ end }}`
+
+	var buffer bytes.Buffer
+	queryTemplate, err := template.New("queryTemplate").Parse(query)
+	if err != nil {
+		return "", err
+	}
+
+	if err := queryTemplate.Execute(&buffer, searchQuery); err != nil {
+		return "", err
+	}
+
+	return buffer.String(), nil
 }
 
 func (h *DBHandler) GetDailyTodoList(w http.ResponseWriter, r *http.Request) {
@@ -341,6 +478,54 @@ func (h *DBHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&DeleteTodoMsg{"todoを削除しました。"}); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) SearchTodoList(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	urlQuery := r.URL.Query()
+
+	searchQuery, err := NewSearchQuery(urlQuery, userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"日付を正しく指定してください。"}))
+		return
+	}
+
+	query, err := generateSqlQuery(searchQuery)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	dbSearchTodoList, err := h.DBRepo.SearchTodoList(query)
+
+	if len(dbSearchTodoList) == 0 {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"条件に一致するtodoは見つかりませんでした。"}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		return
+	}
+
+	searchTodoList := model.NewSearchTodoList(dbSearchTodoList)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&searchTodoList); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

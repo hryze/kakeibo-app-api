@@ -25,4 +25,5 @@ type TodoRepository interface {
 	PostTodo(todo *model.Todo, userID string) (sql.Result, error)
 	PutTodo(todo *model.Todo, todoID int) error
 	DeleteTodo(todoID int) error
+	SearchTodoList(query string) ([]model.Todo, error)
 }

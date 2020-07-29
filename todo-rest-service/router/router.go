@@ -17,10 +17,11 @@ func Run() error {
 	router.HandleFunc("/todo-list", h.PostTodo).Methods("POST")
 	router.HandleFunc("/todo-list/{id:[0-9]+}", h.PutTodo).Methods("PUT")
 	router.HandleFunc("/todo-list/{id:[0-9]+}", h.DeleteTodo).Methods("DELETE")
+	router.HandleFunc("/todo-list/search", h.SearchTodoList).Methods("GET")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Accept-Language"},
 		AllowCredentials: true,
 	})
