@@ -16,18 +16,29 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type Users interface {
+	ShowUser() (string, error)
+}
+
 type LogoutMsg struct {
 	Message string `json:"message"`
 }
 
-type ValidationErrorMsg struct {
+type UserValidationErrorMsg struct {
 	ID       string `json:"id"`
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func (e *ValidationErrorMsg) Error() string {
+type UserConflictErrorMsg struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (e *UserValidationErrorMsg) Error() string {
 	b, err := json.Marshal(e)
 	if err != nil {
 		log.Println(err)
@@ -35,10 +46,18 @@ func (e *ValidationErrorMsg) Error() string {
 	return string(b)
 }
 
-func validateUser(user interface{}) error {
-	var validationErrorMsg ValidationErrorMsg
+func (e *UserConflictErrorMsg) Error() string {
+	b, err := json.Marshal(e)
+	if err != nil {
+		log.Println(err)
+	}
+	return string(b)
+}
+
+func validateUser(users Users) error {
+	var userValidationErrorMsg UserValidationErrorMsg
 	validate := validator.New()
-	err := validate.Struct(user)
+	err := validate.Struct(users)
 	if err == nil {
 		return nil
 	}
@@ -46,21 +65,21 @@ func validateUser(user interface{}) error {
 		fieldName := err.Field()
 		switch fieldName {
 		case "ID":
-			validationErrorMsg.ID = "IDを正しく入力してください"
+			userValidationErrorMsg.ID = "IDを正しく入力してください"
 		case "Name":
-			validationErrorMsg.Name = "名前を正しく入力してください"
+			userValidationErrorMsg.Name = "名前を正しく入力してください"
 		case "Email":
-			validationErrorMsg.Email = "メールアドレスを正しく入力してください"
+			userValidationErrorMsg.Email = "メールアドレスを正しく入力してください"
 		case "Password":
-			validationErrorMsg.Password = "パスワードを正しく入力してください"
+			userValidationErrorMsg.Password = "パスワードを正しく入力してください"
 		}
 	}
 
-	return &validationErrorMsg
+	return &userValidationErrorMsg
 }
 
 func checkForUniqueUser(h *DBHandler, signUpUser *model.SignUpUser) error {
-	var validationErrorMsg ValidationErrorMsg
+	var userConflictErrorMsg UserConflictErrorMsg
 
 	errID := h.DBRepo.FindID(signUpUser)
 	if errID != nil && errID != sql.ErrNoRows {
@@ -77,18 +96,18 @@ func checkForUniqueUser(h *DBHandler, signUpUser *model.SignUpUser) error {
 	}
 
 	if errID == nil && errEmail != nil {
-		validationErrorMsg.ID = "このIDは既に利用されています"
-		return &validationErrorMsg
+		userConflictErrorMsg.ID = "このIDは既に利用されています"
+		return &userConflictErrorMsg
 	}
 
 	if errEmail == nil && errID != nil {
-		validationErrorMsg.Email = "このメールアドレスは既に利用されています"
-		return &validationErrorMsg
+		userConflictErrorMsg.Email = "このメールアドレスは既に利用されています"
+		return &userConflictErrorMsg
 	}
 
-	validationErrorMsg.ID = "このIDは既に利用されています"
-	validationErrorMsg.Email = "このメールアドレスは既に利用されています"
-	return &validationErrorMsg
+	userConflictErrorMsg.ID = "このIDは既に利用されています"
+	userConflictErrorMsg.Email = "このメールアドレスは既に利用されています"
+	return &userConflictErrorMsg
 }
 
 func postInitStandardBudgets(userID string) error {
@@ -128,12 +147,7 @@ func (h *DBHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := checkForUniqueUser(h, &signUpUser); err != nil {
-		validationErrorMsg, ok := err.(*ValidationErrorMsg)
-		if !ok {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-		errorResponseByJSON(w, NewHTTPError(http.StatusConflict, validationErrorMsg))
+		errorResponseByJSON(w, NewHTTPError(http.StatusConflict, err))
 		return
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(signUpUser.Password), 10)
@@ -180,7 +194,7 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 	dbUser, err := h.DBRepo.FindUser(&loginUser)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"認証に失敗しました"}))
 			return
 		} else if err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -189,7 +203,7 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	hashedPassword := dbUser.Password
 	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"認証に失敗しました"}))
 		return
 	}
 	loginUser.Password = ""
@@ -219,7 +233,7 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 func (h *DBHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_id")
 	if errors.Is(err, http.ErrNoCookie) {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"ログアウト済みです"}))
 		return
 	}
 	sessionID := cookie.Value

@@ -38,7 +38,7 @@ func NewHTTPError(status int, err error) error {
 	switch status {
 	case http.StatusBadRequest:
 		switch err := err.(type) {
-		case *ValidationErrorMsg:
+		case *UserValidationErrorMsg:
 			return &HTTPError{
 				Status:       status,
 				ErrorMessage: err,
@@ -46,18 +46,18 @@ func NewHTTPError(status int, err error) error {
 		default:
 			return &HTTPError{
 				Status:       status,
-				ErrorMessage: &BadRequestErrorMsg{"ログアウト済みです"},
+				ErrorMessage: err,
 			}
 		}
 	case http.StatusConflict:
 		return &HTTPError{
 			Status:       status,
-			ErrorMessage: err.(*ValidationErrorMsg),
+			ErrorMessage: err,
 		}
 	case http.StatusUnauthorized:
 		return &HTTPError{
 			Status:       status,
-			ErrorMessage: &AuthenticationErrorMsg{"認証に失敗しました"},
+			ErrorMessage: err,
 		}
 	default:
 		return &HTTPError{

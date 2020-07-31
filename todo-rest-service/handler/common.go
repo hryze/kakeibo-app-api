@@ -52,7 +52,7 @@ func NewHTTPError(status int, err error) error {
 	case http.StatusUnauthorized:
 		return &HTTPError{
 			Status:       status,
-			ErrorMessage: &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"},
+			ErrorMessage: err,
 		}
 	default:
 		return &HTTPError{

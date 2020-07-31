@@ -25,10 +25,6 @@ type AuthenticationErrorMsg struct {
 	Message string `json:"message"`
 }
 
-type ConflictErrorMsg struct {
-	Message string `json:"message"`
-}
-
 type InternalServerErrorMsg struct {
 	Message string `json:"message"`
 }
@@ -60,18 +56,18 @@ func NewHTTPError(status int, err error) error {
 		default:
 			return &HTTPError{
 				Status:       status,
-				ErrorMessage: &BadRequestErrorMsg{"トランザクションを取得できませんでした。"},
+				ErrorMessage: err,
 			}
 		}
 	case http.StatusConflict:
 		return &HTTPError{
 			Status:       status,
-			ErrorMessage: err.(*ConflictErrorMsg),
+			ErrorMessage: err,
 		}
 	case http.StatusUnauthorized:
 		return &HTTPError{
 			Status:       status,
-			ErrorMessage: &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"},
+			ErrorMessage: err,
 		}
 	default:
 		return &HTTPError{
@@ -94,10 +90,6 @@ func (e *BadRequestErrorMsg) Error() string {
 }
 
 func (e *AuthenticationErrorMsg) Error() string {
-	return e.Message
-}
-
-func (e *ConflictErrorMsg) Error() string {
 	return e.Message
 }
 
