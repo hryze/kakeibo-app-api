@@ -11,23 +11,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
 
 	"github.com/go-playground/validator"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserHandler struct {
-	userRepo repository.UserRepository
-}
-
 type LogoutMsg struct {
 	Message string `json:"message"`
-}
-
-type HTTPError struct {
-	Status       int   `json:"status"`
-	ErrorMessage error `json:"error"`
 }
 
 type ValidationErrorMsg struct {
@@ -37,95 +27,12 @@ type ValidationErrorMsg struct {
 	Password string `json:"password"`
 }
 
-type AuthenticationErrorMsg struct {
-	Message string `json:"message"`
-}
-
-type BadRequestErrorMsg struct {
-	Message string `json:"message"`
-}
-
-type InternalServerErrorMsg struct {
-	Message string `json:"message"`
-}
-
-func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
-	userHandler := UserHandler{userRepo: userRepo}
-	return &userHandler
-}
-
-func NewHTTPError(status int, err error) error {
-	switch status {
-	case http.StatusBadRequest:
-		switch err := err.(type) {
-		case *ValidationErrorMsg:
-			return &HTTPError{
-				Status:       status,
-				ErrorMessage: err,
-			}
-		default:
-			return &HTTPError{
-				Status:       status,
-				ErrorMessage: &BadRequestErrorMsg{"ログアウト済みです"},
-			}
-		}
-	case http.StatusConflict:
-		return &HTTPError{
-			Status:       status,
-			ErrorMessage: err.(*ValidationErrorMsg),
-		}
-	case http.StatusUnauthorized:
-		return &HTTPError{
-			Status:       status,
-			ErrorMessage: &AuthenticationErrorMsg{"認証に失敗しました"},
-		}
-	default:
-		return &HTTPError{
-			Status:       status,
-			ErrorMessage: &InternalServerErrorMsg{"500 Internal Server Error"},
-		}
-	}
-}
-
-func (e *HTTPError) Error() string {
-	b, err := json.Marshal(e)
-	if err != nil {
-		log.Println(err)
-	}
-	return string(b)
-}
-
 func (e *ValidationErrorMsg) Error() string {
 	b, err := json.Marshal(e)
 	if err != nil {
 		log.Println(err)
 	}
 	return string(b)
-}
-
-func (e *AuthenticationErrorMsg) Error() string {
-	return e.Message
-}
-
-func (e *BadRequestErrorMsg) Error() string {
-	return e.Message
-}
-
-func (e *InternalServerErrorMsg) Error() string {
-	return e.Message
-}
-
-func errorResponseByJSON(w http.ResponseWriter, err error) {
-	httpError, ok := err.(*HTTPError)
-	if !ok {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(httpError.Status)
-	if err := json.NewEncoder(w).Encode(httpError); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
 }
 
 func validateUser(user interface{}) error {
@@ -152,15 +59,15 @@ func validateUser(user interface{}) error {
 	return &validationErrorMsg
 }
 
-func checkForUniqueUser(h *UserHandler, signUpUser *model.SignUpUser) error {
+func checkForUniqueUser(h *DBHandler, signUpUser *model.SignUpUser) error {
 	var validationErrorMsg ValidationErrorMsg
 
-	errID := h.userRepo.FindID(signUpUser)
+	errID := h.DBRepo.FindID(signUpUser)
 	if errID != nil && errID != sql.ErrNoRows {
 		return errID
 	}
 
-	errEmail := h.userRepo.FindEmail(signUpUser)
+	errEmail := h.DBRepo.FindEmail(signUpUser)
 	if errEmail != nil && errEmail != sql.ErrNoRows {
 		return errEmail
 	}
@@ -210,7 +117,7 @@ func postInitStandardBudgets(userID string) error {
 	return errors.New("couldn't create a standard budget")
 }
 
-func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
+func (h *DBHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var signUpUser model.SignUpUser
 	if err := json.NewDecoder(r.Body).Decode(&signUpUser); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -235,13 +142,13 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	signUpUser.Password = string(hash)
-	if err := h.userRepo.CreateUser(&signUpUser); err != nil {
+	if err := h.DBRepo.CreateUser(&signUpUser); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
 	if err := postInitStandardBudgets(signUpUser.ID); err != nil {
-		if err := h.userRepo.DeleteUser(&signUpUser); err != nil {
+		if err := h.DBRepo.DeleteUser(&signUpUser); err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
@@ -259,7 +166,7 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var loginUser model.LoginUser
 	if err := json.NewDecoder(r.Body).Decode(&loginUser); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -270,7 +177,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	password := loginUser.Password
-	dbUser, err := h.userRepo.FindUser(&loginUser)
+	dbUser, err := h.DBRepo.FindUser(&loginUser)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
@@ -289,7 +196,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	sessionID := uuid.New().String()
 	expiration := 86400 * 30
-	if err := h.userRepo.SetSessionID(sessionID, loginUser.ID, expiration); err != nil {
+	if err := h.DBRepo.SetSessionID(sessionID, loginUser.ID, expiration); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -309,14 +216,14 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+func (h *DBHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_id")
 	if errors.Is(err, http.ErrNoCookie) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, nil))
 		return
 	}
 	sessionID := cookie.Value
-	if err := h.userRepo.DeleteSessionID(sessionID); err != nil {
+	if err := h.DBRepo.DeleteSessionID(sessionID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}

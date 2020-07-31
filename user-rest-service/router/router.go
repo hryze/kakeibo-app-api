@@ -9,7 +9,7 @@ import (
 )
 
 func Run() error {
-	h := injector.InjectUserHandler()
+	h := injector.InjectDBHandler()
 
 	router := mux.NewRouter()
 	router.Handle("/signup", http.HandlerFunc(h.SignUp)).Methods("POST")
