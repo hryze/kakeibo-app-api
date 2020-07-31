@@ -26,13 +26,13 @@ func InjectRedis() *infrastructure.RedisHandler {
 	return redisHandler
 }
 
-func InjectUserRepository() *infrastructure.UserRepository {
+func InjectDBRepository() *infrastructure.DBRepository {
 	mySQLHandler := InjectMySQL()
 	redisHandler := InjectRedis()
-	return infrastructure.NewUserRepository(mySQLHandler, redisHandler)
+	return infrastructure.NewDBRepository(mySQLHandler, redisHandler)
 }
 
-func InjectUserHandler() *handler.UserHandler {
-	userRepository := InjectUserRepository()
-	return handler.NewUserHandler(userRepository)
+func InjectDBHandler() *handler.DBHandler {
+	DBRepository := InjectDBRepository()
+	return handler.NewDBHandler(DBRepository)
 }

@@ -16,7 +16,7 @@ func Run() error {
 	router.HandleFunc("/categories/custom-categories", h.PostCustomCategory).Methods("POST")
 	router.HandleFunc("/categories/custom-categories/{id:[0-9]+}", h.PutCustomCategory).Methods("PUT")
 	router.HandleFunc("/categories/custom-categories/{id:[0-9]+}", h.DeleteCustomCategory).Methods("DELETE")
-	router.HandleFunc("/transactions/{month:[0-9]{4}-[0-9]{2}}", h.GetMonthlyTransactionsList).Methods("GET")
+	router.HandleFunc("/transactions/{year_month:[0-9]{4}-[0-9]{2}}", h.GetMonthlyTransactionsList).Methods("GET")
 	router.HandleFunc("/transactions", h.PostTransaction).Methods("POST")
 	router.HandleFunc("/transactions/{id:[0-9]+}", h.PutTransaction).Methods("PUT")
 	router.HandleFunc("/transactions/{id:[0-9]+}", h.DeleteTransaction).Methods("DELETE")
@@ -29,6 +29,7 @@ func Run() error {
 	router.HandleFunc("/custom-budgets/{year_month:[0-9]{4}-[0-9]{2}}", h.PutCustomBudgets).Methods("PUT")
 	router.HandleFunc("/custom-budgets/{year_month:[0-9]{4}-[0-9]{2}}", h.DeleteCustomBudgets).Methods("DELETE")
 	router.HandleFunc("/budgets/{year:[0-9]{4}}", h.GetYearlyBudgets).Methods("GET")
+	router.HandleFunc("/groups/standard-budgets", h.PostInitGroupStandardBudgets).Methods("POST")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},

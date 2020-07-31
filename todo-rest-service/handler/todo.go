@@ -261,7 +261,7 @@ func (h *DBHandler) GetDailyTodoList(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -270,7 +270,7 @@ func (h *DBHandler) GetDailyTodoList(w http.ResponseWriter, r *http.Request) {
 
 	date, err := time.Parse("2006-01-02", mux.Vars(r)["date"])
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"日付を正しく指定してください。"}))
 		return
 	}
 
@@ -311,7 +311,7 @@ func (h *DBHandler) GetMonthlyTodoList(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -362,7 +362,7 @@ func (h *DBHandler) PostTodo(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -410,7 +410,7 @@ func (h *DBHandler) PutTodo(w http.ResponseWriter, r *http.Request) {
 	_, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -457,7 +457,7 @@ func (h *DBHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	_, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -487,7 +487,7 @@ func (h *DBHandler) SearchTodoList(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))

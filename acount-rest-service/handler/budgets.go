@@ -63,7 +63,7 @@ func (h *DBHandler) GetStandardBudgets(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -88,7 +88,7 @@ func (h *DBHandler) PutStandardBudgets(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -123,7 +123,7 @@ func (h *DBHandler) GetCustomBudgets(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -132,7 +132,7 @@ func (h *DBHandler) GetCustomBudgets(w http.ResponseWriter, r *http.Request) {
 
 	yearMonth, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
 	}
 
@@ -154,7 +154,7 @@ func (h *DBHandler) PostCustomBudgets(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -163,7 +163,7 @@ func (h *DBHandler) PostCustomBudgets(w http.ResponseWriter, r *http.Request) {
 
 	yearMonth, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
 	}
 
@@ -201,7 +201,7 @@ func (h *DBHandler) PutCustomBudgets(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -210,7 +210,7 @@ func (h *DBHandler) PutCustomBudgets(w http.ResponseWriter, r *http.Request) {
 
 	yearMonth, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
 	}
 
@@ -242,7 +242,7 @@ func (h *DBHandler) DeleteCustomBudgets(w http.ResponseWriter, r *http.Request) 
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -251,7 +251,7 @@ func (h *DBHandler) DeleteCustomBudgets(w http.ResponseWriter, r *http.Request) 
 
 	yearMonth, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
 	}
 
@@ -272,7 +272,7 @@ func (h *DBHandler) GetYearlyBudgets(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -281,7 +281,7 @@ func (h *DBHandler) GetYearlyBudgets(w http.ResponseWriter, r *http.Request) {
 
 	year, err := time.Parse("2006", mux.Vars(r)["year"])
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年を正しく指定してください。"}))
 		return
 	}
 

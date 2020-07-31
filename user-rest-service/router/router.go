@@ -9,12 +9,13 @@ import (
 )
 
 func Run() error {
-	h := injector.InjectUserHandler()
+	h := injector.InjectDBHandler()
 
 	router := mux.NewRouter()
 	router.Handle("/signup", http.HandlerFunc(h.SignUp)).Methods("POST")
 	router.Handle("/login", http.HandlerFunc(h.Login)).Methods("POST")
 	router.Handle("/logout", http.HandlerFunc(h.Logout)).Methods("DELETE")
+	router.Handle("/group", http.HandlerFunc(h.PostGroup)).Methods("POST")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},

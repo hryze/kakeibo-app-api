@@ -334,16 +334,16 @@ func (h *DBHandler) GetMonthlyTransactionsList(w http.ResponseWriter, r *http.Re
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	firstDay, err := time.Parse("2006-01", mux.Vars(r)["month"])
+	firstDay, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
 	}
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
@@ -379,7 +379,7 @@ func (h *DBHandler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -412,7 +412,7 @@ func (h *DBHandler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 	dbTransactionSender, err := h.DBRepo.GetTransaction(&transactionSender, int(lastInsertId))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"トランザクションを取得できませんでした"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -431,7 +431,7 @@ func (h *DBHandler) PutTransaction(w http.ResponseWriter, r *http.Request) {
 	_, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -451,7 +451,7 @@ func (h *DBHandler) PutTransaction(w http.ResponseWriter, r *http.Request) {
 
 	transactionID, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"transaction ID を正しく指定してください。"}))
 		return
 	}
 
@@ -464,7 +464,7 @@ func (h *DBHandler) PutTransaction(w http.ResponseWriter, r *http.Request) {
 	dbTransactionSender, err := h.DBRepo.GetTransaction(&transactionSender, transactionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"トランザクションを取得できませんでした"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -483,7 +483,7 @@ func (h *DBHandler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
 	_, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -492,7 +492,7 @@ func (h *DBHandler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
 
 	transactionID, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"transaction ID を正しく指定してください。"}))
 		return
 	}
 
@@ -513,7 +513,7 @@ func (h *DBHandler) SearchTransactionsList(w http.ResponseWriter, r *http.Reques
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))

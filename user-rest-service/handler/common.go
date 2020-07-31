@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/repository"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
 )
 
 type DBHandler struct {
@@ -38,17 +38,7 @@ func NewHTTPError(status int, err error) error {
 	switch status {
 	case http.StatusBadRequest:
 		switch err := err.(type) {
-		case *CustomCategoryValidationErrorMsg:
-			return &HTTPError{
-				Status:       status,
-				ErrorMessage: err,
-			}
-		case *TransactionValidationErrorMsg:
-			return &HTTPError{
-				Status:       status,
-				ErrorMessage: err,
-			}
-		case *BudgetValidationErrorMsg:
+		case *UserValidationErrorMsg:
 			return &HTTPError{
 				Status:       status,
 				ErrorMessage: err,
