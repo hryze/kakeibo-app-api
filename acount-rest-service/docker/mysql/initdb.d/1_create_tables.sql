@@ -82,3 +82,14 @@ CREATE TABLE custom_budgets
     REFERENCES big_categories(id)
     ON DELETE RESTRICT ON UPDATE CASCADE
 );
+
+CREATE TABLE group_standard_budgets
+(
+  group_id INT NOT NULL,
+  big_category_id INT NOT NULL,
+  budget INT NOT NULL DEFAULT 0,
+  PRIMARY KEY(group_id, big_category_id),
+  FOREIGN KEY fk_big_category_id(big_category_id)
+    REFERENCES big_categories(id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+);

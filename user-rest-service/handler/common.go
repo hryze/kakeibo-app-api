@@ -99,3 +99,16 @@ func errorResponseByJSON(w http.ResponseWriter, err error) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
+
+func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (string, error) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		return "", err
+	}
+	sessionID := cookie.Value
+	userID, err := h.DBRepo.GetUserID(sessionID)
+	if err != nil {
+		return "", err
+	}
+	return userID, nil
+}

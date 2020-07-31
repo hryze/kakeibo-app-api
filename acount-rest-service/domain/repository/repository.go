@@ -12,6 +12,7 @@ type DBRepository interface {
 	CategoriesRepository
 	TransactionsRepository
 	BudgetsRepository
+	GroupBudgetsRepository
 }
 
 type AuthRepository interface {
@@ -47,4 +48,8 @@ type BudgetsRepository interface {
 	DeleteCustomBudgets(yearMonth time.Time, userID string) error
 	GetMonthlyStandardBudget(userID string) (model.MonthlyBudget, error)
 	GetMonthlyCustomBudgets(year time.Time, userID string) ([]model.MonthlyBudget, error)
+}
+
+type GroupBudgetsRepository interface {
+	PostInitGroupStandardBudgets(groupID int) error
 }
