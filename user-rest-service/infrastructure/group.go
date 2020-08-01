@@ -126,3 +126,16 @@ func (r *GroupRepository) DeleteGroupAndGroupUser(groupID int, userID string) er
 
 	return nil
 }
+
+func (r *GroupRepository) PutGroup(group *model.Group, groupID int) error {
+	query := `
+        UPDATE
+            group_names
+        SET 
+            group_name = ?
+        WHERE
+            id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, group.GroupName, groupID)
+	return err
+}

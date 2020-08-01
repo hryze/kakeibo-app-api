@@ -16,10 +16,11 @@ func Run() error {
 	router.Handle("/login", http.HandlerFunc(h.Login)).Methods("POST")
 	router.Handle("/logout", http.HandlerFunc(h.Logout)).Methods("DELETE")
 	router.Handle("/group", http.HandlerFunc(h.PostGroup)).Methods("POST")
+	router.Handle("/group/{id:[0-9]+}", http.HandlerFunc(h.PutGroup)).Methods("PUT")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowedMethods:   []string{"POST", "DELETE", "OPTIONS"},
+		AllowedMethods:   []string{"POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Accept-Language"},
 		AllowCredentials: true,
 	})

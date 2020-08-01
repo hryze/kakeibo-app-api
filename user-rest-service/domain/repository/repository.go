@@ -30,4 +30,5 @@ type GroupRepository interface {
 	GetGroup(groupID int) (*model.Group, error)
 	PostGroupAndGroupUser(group *model.Group, userID string) (sql.Result, error)
 	DeleteGroupAndGroupUser(groupID int, userID string) error
+	PutGroup(group *model.Group, groupID int) error
 }
