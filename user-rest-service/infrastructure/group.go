@@ -2,12 +2,138 @@ package infrastructure
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 )
 
 type GroupRepository struct {
 	*MySQLHandler
+}
+
+func (r *GroupRepository) GetGroupList(userID string) ([]model.Group, error) {
+	query := `
+        SELECT
+            group_users.group_id id,
+            group_names.group_name group_name
+        FROM
+            group_users
+        LEFT JOIN
+            group_names
+        ON
+            group_users.group_id = group_names.id
+        WHERE
+            group_users.user_id = ?`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groupList []model.Group
+	for rows.Next() {
+		var group model.Group
+		if err := rows.StructScan(&group); err != nil {
+			return nil, err
+		}
+		groupList = append(groupList, group)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return groupList, nil
+}
+
+func (r *GroupRepository) GetGroupUsersList(groupList []model.Group) ([]model.GroupUser, error) {
+	sliceQuery := make([]string, len(groupList))
+	for i := 0; i < len(groupList); i++ {
+		sliceQuery[i] = `
+            SELECT
+                group_users.group_id group_id,
+                users.name user_name
+            FROM
+                group_users
+            LEFT JOIN
+                users
+            ON
+                group_users.user_id = users.user_id
+            WHERE
+                group_users.group_id = ?`
+	}
+
+	query := strings.Join(sliceQuery, " UNION ")
+
+	groupIDList := make([]interface{}, len(groupList))
+	for i := 0; i < len(groupList); i++ {
+		groupIDList[i] = groupList[i].ID
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupIDList...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groupUsersList []model.GroupUser
+	for rows.Next() {
+		var groupUser model.GroupUser
+		if err := rows.StructScan(&groupUser); err != nil {
+			return nil, err
+		}
+		groupUsersList = append(groupUsersList, groupUser)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return groupUsersList, nil
+}
+
+func (r *GroupRepository) GetGroupUnapprovedUsersList(groupList []model.Group) ([]model.GroupUnapprovedUser, error) {
+	sliceQuery := make([]string, len(groupList))
+	for i := 0; i < len(groupList); i++ {
+		sliceQuery[i] = `
+            SELECT
+                group_unapproved_users.group_id group_id,
+                users.name user_name
+            FROM
+                group_unapproved_users
+            LEFT JOIN
+                users
+            ON
+                group_unapproved_users.user_id = users.user_id
+            WHERE
+                group_unapproved_users.group_id = ?`
+	}
+
+	query := strings.Join(sliceQuery, " UNION ")
+
+	groupIDList := make([]interface{}, len(groupList))
+	for i := 0; i < len(groupList); i++ {
+		groupIDList[i] = groupList[i].ID
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupIDList...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groupUnapprovedUsersList []model.GroupUnapprovedUser
+	for rows.Next() {
+		var groupUnapprovedUser model.GroupUnapprovedUser
+		if err := rows.StructScan(&groupUnapprovedUser); err != nil {
+			return nil, err
+		}
+		groupUnapprovedUsersList = append(groupUnapprovedUsersList, groupUnapprovedUser)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return groupUnapprovedUsersList, nil
 }
 
 func (r *GroupRepository) GetGroup(groupID int) (*model.Group, error) {

@@ -15,6 +15,10 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 )
 
+type NoContentMsg struct {
+	Message string `json:"message"`
+}
+
 func postInitGroupStandardBudgets(groupID int) error {
 	request, err := http.NewRequest(
 		"POST",
@@ -39,6 +43,70 @@ func postInitGroupStandardBudgets(groupID int) error {
 	}
 
 	return errors.New("couldn't create a group standard budget")
+}
+
+func (h *DBHandler) GetGroupList(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupList, err := h.DBRepo.GetGroupList(userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(groupList) == 0 {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"参加しているグループはありません。"}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		return
+	}
+
+	groupUsersList, err := h.DBRepo.GetGroupUsersList(groupList)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupUnapprovedUsersList, err := h.DBRepo.GetGroupUnapprovedUsersList(groupList)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for i := 0; i < len(groupList); i++ {
+		for _, groupUser := range groupUsersList {
+			if groupList[i].ID == groupUser.GroupID {
+				groupList[i].GroupUsersList = append(groupList[i].GroupUsersList, groupUser.UserName)
+			}
+		}
+
+		for _, groupUnapprovedUser := range groupUnapprovedUsersList {
+			if groupList[i].ID == groupUnapprovedUser.GroupID {
+				groupList[i].GroupUnapprovedUsersList = append(groupList[i].GroupUnapprovedUsersList, groupUnapprovedUser.UserName)
+			}
+		}
+	}
+
+	groupListSender := model.NewGroupList(groupList)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&groupListSender); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *DBHandler) PostGroup(w http.ResponseWriter, r *http.Request) {
