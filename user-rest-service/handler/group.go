@@ -54,35 +54,20 @@ func (h *DBHandler) PostGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.DBRepo.PostGroup(&group)
+	result, err := h.DBRepo.PostGroupAndGroupUser(&group, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	groupLastInsertId, err := result.LastInsertId()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	result, err = h.DBRepo.PostGroupUser(int(groupLastInsertId), userID)
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-	groupUserLastInsertId, err := result.LastInsertId()
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
 	if err := postInitGroupStandardBudgets(int(groupLastInsertId)); err != nil {
-		if err := h.DBRepo.DeleteGroup(int(groupLastInsertId)); err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		if err := h.DBRepo.DeleteGroupUser(int(groupUserLastInsertId), userID); err != nil {
+		if err := h.DBRepo.DeleteGroupAndGroupUser(int(groupLastInsertId), userID); err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}

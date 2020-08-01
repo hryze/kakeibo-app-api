@@ -27,50 +27,102 @@ func (r *GroupRepository) GetGroup(groupID int) (*model.Group, error) {
 	return &group, nil
 }
 
-func (r *GroupRepository) PostGroup(group *model.Group) (sql.Result, error) {
-	query := `
+func (r *GroupRepository) PostGroupAndGroupUser(group *model.Group, userID string) (sql.Result, error) {
+	groupQuery := `
         INSERT INTO group_names
             (group_name)
         VALUES
             (?)`
 
-	result, err := r.MySQLHandler.conn.Exec(query, group.GroupName)
-	return result, err
+	groupUserQuery := `
+        INSERT INTO group_users
+            (group_id, user_id)
+        VALUES
+            (?,?)`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	transactions := func(tx *sql.Tx) (sql.Result, error) {
+		result, err := tx.Exec(groupQuery, group.GroupName)
+		if err != nil {
+			return nil, err
+		}
+
+		groupLastInsertId, err := result.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+
+		if _, err := tx.Exec(groupUserQuery, int(groupLastInsertId), userID); err != nil {
+			return nil, err
+		}
+
+		return result, nil
+	}
+
+	result, err := transactions(tx)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
-func (r *GroupRepository) DeleteGroup(groupID int) error {
-	query := `
+func (r *GroupRepository) DeleteGroupAndGroupUser(groupID int, userID string) error {
+	groupQuery := `
         DELETE
         FROM
             group_names
         WHERE
             id = ?`
 
-	_, err := r.MySQLHandler.conn.Exec(query, groupID)
-	return err
-}
-
-func (r *GroupRepository) PostGroupUser(groupID int, userID string) (sql.Result, error) {
-	query := `
-        INSERT INTO group_users
-            (group_id, user_id)
-        VALUES
-            (?,?)`
-
-	result, err := r.MySQLHandler.conn.Exec(query, groupID, userID)
-	return result, err
-}
-
-func (r *GroupRepository) DeleteGroupUser(groupID int, userID string) error {
-	query := `
+	groupUserQuery := `
         DELETE
         FROM
             group_users
         WHERE
-            id = ?
+            group_id = ?
         AND
-            userID = ?`
+            user_id = ?`
 
-	_, err := r.MySQLHandler.conn.Exec(query, groupID, userID)
-	return err
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+
+		if _, err := tx.Exec(groupUserQuery, groupID, userID); err != nil {
+			return err
+		}
+
+		if _, err := tx.Exec(groupQuery, groupID); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }

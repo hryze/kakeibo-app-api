@@ -28,8 +28,6 @@ type UserRepository interface {
 
 type GroupRepository interface {
 	GetGroup(groupID int) (*model.Group, error)
-	PostGroup(group *model.Group) (sql.Result, error)
-	DeleteGroup(groupID int) error
-	PostGroupUser(groupID int, userID string) (sql.Result, error)
-	DeleteGroupUser(groupID int, userID string) error
+	PostGroupAndGroupUser(group *model.Group, userID string) (sql.Result, error)
+	DeleteGroupAndGroupUser(groupID int, userID string) error
 }
