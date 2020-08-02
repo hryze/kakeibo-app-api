@@ -9,19 +9,19 @@ type UserRepository struct {
 	*RedisHandler
 }
 
-func (r *UserRepository) FindID(signUpUser *model.SignUpUser) error {
-	var dbID string
+func (r *UserRepository) FindUserID(userID string) error {
+	var dbUserID string
 	query := "SELECT user_id FROM users WHERE user_id = ?"
-	if err := r.MySQLHandler.conn.QueryRowx(query, signUpUser.ID).Scan(&dbID); err != nil {
+	if err := r.MySQLHandler.conn.QueryRowx(query, userID).Scan(&dbUserID); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *UserRepository) FindEmail(signUpUser *model.SignUpUser) error {
+func (r *UserRepository) FindEmail(email string) error {
 	var dbEmail string
 	query := "SELECT email FROM users WHERE email = ?"
-	if err := r.MySQLHandler.conn.QueryRowx(query, signUpUser.Email).Scan(&dbEmail); err != nil {
+	if err := r.MySQLHandler.conn.QueryRowx(query, email).Scan(&dbEmail); err != nil {
 		return err
 	}
 	return nil
