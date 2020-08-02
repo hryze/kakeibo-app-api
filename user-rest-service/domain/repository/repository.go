@@ -17,8 +17,8 @@ type AuthRepository interface {
 }
 
 type UserRepository interface {
-	FindID(signUpUser *model.SignUpUser) error
-	FindEmail(signUpUser *model.SignUpUser) error
+	FindUserID(userID string) error
+	FindEmail(email string) error
 	CreateUser(user *model.SignUpUser) error
 	DeleteUser(signUpUser *model.SignUpUser) error
 	FindUser(user *model.LoginUser) (*model.LoginUser, error)
@@ -34,4 +34,8 @@ type GroupRepository interface {
 	PostGroupAndGroupUser(group *model.Group, userID string) (sql.Result, error)
 	DeleteGroupAndGroupUser(groupID int, userID string) error
 	PutGroup(group *model.Group, groupID int) error
+	PostGroupUnapprovedUser(groupUnapprovedUser *model.GroupUnapprovedUser, groupID int) (sql.Result, error)
+	GetGroupUnapprovedUser(groupUnapprovedUsersID int) (*model.GroupUnapprovedUser, error)
+	FindGroupUser(groupID int, userID string) error
+	FindGroupUnapprovedUser(groupID int, userID string) error
 }

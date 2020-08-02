@@ -81,12 +81,12 @@ func validateUser(users Users) error {
 func checkForUniqueUser(h *DBHandler, signUpUser *model.SignUpUser) error {
 	var userConflictErrorMsg UserConflictErrorMsg
 
-	errID := h.DBRepo.FindID(signUpUser)
+	errID := h.DBRepo.FindUserID(signUpUser.ID)
 	if errID != nil && errID != sql.ErrNoRows {
 		return errID
 	}
 
-	errEmail := h.DBRepo.FindEmail(signUpUser)
+	errEmail := h.DBRepo.FindEmail(signUpUser.Email)
 	if errEmail != nil && errEmail != sql.ErrNoRows {
 		return errEmail
 	}
