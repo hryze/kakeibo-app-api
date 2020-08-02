@@ -27,9 +27,11 @@ type UserRepository interface {
 }
 
 type GroupRepository interface {
+	GetGroupList(userID string) ([]model.Group, error)
+	GetGroupUsersList(groupList []model.Group) ([]model.GroupUser, error)
+	GetGroupUnapprovedUsersList(groupList []model.Group) ([]model.GroupUnapprovedUser, error)
 	GetGroup(groupID int) (*model.Group, error)
-	PostGroup(group *model.Group) (sql.Result, error)
-	DeleteGroup(groupID int) error
-	PostGroupUser(groupID int, userID string) (sql.Result, error)
-	DeleteGroupUser(groupID int, userID string) error
+	PostGroupAndGroupUser(group *model.Group, userID string) (sql.Result, error)
+	DeleteGroupAndGroupUser(groupID int, userID string) error
+	PutGroup(group *model.Group, groupID int) error
 }
