@@ -19,9 +19,11 @@ CREATE TABLE group_names
 
 CREATE TABLE group_users
 (
+  id INT NOT NULL AUTO_INCREMENT,
   group_id INT NOT NULL,
   user_id VARCHAR(10) NOT NULL,
-  PRIMARY KEY(group_id, user_id),
+  PRIMARY KEY(id),
+  UNIQUE uq_group_users (group_id, user_id),
   FOREIGN KEY fk_group_id(group_id)
     REFERENCES group_names(id)
     ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -32,9 +34,11 @@ CREATE TABLE group_users
 
 CREATE TABLE group_unapproved_users
 (
+  id INT NOT NULL AUTO_INCREMENT,
   group_id INT NOT NULL,
   user_id VARCHAR(10) NOT NULL,
-  PRIMARY KEY(group_id, user_id),
+  PRIMARY KEY(id),
+  UNIQUE uq_group_unapproved_users (group_id, user_id),
   FOREIGN KEY fk_group_id(group_id)
     REFERENCES group_names(id)
     ON DELETE RESTRICT ON UPDATE CASCADE,
