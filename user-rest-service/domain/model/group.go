@@ -1,30 +1,44 @@
 package model
 
 type GroupList struct {
-	GroupList []Group `json:"group_list"`
+	ApprovedGroupList   []ApprovedGroup   `json:"approved_group_list"`
+	UnapprovedGroupList []UnapprovedGroup `json:"unapproved_group_list"`
+}
+
+type ApprovedGroup struct {
+	GroupID             int              `json:"group_id"               db:"group_id"`
+	GroupName           string           `json:"group_name"             db:"group_name"`
+	ApprovedUsersList   []ApprovedUser   `json:"approved_users_list"`
+	UnapprovedUsersList []UnapprovedUser `json:"unapproved_users_list"`
+}
+
+type UnapprovedGroup struct {
+	GroupID             int              `json:"group_id"               db:"group_id"`
+	GroupName           string           `json:"group_name"             db:"group_name"`
+	ApprovedUsersList   []ApprovedUser   `json:"approved_users_list"`
+	UnapprovedUsersList []UnapprovedUser `json:"unapproved_users_list"`
+}
+
+type ApprovedUser struct {
+	GroupID  int    `json:"group_id"  db:"group_id"`
+	UserID   string `json:"user_id"   db:"user_id"`
+	UserName string `json:"user_name" db:"user_name"`
+}
+
+type UnapprovedUser struct {
+	GroupID  int    `json:"group_id"  db:"group_id"`
+	UserID   string `json:"user_id"   db:"user_id"`
+	UserName string `json:"user_name" db:"user_name"`
 }
 
 type Group struct {
-	GroupID                  int                   `json:"group_id"                              db:"id"`
-	GroupName                string                `json:"group_name"                            db:"group_name"`
-	GroupUsersList           []GroupUser           `json:"group_users_list,omitempty"`
-	GroupUnapprovedUsersList []GroupUnapprovedUser `json:"group_unapproved_users_list,omitempty"`
+	GroupID   int    `json:"group_id"   db:"id"`
+	GroupName string `json:"group_name" db:"group_name"`
 }
 
-type GroupUser struct {
-	GroupID  int    `json:"group_id"  db:"group_id"`
-	UserID   string `json:"user_id"   db:"user_id"`
-	UserName string `json:"user_name" db:"user_name"`
-}
-
-type GroupUnapprovedUser struct {
-	GroupID  int    `json:"group_id"  db:"group_id"`
-	UserID   string `json:"user_id"   db:"user_id"`
-	UserName string `json:"user_name" db:"user_name"`
-}
-
-func NewGroupList(groupList []Group) GroupList {
+func NewGroupList(approvedGroupList []ApprovedGroup, unapprovedGroupList []UnapprovedGroup) GroupList {
 	return GroupList{
-		GroupList: groupList,
+		ApprovedGroupList:   approvedGroupList,
+		UnapprovedGroupList: unapprovedGroupList,
 	}
 }

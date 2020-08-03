@@ -63,7 +63,7 @@ func postInitGroupStandardBudgets(groupID int) error {
 }
 
 func checkForUniqueGroupUser(h *DBHandler, groupID int, userID string) error {
-	if err := h.DBRepo.FindGroupUser(groupID, userID); err != sql.ErrNoRows {
+	if err := h.DBRepo.FindApprovedUser(groupID, userID); err != sql.ErrNoRows {
 		if err == nil {
 			return &GroupUserConflictErrorMsg{"こちらのユーザーは既にグループに参加しています。"}
 		}
@@ -71,7 +71,7 @@ func checkForUniqueGroupUser(h *DBHandler, groupID int, userID string) error {
 		return err
 	}
 
-	if err := h.DBRepo.FindGroupUnapprovedUser(groupID, userID); err != sql.ErrNoRows {
+	if err := h.DBRepo.FindUnapprovedUser(groupID, userID); err != sql.ErrNoRows {
 		if err == nil {
 			return &GroupUserConflictErrorMsg{"こちらのユーザーは既にグループに招待しています。"}
 		}
@@ -98,6 +98,20 @@ func validateUserID(userID string) error {
 	return nil
 }
 
+func generateGroupIDList(approvedGroupList []model.ApprovedGroup, unapprovedGroupList []model.UnapprovedGroup) []interface{} {
+	var groupIDList []interface{}
+
+	for _, approvedGroup := range approvedGroupList {
+		groupIDList = append(groupIDList, approvedGroup.GroupID)
+	}
+
+	for _, unapprovedGroup := range unapprovedGroupList {
+		groupIDList = append(groupIDList, unapprovedGroup.GroupID)
+	}
+
+	return groupIDList
+}
+
 func (h *DBHandler) GetGroupList(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
@@ -109,16 +123,22 @@ func (h *DBHandler) GetGroupList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groupList, err := h.DBRepo.GetGroupList(userID)
+	approvedGroupList, err := h.DBRepo.GetApprovedGroupList(userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	if len(groupList) == 0 {
+	unapprovedGroupList, err := h.DBRepo.GetUnApprovedGroupList(userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(approvedGroupList) == 0 && len(unapprovedGroupList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoContentMsg{"参加しているグループはありません。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"参加しているグループ、招待されているグループはありません。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -126,37 +146,53 @@ func (h *DBHandler) GetGroupList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groupUsersList, err := h.DBRepo.GetGroupUsersList(groupList)
+	groupIDList := generateGroupIDList(approvedGroupList, unapprovedGroupList)
+
+	approvedUsersList, err := h.DBRepo.GetApprovedUsersList(groupIDList)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	groupUnapprovedUsersList, err := h.DBRepo.GetGroupUnapprovedUsersList(groupList)
+	unapprovedUsersList, err := h.DBRepo.GetUnapprovedUsersList(groupIDList)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	for i := 0; i < len(groupList); i++ {
-		for _, groupUser := range groupUsersList {
-			if groupList[i].GroupID == groupUser.GroupID {
-				groupList[i].GroupUsersList = append(groupList[i].GroupUsersList, groupUser)
+	for i := 0; i < len(approvedGroupList); i++ {
+		for _, approvedUser := range approvedUsersList {
+			if approvedGroupList[i].GroupID == approvedUser.GroupID {
+				approvedGroupList[i].ApprovedUsersList = append(approvedGroupList[i].ApprovedUsersList, approvedUser)
 			}
 		}
 
-		for _, groupUnapprovedUser := range groupUnapprovedUsersList {
-			if groupList[i].GroupID == groupUnapprovedUser.GroupID {
-				groupList[i].GroupUnapprovedUsersList = append(groupList[i].GroupUnapprovedUsersList, groupUnapprovedUser)
+		for _, unapprovedUser := range unapprovedUsersList {
+			if approvedGroupList[i].GroupID == unapprovedUser.GroupID {
+				approvedGroupList[i].UnapprovedUsersList = append(approvedGroupList[i].UnapprovedUsersList, unapprovedUser)
 			}
 		}
 	}
 
-	groupListSender := model.NewGroupList(groupList)
+	for i := 0; i < len(unapprovedGroupList); i++ {
+		for _, approvedUser := range approvedUsersList {
+			if unapprovedGroupList[i].GroupID == approvedUser.GroupID {
+				unapprovedGroupList[i].ApprovedUsersList = append(unapprovedGroupList[i].ApprovedUsersList, approvedUser)
+			}
+		}
+
+		for _, unapprovedUser := range unapprovedUsersList {
+			if unapprovedGroupList[i].GroupID == unapprovedUser.GroupID {
+				unapprovedGroupList[i].UnapprovedUsersList = append(unapprovedGroupList[i].UnapprovedUsersList, unapprovedUser)
+			}
+		}
+	}
+
+	groupList := model.NewGroupList(approvedGroupList, unapprovedGroupList)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&groupListSender); err != nil {
+	if err := json.NewEncoder(w).Encode(&groupList); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -179,7 +215,7 @@ func (h *DBHandler) PostGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.DBRepo.PostGroupAndGroupUser(&group, userID)
+	result, err := h.DBRepo.PostGroupAndApprovedUser(&group, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -192,7 +228,7 @@ func (h *DBHandler) PostGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := postInitGroupStandardBudgets(int(groupLastInsertId)); err != nil {
-		if err := h.DBRepo.DeleteGroupAndGroupUser(int(groupLastInsertId), userID); err != nil {
+		if err := h.DBRepo.DeleteGroupAndApprovedUser(int(groupLastInsertId), userID); err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
@@ -271,7 +307,7 @@ func (h *DBHandler) PostGroupUnapprovedUsers(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var groupUnapprovedUser model.GroupUnapprovedUser
+	var groupUnapprovedUser model.UnapprovedUser
 	if err := json.NewDecoder(r.Body).Decode(&groupUnapprovedUser); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -309,7 +345,7 @@ func (h *DBHandler) PostGroupUnapprovedUsers(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	result, err := h.DBRepo.PostGroupUnapprovedUser(&groupUnapprovedUser, groupID)
+	result, err := h.DBRepo.PostUnapprovedUser(&groupUnapprovedUser, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -321,7 +357,7 @@ func (h *DBHandler) PostGroupUnapprovedUsers(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	dbGroupUnapprovedUser, err := h.DBRepo.GetGroupUnapprovedUser(int(lastInsertId))
+	dbGroupUnapprovedUser, err := h.DBRepo.GetUnapprovedUser(int(lastInsertId))
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return

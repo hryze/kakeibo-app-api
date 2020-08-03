@@ -27,15 +27,16 @@ type UserRepository interface {
 }
 
 type GroupRepository interface {
-	GetGroupList(userID string) ([]model.Group, error)
-	GetGroupUsersList(groupList []model.Group) ([]model.GroupUser, error)
-	GetGroupUnapprovedUsersList(groupList []model.Group) ([]model.GroupUnapprovedUser, error)
+	GetApprovedGroupList(userID string) ([]model.ApprovedGroup, error)
+	GetUnApprovedGroupList(userID string) ([]model.UnapprovedGroup, error)
+	GetApprovedUsersList(approvedGroupIDList []interface{}) ([]model.ApprovedUser, error)
+	GetUnapprovedUsersList(unapprovedGroupIDList []interface{}) ([]model.UnapprovedUser, error)
 	GetGroup(groupID int) (*model.Group, error)
-	PostGroupAndGroupUser(group *model.Group, userID string) (sql.Result, error)
-	DeleteGroupAndGroupUser(groupID int, userID string) error
 	PutGroup(group *model.Group, groupID int) error
-	PostGroupUnapprovedUser(groupUnapprovedUser *model.GroupUnapprovedUser, groupID int) (sql.Result, error)
-	GetGroupUnapprovedUser(groupUnapprovedUsersID int) (*model.GroupUnapprovedUser, error)
-	FindGroupUser(groupID int, userID string) error
-	FindGroupUnapprovedUser(groupID int, userID string) error
+	PostGroupAndApprovedUser(group *model.Group, userID string) (sql.Result, error)
+	DeleteGroupAndApprovedUser(groupID int, userID string) error
+	PostUnapprovedUser(unapprovedUser *model.UnapprovedUser, groupID int) (sql.Result, error)
+	GetUnapprovedUser(groupUnapprovedUsersID int) (*model.UnapprovedUser, error)
+	FindApprovedUser(groupID int, userID string) error
+	FindUnapprovedUser(groupID int, userID string) error
 }
