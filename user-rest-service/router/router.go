@@ -19,6 +19,7 @@ func Run() error {
 	router.Handle("/groups", http.HandlerFunc(h.PostGroup)).Methods("POST")
 	router.Handle("/groups/{group_id:[0-9]+}", http.HandlerFunc(h.PutGroup)).Methods("PUT")
 	router.Handle("/groups/{group_id:[0-9]+}/users", http.HandlerFunc(h.PostGroupUnapprovedUsers)).Methods("POST")
+	router.Handle("/groups/{group_id:[0-9]+}/users/approved", http.HandlerFunc(h.PostGroupApprovedUsers)).Methods("POST")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},

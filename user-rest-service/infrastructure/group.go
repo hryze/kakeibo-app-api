@@ -360,3 +360,75 @@ func (r *GroupRepository) FindUnapprovedUser(groupID int, userID string) error {
 
 	return err
 }
+
+func (r *GroupRepository) PostGroupApprovedUserAndDeleteGroupUnapprovedUser(groupID int, userID string) (sql.Result, error) {
+	insertApprovedUserQuery := `
+        INSERT INTO group_users
+            (group_id, user_id)
+        VALUES
+            (?,?)`
+
+	deleteUnapprovedUserQuery := `
+        DELETE
+        FROM
+            group_unapproved_users
+        WHERE
+            group_id = ?
+        AND
+            user_id = ?`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	transactions := func(tx *sql.Tx) (sql.Result, error) {
+		result, err := tx.Exec(insertApprovedUserQuery, groupID, userID)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, err := tx.Exec(deleteUnapprovedUserQuery, groupID, userID); err != nil {
+			return nil, err
+		}
+
+		return result, nil
+	}
+
+	result, err := transactions(tx)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (r *GroupRepository) GetApprovedUser(approvedUsersID int) (*model.ApprovedUser, error) {
+	query := `
+        SELECT
+            group_users.group_id group_id,
+            group_users.user_id user_id,
+            users.name user_name
+        FROM
+            group_users
+        LEFT JOIN
+            users
+        ON
+            group_users.user_id = users.user_id
+        WHERE
+            group_users.id = ?`
+
+	var approvedUser model.ApprovedUser
+	if err := r.MySQLHandler.conn.QueryRowx(query, approvedUsersID).StructScan(&approvedUser); err != nil {
+		return nil, err
+	}
+
+	return &approvedUser, nil
+}
