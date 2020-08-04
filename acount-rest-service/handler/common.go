@@ -36,43 +36,15 @@ func NewDBHandler(DBRepo repository.DBRepository) *DBHandler {
 
 func NewHTTPError(status int, err error) error {
 	switch status {
-	case http.StatusBadRequest:
-		switch err := err.(type) {
-		case *CustomCategoryValidationErrorMsg:
-			return &HTTPError{
-				Status:       status,
-				ErrorMessage: err,
-			}
-		case *TransactionValidationErrorMsg:
-			return &HTTPError{
-				Status:       status,
-				ErrorMessage: err,
-			}
-		case *BudgetValidationErrorMsg:
-			return &HTTPError{
-				Status:       status,
-				ErrorMessage: err,
-			}
-		default:
-			return &HTTPError{
-				Status:       status,
-				ErrorMessage: err,
-			}
-		}
-	case http.StatusConflict:
+	case http.StatusInternalServerError:
 		return &HTTPError{
 			Status:       status,
-			ErrorMessage: err,
-		}
-	case http.StatusUnauthorized:
-		return &HTTPError{
-			Status:       status,
-			ErrorMessage: err,
+			ErrorMessage: &InternalServerErrorMsg{"500 Internal Server Error"},
 		}
 	default:
 		return &HTTPError{
 			Status:       status,
-			ErrorMessage: &InternalServerErrorMsg{"500 Internal Server Error"},
+			ErrorMessage: err,
 		}
 	}
 }
