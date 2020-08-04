@@ -507,3 +507,25 @@ func (h *DBHandler) DeleteGroupUnapprovedUser(w http.ResponseWriter, r *http.Req
 		return
 	}
 }
+
+func (h *DBHandler) ConfirmGroupAffiliation(w http.ResponseWriter, r *http.Request) {
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	userID := mux.Vars(r)["user_id"]
+
+	if err := h.DBRepo.FindApprovedUser(groupID, userID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}

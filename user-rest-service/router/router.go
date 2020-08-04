@@ -22,6 +22,7 @@ func Run() error {
 	router.Handle("/groups/{group_id:[0-9]+}/users", http.HandlerFunc(h.DeleteGroupApprovedUser)).Methods("DELETE")
 	router.Handle("/groups/{group_id:[0-9]+}/users/approved", http.HandlerFunc(h.PostGroupApprovedUser)).Methods("POST")
 	router.Handle("/groups/{group_id:[0-9]+}/users/unapproved", http.HandlerFunc(h.DeleteGroupUnapprovedUser)).Methods("DELETE")
+	router.Handle("/groups/{group_id:[0-9]+}/users/{user_id:[\\S]{1,10}}", http.HandlerFunc(h.ConfirmGroupAffiliation)).Methods("GET")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
