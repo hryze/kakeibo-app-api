@@ -446,3 +446,17 @@ func (r *GroupRepository) DeleteGroupUnapprovedUser(groupID int, userID string) 
 	_, err := r.MySQLHandler.conn.Exec(query, groupID, userID)
 	return err
 }
+
+func (r *GroupRepository) DeleteGroupApprovedUser(groupID int, userID string) error {
+	query := `
+        DELETE 
+        FROM
+            group_users
+        WHERE
+            group_id = ?
+        AND
+            user_id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupID, userID)
+	return err
+}
