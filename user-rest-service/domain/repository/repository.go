@@ -41,4 +41,5 @@ type GroupRepository interface {
 	FindUnapprovedUser(groupID int, userID string) error
 	PostGroupApprovedUserAndDeleteGroupUnapprovedUser(groupID int, userID string) (sql.Result, error)
 	GetApprovedUser(approvedUsersID int) (*model.ApprovedUser, error)
+	DeleteGroupUnapprovedUser(groupID int, userID string) error
 }

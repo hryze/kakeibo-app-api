@@ -432,3 +432,17 @@ func (r *GroupRepository) GetApprovedUser(approvedUsersID int) (*model.ApprovedU
 
 	return &approvedUser, nil
 }
+
+func (r *GroupRepository) DeleteGroupUnapprovedUser(groupID int, userID string) error {
+	query := `
+        DELETE 
+        FROM
+            group_unapproved_users
+        WHERE
+            group_id = ?
+        AND
+            user_id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupID, userID)
+	return err
+}
