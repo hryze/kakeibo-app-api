@@ -131,3 +131,11 @@ func (ni *NullInt64) UnmarshalJSON(b []byte) error {
 	}
 	return err
 }
+
+func (t TransactionReceiver) ShowTransactionReceiver() (string, error) {
+	b, err := json.Marshal(t)
+	if err != nil {
+		return string(b), err
+	}
+	return string(b), nil
+}

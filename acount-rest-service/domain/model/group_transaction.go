@@ -1,5 +1,7 @@
 package model
 
+import "encoding/json"
+
 type GroupTransactionsList struct {
 	GroupTransactionsList []GroupTransactionSender `json:"transactions_list"`
 }
@@ -31,4 +33,12 @@ type GroupTransactionReceiver struct {
 
 func NewGroupTransactionsList(groupTransactionsList []GroupTransactionSender) GroupTransactionsList {
 	return GroupTransactionsList{GroupTransactionsList: groupTransactionsList}
+}
+
+func (t GroupTransactionReceiver) ShowTransactionReceiver() (string, error) {
+	b, err := json.Marshal(t)
+	if err != nil {
+		return string(b), err
+	}
+	return string(b), nil
 }

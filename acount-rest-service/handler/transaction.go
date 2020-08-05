@@ -24,6 +24,10 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+type TransactionReceivers interface {
+	ShowTransactionReceiver() (string, error)
+}
+
 type SearchQuery struct {
 	TransactionType string
 	BigCategoryID   string
@@ -59,7 +63,7 @@ func (e *TransactionValidationErrorMsg) Error() string {
 	return string(b)
 }
 
-func validateTransaction(transactionReceiver *model.TransactionReceiver) error {
+func validateTransaction(transactionReceivers TransactionReceivers) error {
 	var transactionValidationErrorMsg TransactionValidationErrorMsg
 
 	validate := validator.New()
@@ -67,7 +71,7 @@ func validateTransaction(transactionReceiver *model.TransactionReceiver) error {
 	validate.RegisterValidation("blank", blankValidation)
 	validate.RegisterValidation("date", dateValidation)
 	validate.RegisterValidation("either_id", eitherIDValidation)
-	err := validate.Struct(transactionReceiver)
+	err := validate.Struct(transactionReceivers)
 	if err == nil {
 		return nil
 	}
@@ -176,24 +180,38 @@ func dateValidation(fl validator.FieldLevel) bool {
 }
 
 func eitherIDValidation(fl validator.FieldLevel) bool {
-	transactionReceiver, ok := fl.Parent().Interface().(*model.TransactionReceiver)
-	if !ok {
+	switch transaction := fl.Parent().Interface().(type) {
+	case *model.TransactionReceiver:
+		if transaction.MediumCategoryID.Valid && transaction.CustomCategoryID.Valid {
+			return false
+		}
+
+		if transaction.CustomCategoryID.Valid {
+			return true
+		}
+
+		if transaction.MediumCategoryID.Valid {
+			return true
+		}
+
+		return false
+	case *model.GroupTransactionReceiver:
+		if transaction.MediumCategoryID.Valid && transaction.CustomCategoryID.Valid {
+			return false
+		}
+
+		if transaction.CustomCategoryID.Valid {
+			return true
+		}
+
+		if transaction.MediumCategoryID.Valid {
+			return true
+		}
+
+		return false
+	default:
 		return false
 	}
-
-	if transactionReceiver.MediumCategoryID.Valid && transactionReceiver.CustomCategoryID.Valid {
-		return false
-	}
-
-	if transactionReceiver.CustomCategoryID.Valid {
-		return true
-	}
-
-	if transactionReceiver.MediumCategoryID.Valid {
-		return true
-	}
-
-	return false
 }
 
 func NewSearchQuery(urlQuery url.Values, userID string) SearchQuery {
