@@ -96,7 +96,7 @@ func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (stri
 	return userID, nil
 }
 
-func getVerifyGroupAffiliation(groupID int, userID string) error {
+func verifyGroupAffiliation(groupID int, userID string) error {
 	url := fmt.Sprintf("http://localhost:8080/groups/%d/users/%s", groupID, userID)
 
 	request, err := http.NewRequest(

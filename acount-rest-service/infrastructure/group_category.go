@@ -1,6 +1,10 @@
 package infrastructure
 
-import "github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
+import (
+	"database/sql"
+
+	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
+)
 
 type GroupCategoriesRepository struct {
 	*MySQLHandler
@@ -97,4 +101,35 @@ func (r *GroupCategoriesRepository) GetGroupCustomCategoriesList(groupID int) ([
 	}
 
 	return groupCustomCategoriesList, nil
+}
+
+func (r *GroupCategoriesRepository) FindGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) error {
+	query := `
+        SELECT 
+            category_name 
+        FROM 
+            group_custom_categories 
+        WHERE 
+            group_id = ? 
+        AND 
+            big_category_id = ? 
+        AND 
+            category_name = ?`
+
+	var groupCustomCategoryName string
+	err := r.MySQLHandler.conn.QueryRowx(query, groupID, groupCustomCategory.BigCategoryID, groupCustomCategory.Name).Scan(&groupCustomCategoryName)
+
+	return err
+}
+
+func (r *GroupCategoriesRepository) PostGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) (sql.Result, error) {
+	query := `
+        INSERT INTO group_custom_categories
+            (category_name, big_category_id, group_id) 
+        VALUES
+            (?,?,?)`
+
+	result, err := r.MySQLHandler.conn.Exec(query, groupCustomCategory.Name, groupCustomCategory.BigCategoryID, groupID)
+
+	return result, err
 }

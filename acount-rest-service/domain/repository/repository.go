@@ -55,6 +55,8 @@ type GroupCategoriesRepository interface {
 	GetGroupBigCategoriesList() ([]model.GroupBigCategory, error)
 	GetGroupMediumCategoriesList() ([]model.GroupMediumCategory, error)
 	GetGroupCustomCategoriesList(groupID int) ([]model.GroupCustomCategory, error)
+	FindGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) error
+	PostGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) (sql.Result, error)
 }
 
 type GroupBudgetsRepository interface {
