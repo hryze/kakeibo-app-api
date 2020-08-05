@@ -15,6 +15,50 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+type DeleteGroupCustomCategoryMsg struct {
+	Message string `json:"message"`
+}
+
+type GroupCustomCategoryValidationErrorMsg struct {
+	Message string `json:"message"`
+}
+
+type GroupCustomCategoryConflictErrorMsg struct {
+	Message string `json:"message"`
+}
+
+func (e *GroupCustomCategoryValidationErrorMsg) Error() string {
+	return e.Message
+}
+
+func (e *GroupCustomCategoryConflictErrorMsg) Error() string {
+	return e.Message
+}
+
+func validateGroupCustomCategory(r *http.Request, groupCustomCategory *model.GroupCustomCategory) error {
+	if strings.HasPrefix(groupCustomCategory.Name, " ") || strings.HasPrefix(groupCustomCategory.Name, "　") {
+		if r.Method == http.MethodPost {
+			return &GroupCustomCategoryValidationErrorMsg{"中カテゴリーの登録に失敗しました。 文字列先頭に空白がないか確認してください。"}
+		}
+
+		return &GroupCustomCategoryValidationErrorMsg{"中カテゴリーの更新に失敗しました。 文字列先頭に空白がないか確認してください。"}
+	}
+
+	if strings.HasSuffix(groupCustomCategory.Name, " ") || strings.HasSuffix(groupCustomCategory.Name, "　") {
+		if r.Method == http.MethodPost {
+			return &GroupCustomCategoryValidationErrorMsg{"中カテゴリーの登録に失敗しました。 文字列末尾に空白がないか確認してください。"}
+		}
+
+		return &GroupCustomCategoryValidationErrorMsg{"中カテゴリーの更新に失敗しました。 文字列末尾に空白がないか確認してください。"}
+	}
+
+	if utf8.RuneCountInString(groupCustomCategory.Name) > 9 {
+		return &GroupCustomCategoryValidationErrorMsg{"カテゴリー名は9文字以下で入力してください。"}
+	}
+
+	return nil
+}
+
 func (h *DBHandler) GetGroupCategoriesList(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
@@ -90,46 +134,6 @@ func (h *DBHandler) GetGroupCategoriesList(w http.ResponseWriter, r *http.Reques
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-}
-
-type GroupCustomCategoryValidationErrorMsg struct {
-	Message string `json:"message"`
-}
-
-type GroupCustomCategoryConflictErrorMsg struct {
-	Message string `json:"message"`
-}
-
-func (e *GroupCustomCategoryValidationErrorMsg) Error() string {
-	return e.Message
-}
-
-func (e *GroupCustomCategoryConflictErrorMsg) Error() string {
-	return e.Message
-}
-
-func validateGroupCustomCategory(r *http.Request, groupCustomCategory *model.GroupCustomCategory) error {
-	if strings.HasPrefix(groupCustomCategory.Name, " ") || strings.HasPrefix(groupCustomCategory.Name, "　") {
-		if r.Method == http.MethodPost {
-			return &GroupCustomCategoryValidationErrorMsg{"中カテゴリーの登録に失敗しました。 文字列先頭に空白がないか確認してください。"}
-		}
-
-		return &GroupCustomCategoryValidationErrorMsg{"中カテゴリーの更新に失敗しました。 文字列先頭に空白がないか確認してください。"}
-	}
-
-	if strings.HasSuffix(groupCustomCategory.Name, " ") || strings.HasSuffix(groupCustomCategory.Name, "　") {
-		if r.Method == http.MethodPost {
-			return &GroupCustomCategoryValidationErrorMsg{"中カテゴリーの登録に失敗しました。 文字列末尾に空白がないか確認してください。"}
-		}
-
-		return &GroupCustomCategoryValidationErrorMsg{"中カテゴリーの更新に失敗しました。 文字列末尾に空白がないか確認してください。"}
-	}
-
-	if utf8.RuneCountInString(groupCustomCategory.Name) > 9 {
-		return &GroupCustomCategoryValidationErrorMsg{"カテゴリー名は9文字以下で入力してください。"}
-	}
-
-	return nil
 }
 
 func (h *DBHandler) PostGroupCustomCategory(w http.ResponseWriter, r *http.Request) {
@@ -261,6 +265,57 @@ func (h *DBHandler) PutGroupCustomCategory(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&groupCustomCategory); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) DeleteGroupCustomCategory(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	groupCustomCategoryID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"custom category ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := h.DBRepo.FindGroupCustomCategoryID(groupCustomCategoryID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"指定された中カテゴリーは既に削除されています。"}))
+		return
+	}
+
+	if err := h.DBRepo.DeleteGroupCustomCategory(groupCustomCategoryID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&DeleteGroupCustomCategoryMsg{"カスタムカテゴリーを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

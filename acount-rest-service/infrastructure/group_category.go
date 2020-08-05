@@ -147,3 +147,30 @@ func (r *GroupCategoriesRepository) PutGroupCustomCategory(groupCustomCategory *
 
 	return err
 }
+
+func (r *GroupCategoriesRepository) FindGroupCustomCategoryID(groupCustomCategoryID int) error {
+	query := `
+        SELECT 
+            category_name 
+        FROM 
+            group_custom_categories 
+        WHERE 
+            id = ?`
+
+	var groupCustomCategoryName string
+	err := r.MySQLHandler.conn.QueryRowx(query, groupCustomCategoryID).Scan(&groupCustomCategoryName)
+
+	return err
+}
+
+func (r *CategoriesRepository) DeleteGroupCustomCategory(groupCustomCategoryID int) error {
+	query := `
+        DELETE 
+        FROM 
+            group_custom_categories 
+        WHERE 
+            id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupCustomCategoryID)
+	return err
+}
