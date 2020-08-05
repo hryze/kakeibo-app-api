@@ -12,6 +12,7 @@ type DBRepository interface {
 	CategoriesRepository
 	TransactionsRepository
 	BudgetsRepository
+	GroupCategoriesRepository
 	GroupBudgetsRepository
 }
 
@@ -48,6 +49,12 @@ type BudgetsRepository interface {
 	DeleteCustomBudgets(yearMonth time.Time, userID string) error
 	GetMonthlyStandardBudget(userID string) (model.MonthlyBudget, error)
 	GetMonthlyCustomBudgets(year time.Time, userID string) ([]model.MonthlyBudget, error)
+}
+
+type GroupCategoriesRepository interface {
+	GetGroupBigCategoriesList() ([]model.GroupBigCategory, error)
+	GetGroupMediumCategoriesList() ([]model.GroupMediumCategory, error)
+	GetGroupCustomCategoriesList(groupID int) ([]model.GroupCustomCategory, error)
 }
 
 type GroupBudgetsRepository interface {

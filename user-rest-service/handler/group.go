@@ -508,7 +508,7 @@ func (h *DBHandler) DeleteGroupUnapprovedUser(w http.ResponseWriter, r *http.Req
 	}
 }
 
-func (h *DBHandler) ConfirmGroupAffiliation(w http.ResponseWriter, r *http.Request) {
+func (h *DBHandler) VerifyGroupAffiliation(w http.ResponseWriter, r *http.Request) {
 	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
