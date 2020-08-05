@@ -57,6 +57,7 @@ type GroupCategoriesRepository interface {
 	GetGroupCustomCategoriesList(groupID int) ([]model.GroupCustomCategory, error)
 	FindGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) error
 	PostGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) (sql.Result, error)
+	PutGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory) error
 }
 
 type GroupBudgetsRepository interface {

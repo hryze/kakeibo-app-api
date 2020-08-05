@@ -133,3 +133,17 @@ func (r *GroupCategoriesRepository) PostGroupCustomCategory(groupCustomCategory 
 
 	return result, err
 }
+
+func (r *GroupCategoriesRepository) PutGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory) error {
+	query := `
+        UPDATE 
+            group_custom_categories 
+        SET 
+            category_name = ? 
+        WHERE 
+            id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupCustomCategory.Name, groupCustomCategory.ID)
+
+	return err
+}
