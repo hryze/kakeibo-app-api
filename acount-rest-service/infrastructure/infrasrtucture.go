@@ -6,6 +6,7 @@ type DBRepository struct {
 	*TransactionsRepository
 	*BudgetsRepository
 	*GroupCategoriesRepository
+	*GroupTransactionsRepository
 	*GroupBudgetsRepository
 }
 
@@ -16,6 +17,7 @@ func NewDBRepository(mysqlHandler *MySQLHandler, redisHandler *RedisHandler) *DB
 		&TransactionsRepository{mysqlHandler},
 		&BudgetsRepository{mysqlHandler},
 		&GroupCategoriesRepository{mysqlHandler},
+		&GroupTransactionsRepository{mysqlHandler},
 		&GroupBudgetsRepository{mysqlHandler},
 	}
 }

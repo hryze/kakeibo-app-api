@@ -13,6 +13,7 @@ type DBRepository interface {
 	TransactionsRepository
 	BudgetsRepository
 	GroupCategoriesRepository
+	GroupTransactionsRepository
 	GroupBudgetsRepository
 }
 
@@ -60,6 +61,10 @@ type GroupCategoriesRepository interface {
 	PutGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory) error
 	FindGroupCustomCategoryID(groupCustomCategoryID int) error
 	DeleteGroupCustomCategory(groupCustomCategoryID int) error
+}
+
+type GroupTransactionsRepository interface {
+	GetMonthlyGroupTransactionsList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionSender, error)
 }
 
 type GroupBudgetsRepository interface {
