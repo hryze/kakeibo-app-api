@@ -28,7 +28,7 @@ type TransactionReceivers interface {
 	ShowTransactionReceiver() (string, error)
 }
 
-type SearchQuery struct {
+type TransactionsSearchQuery struct {
 	TransactionType string
 	BigCategoryID   string
 	Shop            string
@@ -214,11 +214,11 @@ func eitherIDValidation(fl validator.FieldLevel) bool {
 	}
 }
 
-func NewSearchQuery(urlQuery url.Values, userID string) SearchQuery {
+func NewTransactionsSearchQuery(urlQuery url.Values, userID string) TransactionsSearchQuery {
 	startDate := trimDate(urlQuery.Get("start_date"))
 	endDate := trimDate(urlQuery.Get("end_date"))
 
-	return SearchQuery{
+	return TransactionsSearchQuery{
 		TransactionType: urlQuery.Get("transaction_type"),
 		BigCategoryID:   urlQuery.Get("big_category_id"),
 		Shop:            urlQuery.Get("shop"),
@@ -242,7 +242,7 @@ func trimDate(date string) string {
 	return date[:10]
 }
 
-func generateSqlQuery(searchQuery SearchQuery) (string, error) {
+func generateTransactionsSqlQuery(searchQuery TransactionsSearchQuery) (string, error) {
 	query := `
         SELECT
             transactions.id id,
@@ -325,9 +325,9 @@ func generateSqlQuery(searchQuery SearchQuery) (string, error) {
         {{ end }}
 
         {{ with $SortType := .SortType}}
-        {{ $SortType }}
+        {{ $SortType }}, transactions.updated_date DESC
         {{ else }}
-        DESC
+        DESC, transactions.updated_date DESC
         {{ end }}
 
         {{ with $Limit := .Limit}}
@@ -336,7 +336,7 @@ func generateSqlQuery(searchQuery SearchQuery) (string, error) {
         {{ end }}`
 
 	var buffer bytes.Buffer
-	queryTemplate, err := template.New("queryTemplate").Parse(query)
+	queryTemplate, err := template.New("TransactionsSqlQueryTemplate").Parse(query)
 	if err != nil {
 		return "", err
 	}
@@ -540,9 +540,9 @@ func (h *DBHandler) SearchTransactionsList(w http.ResponseWriter, r *http.Reques
 
 	urlQuery := r.URL.Query()
 
-	searchQuery := NewSearchQuery(urlQuery, userID)
+	searchQuery := NewTransactionsSearchQuery(urlQuery, userID)
 
-	query, err := generateSqlQuery(searchQuery)
+	query, err := generateTransactionsSqlQuery(searchQuery)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return

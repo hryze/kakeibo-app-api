@@ -69,6 +69,7 @@ type GroupTransactionsRepository interface {
 	PostGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupID int, userID string) (sql.Result, error)
 	PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int) error
 	DeleteGroupTransaction(groupTransactionID int) error
+	SearchGroupTransactionsList(query string) ([]model.GroupTransactionSender, error)
 }
 
 type GroupBudgetsRepository interface {
