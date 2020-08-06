@@ -67,6 +67,7 @@ type GroupTransactionsRepository interface {
 	GetMonthlyGroupTransactionsList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionSender, error)
 	GetGroupTransaction(groupTransactionID int) (*model.GroupTransactionSender, error)
 	PostGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupID int, userID string) (sql.Result, error)
+	PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int) error
 }
 
 type GroupBudgetsRepository interface {

@@ -119,3 +119,24 @@ func (r *TransactionsRepository) PostGroupTransaction(groupTransaction *model.Gr
 
 	return result, err
 }
+
+func (r *TransactionsRepository) PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int) error {
+	query := `
+        UPDATE
+            group_transactions
+        SET 
+            transaction_type = ?,
+            transaction_date = ?,
+            shop = ?,
+            memo = ?,
+            amount = ?,
+            big_category_id = ?,
+            medium_category_id = ?,
+            custom_category_id = ?
+        WHERE
+            id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupTransaction.TransactionType, groupTransaction.TransactionDate, groupTransaction.Shop, groupTransaction.Memo, groupTransaction.Amount, groupTransaction.BigCategoryID, groupTransaction.MediumCategoryID, groupTransaction.CustomCategoryID, groupTransactionID)
+
+	return err
+}

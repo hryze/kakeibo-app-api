@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -132,6 +134,73 @@ func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(dbGroupTransactionSender); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	var groupTransactionReceiver model.GroupTransactionReceiver
+	if err := json.NewDecoder(r.Body).Decode(&groupTransactionReceiver); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := validateTransaction(&groupTransactionReceiver); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		return
+	}
+
+	groupTransactionID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"transaction ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := h.DBRepo.PutGroupTransaction(&groupTransactionReceiver, groupTransactionID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupTransactionSender, err := h.DBRepo.GetGroupTransaction(groupTransactionID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"トランザクションを取得できませんでした"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(groupTransactionSender); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
