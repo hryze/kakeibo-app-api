@@ -29,7 +29,6 @@ func Run() error {
 	router.HandleFunc("/custom-budgets/{year_month:[0-9]{4}-[0-9]{2}}", h.PutCustomBudgets).Methods("PUT")
 	router.HandleFunc("/custom-budgets/{year_month:[0-9]{4}-[0-9]{2}}", h.DeleteCustomBudgets).Methods("DELETE")
 	router.HandleFunc("/budgets/{year:[0-9]{4}}", h.GetYearlyBudgets).Methods("GET")
-	router.HandleFunc("/groups/standard-budgets", h.PostInitGroupStandardBudgets).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/categories", h.GetGroupCategoriesList).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/categories/custom-categories", h.PostGroupCustomCategory).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/categories/custom-categories/{id:[0-9]+}", h.PutGroupCustomCategory).Methods("PUT")
@@ -39,6 +38,8 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/{id:[0-9]+}", h.PutGroupTransaction).Methods("PUT")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/{id:[0-9]+}", h.DeleteGroupTransaction).Methods("DELETE")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/search", h.SearchGroupTransactionsList).Methods("GET")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/standard-budgets", h.PostInitGroupStandardBudgets).Methods("POST")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/standard-budgets", h.GetGroupStandardBudgets).Methods("GET")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},

@@ -74,4 +74,5 @@ type GroupTransactionsRepository interface {
 
 type GroupBudgetsRepository interface {
 	PostInitGroupStandardBudgets(groupID int) error
+	GetGroupStandardBudgets(groupID int) (*model.GroupStandardBudgets, error)
 }

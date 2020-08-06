@@ -17,8 +17,174 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type GroupTransactionsSearchQuery struct {
+	TransactionType string
+	BigCategoryID   string
+	Shop            string
+	Memo            string
+	LowAmount       string
+	HighAmount      string
+	StartDate       string
+	EndDate         string
+	Sort            string
+	SortType        string
+	Limit           string
+	GroupID         string
+	UsersID         []string
+}
+
 type DeleteGroupTransactionMsg struct {
 	Message string `json:"message"`
+}
+
+func NewGroupTransactionsSearchQuery(urlQuery url.Values, groupID string) GroupTransactionsSearchQuery {
+	startDate := trimDate(urlQuery.Get("start_date"))
+	endDate := trimDate(urlQuery.Get("end_date"))
+
+	return GroupTransactionsSearchQuery{
+		TransactionType: urlQuery.Get("transaction_type"),
+		BigCategoryID:   urlQuery.Get("big_category_id"),
+		Shop:            urlQuery.Get("shop"),
+		Memo:            urlQuery.Get("memo"),
+		LowAmount:       urlQuery.Get("low_amount"),
+		HighAmount:      urlQuery.Get("high_amount"),
+		StartDate:       startDate,
+		EndDate:         endDate,
+		Sort:            urlQuery.Get("sort"),
+		SortType:        urlQuery.Get("sort_type"),
+		Limit:           urlQuery.Get("limit"),
+		GroupID:         groupID,
+		UsersID:         urlQuery["user_id"],
+	}
+}
+
+func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery) (string, error) {
+	query := `
+        SELECT
+            group_transactions.id id,
+            group_transactions.transaction_type transaction_type,
+            group_transactions.updated_date updated_date,
+            group_transactions.transaction_date transaction_date,
+            group_transactions.shop shop,
+            group_transactions.memo memo,
+            group_transactions.amount amount,
+            group_transactions.user_id user_id,
+            big_categories.category_name big_category_name,
+            medium_categories.category_name medium_category_name,
+            group_custom_categories.category_name custom_category_name
+        FROM
+            group_transactions
+        LEFT JOIN
+            big_categories
+        ON
+            group_transactions.big_category_id = big_categories.id
+        LEFT JOIN
+            medium_categories
+        ON
+            group_transactions.medium_category_id = medium_categories.id
+        LEFT JOIN
+            group_custom_categories
+        ON
+            group_transactions.custom_category_id = group_custom_categories.id
+        WHERE
+            group_transactions.group_id = {{.GroupID}}
+
+        {{ if eq (len .UsersID) 1 }}
+        {{ range $i, $UserID := .UsersID }}
+        AND
+            user_id = "{{ $UserID }}"
+        {{ end }}
+        {{ end }}
+
+        {{ if gt (len .UsersID) 1 }}
+        {{ range $i, $UserID := .UsersID }}
+        {{ if eq $i 0}}
+        AND
+            user_id IN("{{ $UserID }}"
+        {{ end }}
+        {{ if gt $i 0 }}
+        ,"{{ $UserID }}"
+        {{ end }}
+        {{ end }}
+        {{ end }}
+        {{ if gt (len .UsersID) 1 }}
+        )
+        {{ end }}
+
+        {{ with $StartDate := .StartDate }}
+        AND
+            group_transactions.transaction_date >= "{{ $StartDate }}"
+        {{ end }}
+
+        {{ with $EndDate := .EndDate }}
+        AND
+            group_transactions.transaction_date <= "{{ $EndDate }}"
+        {{ end }}
+
+        {{ with $TransactionType := .TransactionType }}
+        AND
+            group_transactions.transaction_type = "{{ $TransactionType }}"
+        {{ end }}
+
+        {{ with $BigCategoryID := .BigCategoryID }}
+        AND
+            group_transactions.big_category_id = "{{ $BigCategoryID }}"
+        {{ end }}
+
+        {{ with $LowAmount := .LowAmount }}
+        AND
+            group_transactions.amount >= "{{ $LowAmount }}"
+        {{ end }}
+
+        {{ with $HighAmount := .HighAmount }}
+        AND
+            group_transactions.amount <= "{{ $HighAmount }}"
+        {{ end }}
+
+        {{ with $Shop := .Shop }}
+        AND
+            group_transactions.shop
+        LIKE
+            "%{{ $Shop }}%"
+        {{ end }}
+
+        {{ with $Memo := .Memo }}
+        AND
+            group_transactions.memo
+        LIKE
+            "%{{ $Memo }}%"
+        {{ end }}
+
+        {{ with $Sort := .Sort}}
+        ORDER BY
+            group_transactions.{{ $Sort }}
+        {{ else }}
+        ORDER BY
+            group_transactions.transaction_date
+        {{ end }}
+
+        {{ with $SortType := .SortType}}
+        {{ $SortType }}, group_transactions.updated_date DESC
+        {{ else }}
+        DESC, group_transactions.updated_date DESC
+        {{ end }}
+
+        {{ with $Limit := .Limit}}
+        LIMIT
+        {{ $Limit }}
+        {{ end }}`
+
+	var buffer bytes.Buffer
+	queryTemplate, err := template.New("GroupTransactionsSqlQueryTemplate").Parse(query)
+	if err != nil {
+		return "", err
+	}
+
+	if err := queryTemplate.Execute(&buffer, searchQuery); err != nil {
+		return "", err
+	}
+
+	return buffer.String(), nil
 }
 
 func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *http.Request) {
@@ -266,172 +432,6 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-}
-
-type GroupTransactionsSearchQuery struct {
-	TransactionType string
-	BigCategoryID   string
-	Shop            string
-	Memo            string
-	LowAmount       string
-	HighAmount      string
-	StartDate       string
-	EndDate         string
-	Sort            string
-	SortType        string
-	Limit           string
-	GroupID         string
-	UsersID         []string
-}
-
-func NewGroupTransactionsSearchQuery(urlQuery url.Values, groupID string) GroupTransactionsSearchQuery {
-	startDate := trimDate(urlQuery.Get("start_date"))
-	endDate := trimDate(urlQuery.Get("end_date"))
-
-	return GroupTransactionsSearchQuery{
-		TransactionType: urlQuery.Get("transaction_type"),
-		BigCategoryID:   urlQuery.Get("big_category_id"),
-		Shop:            urlQuery.Get("shop"),
-		Memo:            urlQuery.Get("memo"),
-		LowAmount:       urlQuery.Get("low_amount"),
-		HighAmount:      urlQuery.Get("high_amount"),
-		StartDate:       startDate,
-		EndDate:         endDate,
-		Sort:            urlQuery.Get("sort"),
-		SortType:        urlQuery.Get("sort_type"),
-		Limit:           urlQuery.Get("limit"),
-		GroupID:         groupID,
-		UsersID:         urlQuery["user_id"],
-	}
-}
-
-func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery) (string, error) {
-	query := `
-        SELECT
-            group_transactions.id id,
-            group_transactions.transaction_type transaction_type,
-            group_transactions.updated_date updated_date,
-            group_transactions.transaction_date transaction_date,
-            group_transactions.shop shop,
-            group_transactions.memo memo,
-            group_transactions.amount amount,
-            group_transactions.user_id user_id,
-            big_categories.category_name big_category_name,
-            medium_categories.category_name medium_category_name,
-            group_custom_categories.category_name custom_category_name
-        FROM
-            group_transactions
-        LEFT JOIN
-            big_categories
-        ON
-            group_transactions.big_category_id = big_categories.id
-        LEFT JOIN
-            medium_categories
-        ON
-            group_transactions.medium_category_id = medium_categories.id
-        LEFT JOIN
-            group_custom_categories
-        ON
-            group_transactions.custom_category_id = group_custom_categories.id
-        WHERE
-            group_transactions.group_id = {{.GroupID}}
-
-        {{ if eq (len .UsersID) 1 }}
-        {{ range $i, $UserID := .UsersID }}
-        AND
-            user_id = "{{ $UserID }}"
-        {{ end }}
-        {{ end }}
-
-        {{ if gt (len .UsersID) 1 }}
-        {{ range $i, $UserID := .UsersID }}
-        {{ if eq $i 0}}
-        AND
-            user_id IN("{{ $UserID }}"
-        {{ end }}
-        {{ if gt $i 0 }}
-        ,"{{ $UserID }}"
-        {{ end }}
-        {{ end }}
-        {{ end }}
-        {{ if gt (len .UsersID) 1 }}
-        )
-        {{ end }}
-
-        {{ with $StartDate := .StartDate }}
-        AND
-            group_transactions.transaction_date >= "{{ $StartDate }}"
-        {{ end }}
-
-        {{ with $EndDate := .EndDate }}
-        AND
-            group_transactions.transaction_date <= "{{ $EndDate }}"
-        {{ end }}
-
-        {{ with $TransactionType := .TransactionType }}
-        AND
-            group_transactions.transaction_type = "{{ $TransactionType }}"
-        {{ end }}
-
-        {{ with $BigCategoryID := .BigCategoryID }}
-        AND
-            group_transactions.big_category_id = "{{ $BigCategoryID }}"
-        {{ end }}
-
-        {{ with $LowAmount := .LowAmount }}
-        AND
-            group_transactions.amount >= "{{ $LowAmount }}"
-        {{ end }}
-
-        {{ with $HighAmount := .HighAmount }}
-        AND
-            group_transactions.amount <= "{{ $HighAmount }}"
-        {{ end }}
-
-        {{ with $Shop := .Shop }}
-        AND
-            group_transactions.shop
-        LIKE
-            "%{{ $Shop }}%"
-        {{ end }}
-
-        {{ with $Memo := .Memo }}
-        AND
-            group_transactions.memo
-        LIKE
-            "%{{ $Memo }}%"
-        {{ end }}
-
-        {{ with $Sort := .Sort}}
-        ORDER BY
-            group_transactions.{{ $Sort }}
-        {{ else }}
-        ORDER BY
-            group_transactions.transaction_date
-        {{ end }}
-
-        {{ with $SortType := .SortType}}
-        {{ $SortType }}, group_transactions.updated_date DESC
-        {{ else }}
-        DESC, group_transactions.updated_date DESC
-        {{ end }}
-
-        {{ with $Limit := .Limit}}
-        LIMIT
-        {{ $Limit }}
-        {{ end }}`
-
-	var buffer bytes.Buffer
-	queryTemplate, err := template.New("GroupTransactionsSqlQueryTemplate").Parse(query)
-	if err != nil {
-		return "", err
-	}
-
-	if err := queryTemplate.Execute(&buffer, searchQuery); err != nil {
-		return "", err
-	}
-
-	return buffer.String(), nil
 }
 
 func (h *DBHandler) SearchGroupTransactionsList(w http.ResponseWriter, r *http.Request) {
