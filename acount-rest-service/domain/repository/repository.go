@@ -12,6 +12,8 @@ type DBRepository interface {
 	CategoriesRepository
 	TransactionsRepository
 	BudgetsRepository
+	GroupCategoriesRepository
+	GroupTransactionsRepository
 	GroupBudgetsRepository
 }
 
@@ -48,6 +50,26 @@ type BudgetsRepository interface {
 	DeleteCustomBudgets(yearMonth time.Time, userID string) error
 	GetMonthlyStandardBudget(userID string) (model.MonthlyBudget, error)
 	GetMonthlyCustomBudgets(year time.Time, userID string) ([]model.MonthlyBudget, error)
+}
+
+type GroupCategoriesRepository interface {
+	GetGroupBigCategoriesList() ([]model.GroupBigCategory, error)
+	GetGroupMediumCategoriesList() ([]model.GroupMediumCategory, error)
+	GetGroupCustomCategoriesList(groupID int) ([]model.GroupCustomCategory, error)
+	FindGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) error
+	PostGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) (sql.Result, error)
+	PutGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory) error
+	FindGroupCustomCategoryID(groupCustomCategoryID int) error
+	DeleteGroupCustomCategory(groupCustomCategoryID int) error
+}
+
+type GroupTransactionsRepository interface {
+	GetMonthlyGroupTransactionsList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionSender, error)
+	GetGroupTransaction(groupTransactionID int) (*model.GroupTransactionSender, error)
+	PostGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupID int, userID string) (sql.Result, error)
+	PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int) error
+	DeleteGroupTransaction(groupTransactionID int) error
+	SearchGroupTransactionsList(query string) ([]model.GroupTransactionSender, error)
 }
 
 type GroupBudgetsRepository interface {

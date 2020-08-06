@@ -11,7 +11,14 @@ type CategoriesRepository struct {
 }
 
 func (r *CategoriesRepository) GetBigCategoriesList() ([]model.BigCategory, error) {
-	query := "SELECT id, category_name, transaction_type FROM big_categories"
+	query := `
+        SELECT
+            id, category_name, transaction_type 
+        FROM 
+            big_categories
+        ORDER BY
+            id`
+
 	rows, err := r.MySQLHandler.conn.Queryx(query)
 	if err != nil {
 		return nil, err
@@ -33,7 +40,14 @@ func (r *CategoriesRepository) GetBigCategoriesList() ([]model.BigCategory, erro
 }
 
 func (r *CategoriesRepository) GetMediumCategoriesList() ([]model.MediumCategory, error) {
-	query := "SELECT id, category_name, big_category_id FROM medium_categories"
+	query := `
+        SELECT
+            id, category_name, big_category_id 
+        FROM
+            medium_categories
+        ORDER BY
+            id`
+
 	rows, err := r.MySQLHandler.conn.Queryx(query)
 	if err != nil {
 		return nil, err
@@ -55,7 +69,17 @@ func (r *CategoriesRepository) GetMediumCategoriesList() ([]model.MediumCategory
 }
 
 func (r *CategoriesRepository) GetCustomCategoriesList(userID string) ([]model.CustomCategory, error) {
-	query := "SELECT id, category_name, big_category_id FROM custom_categories WHERE user_id = ? ORDER BY id DESC"
+	query := `
+        SELECT
+            id, category_name, big_category_id 
+        FROM 
+            custom_categories 
+        WHERE 
+            user_id = ? 
+        ORDER BY 
+            id 
+        DESC`
+
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID)
 	if err != nil {
 		return nil, err
@@ -78,25 +102,54 @@ func (r *CategoriesRepository) GetCustomCategoriesList(userID string) ([]model.C
 
 func (r *CategoriesRepository) FindCustomCategory(customCategory *model.CustomCategory, userID string) error {
 	var dbCustomCategoryName string
-	query := "SELECT category_name FROM custom_categories WHERE user_id = ? AND big_category_id = ? AND category_name = ?"
+	query := `
+        SELECT 
+            category_name 
+        FROM 
+            custom_categories 
+        WHERE 
+            user_id = ? 
+        AND 
+            big_category_id = ? 
+        AND 
+            category_name = ?`
+
 	err := r.MySQLHandler.conn.QueryRowx(query, userID, customCategory.BigCategoryID, customCategory.Name).Scan(&dbCustomCategoryName)
 	return err
 }
 
 func (r *CategoriesRepository) PostCustomCategory(customCategory *model.CustomCategory, userID string) (sql.Result, error) {
-	query := "INSERT INTO custom_categories(category_name, big_category_id, user_id) VALUES(?,?,?)"
+	query := `
+        INSERT INTO custom_categories
+            (category_name, big_category_id, user_id) 
+        VALUES
+            (?,?,?)`
+
 	result, err := r.MySQLHandler.conn.Exec(query, customCategory.Name, customCategory.BigCategoryID, userID)
 	return result, err
 }
 
 func (r *CategoriesRepository) PutCustomCategory(customCategory *model.CustomCategory) error {
-	query := "UPDATE custom_categories SET category_name = ? WHERE id = ?"
+	query := `
+        UPDATE 
+            custom_categories 
+        SET 
+            category_name = ? 
+        WHERE 
+            id = ?`
+
 	_, err := r.MySQLHandler.conn.Exec(query, customCategory.Name, customCategory.ID)
 	return err
 }
 
 func (r *CategoriesRepository) DeleteCustomCategory(customCategoryID int) error {
-	query := "DELETE FROM custom_categories WHERE id = ?"
+	query := `
+        DELETE 
+        FROM 
+            custom_categories 
+        WHERE 
+            id = ?`
+
 	_, err := r.MySQLHandler.conn.Exec(query, customCategoryID)
 	return err
 }

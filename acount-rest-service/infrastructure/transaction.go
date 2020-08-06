@@ -45,7 +45,7 @@ func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string, first
         AND
             transactions.transaction_date <= ?
         ORDER BY
-            transactions.transaction_date DESC`
+            transactions.transaction_date DESC, transactions.updated_date DESC`
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, firstDay, lastDay)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,12 @@ func (r *TransactionsRepository) PutTransaction(transaction *model.TransactionRe
 }
 
 func (r *TransactionsRepository) DeleteTransaction(transactionID int) error {
-	query := `DELETE FROM transactions WHERE id = ?`
+	query := `
+        DELETE
+        FROM 
+            transactions
+        WHERE 
+            id = ?`
 	_, err := r.MySQLHandler.conn.Exec(query, transactionID)
 	return err
 }

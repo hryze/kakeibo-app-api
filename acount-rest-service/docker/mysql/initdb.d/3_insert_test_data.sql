@@ -18,7 +18,7 @@ VALUES
   (14 , "株配当金", 1, "taira7"),
   (15 , "株配当金", 1, "anraku8");
 
--- expenses table test data
+-- transactions table test data
 INSERT INTO transactions
   (transaction_type, transaction_date, shop, memo, amount, user_id, big_category_id, medium_category_id, custom_category_id)
 VALUES
@@ -163,7 +163,44 @@ VALUES
   ('test6', 14),
   ('test6', 15),
   ('test6', 16),
-  ('test6', 17);
+  ('test6', 17),
+  ('anraku8', 2),
+  ('anraku8', 3),
+  ('anraku8', 4),
+  ('anraku8', 5),
+  ('anraku8', 6),
+  ('anraku8', 7),
+  ('anraku8', 8),
+  ('anraku8', 9),
+  ('anraku8', 10),
+  ('anraku8', 11),
+  ('anraku8', 12),
+  ('anraku8', 13),
+  ('anraku8', 14),
+  ('anraku8', 15),
+  ('anraku8', 16),
+  ('anraku8', 17);
+
+-- group_custom_categories table test data
+INSERT INTO group_custom_categories
+  (id, category_name, big_category_id, group_id)
+VALUES
+  (1, "調味料", 2, 4),
+  (2, "パン", 2, 4),
+  (3, "米", 2, 4),
+  (4, "洗剤", 3, 4),
+  (5, "トイレットペーパー", 3, 4);
+
+-- group_transactions table test data
+INSERT INTO group_transactions
+  (transaction_type, transaction_date, shop, memo, amount, group_id, user_id, big_category_id, medium_category_id, custom_category_id)
+VALUES
+  ("expense", "2020-07-01", "コストコ", "セールで牛肉購入", 4500, 4, "taira7", 2, 6, NULL),
+  ("expense", "2020-07-02", NULL, "電気料金", 15000, 4, "taira7", 12, 71, NULL),
+  ("expense", "2020-07-02", "コストコ", "大容量ケチャップ", 1100, 4, "taira7", 2, NULL, 1),
+  ("expense", "2020-07-01", NULL, "WiFi代", 4900, 4, "taira7", 9, 53, NULL),
+  ("expense", "2020-07-03", "クリエイト", "トイレットペーパー", 450, 4, "anraku8", 3, NULL, 5),
+  ("expense", "2020-07-04", "クリエイト", "洗剤", 500, 4, "anraku8", 3, NULL, 4);
 
 -- group_standard_budgets table test data
 INSERT INTO group_standard_budgets

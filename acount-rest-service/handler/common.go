@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -93,4 +94,34 @@ func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (stri
 		return "", err
 	}
 	return userID, nil
+}
+
+func verifyGroupAffiliation(groupID int, userID string) error {
+	url := fmt.Sprintf("http://localhost:8080/groups/%d/users/%s", groupID, userID)
+
+	request, err := http.NewRequest(
+		"GET",
+		url,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode == http.StatusBadRequest {
+		return &BadRequestErrorMsg{"指定されたグループに所属していません。"}
+	}
+
+	if response.StatusCode == http.StatusInternalServerError {
+		return &InternalServerErrorMsg{"500 Internal Server Error"}
+	}
+
+	return nil
 }

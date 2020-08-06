@@ -8,7 +8,8 @@ VALUES
   ('saigo3', '西郷隆盛', 'saigo@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu'),
   ('test4', 'test4', 'test4@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu'),
   ('test5', 'test5', 'test5@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu'),
-  ('test6', 'test6', 'test6@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu');
+  ('test6', 'test6', 'test6@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu'),
+  ('anraku8', '安楽亮佑', 'anraku@icloud.com', '$2a$10$6KihsMbh9tfCJEJcgo4fqujK.gbbGaq/v7YY9GZF7snhcMsGRQoVK');
 
 -- group_users table test data
 INSERT INTO group_names
@@ -34,6 +35,7 @@ VALUES
   (3, 'taira7'),
   (3, 'test6'),
   (4, 'taira7'),
+  (4, 'anraku8'),
   (5, 'tati1');
 
 -- group_unapproved_users table test data
@@ -46,4 +48,7 @@ VALUES
   (1, 'test6'),
   (2, 'test4'),
   (2, 'tati1'),
+  (2, 'anraku8'),
+  (3, 'anraku8'),
+  (4, 'tati1'),
   (5, 'tati1');
