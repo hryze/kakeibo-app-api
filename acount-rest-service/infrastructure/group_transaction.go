@@ -108,7 +108,7 @@ func (r *GroupTransactionsRepository) GetGroupTransaction(groupTransactionID int
 	return &groupTransactionSender, nil
 }
 
-func (r *TransactionsRepository) PostGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupID int, userID string) (sql.Result, error) {
+func (r *GroupTransactionsRepository) PostGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupID int, userID string) (sql.Result, error) {
 	query := `
         INSERT INTO group_transactions
             (transaction_type, transaction_date, shop, memo, amount, group_id, user_id, big_category_id, medium_category_id, custom_category_id)
@@ -120,7 +120,7 @@ func (r *TransactionsRepository) PostGroupTransaction(groupTransaction *model.Gr
 	return result, err
 }
 
-func (r *TransactionsRepository) PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int) error {
+func (r *GroupTransactionsRepository) PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int) error {
 	query := `
         UPDATE
             group_transactions
@@ -137,6 +137,19 @@ func (r *TransactionsRepository) PutGroupTransaction(groupTransaction *model.Gro
             id = ?`
 
 	_, err := r.MySQLHandler.conn.Exec(query, groupTransaction.TransactionType, groupTransaction.TransactionDate, groupTransaction.Shop, groupTransaction.Memo, groupTransaction.Amount, groupTransaction.BigCategoryID, groupTransaction.MediumCategoryID, groupTransaction.CustomCategoryID, groupTransactionID)
+
+	return err
+}
+
+func (r *GroupTransactionsRepository) DeleteGroupTransaction(groupTransactionID int) error {
+	query := `
+        DELETE
+        FROM 
+            group_transactions
+        WHERE 
+            id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupTransactionID)
 
 	return err
 }

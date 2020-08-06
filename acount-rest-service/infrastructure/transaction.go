@@ -131,7 +131,12 @@ func (r *TransactionsRepository) PutTransaction(transaction *model.TransactionRe
 }
 
 func (r *TransactionsRepository) DeleteTransaction(transactionID int) error {
-	query := `DELETE FROM transactions WHERE id = ?`
+	query := `
+        DELETE
+        FROM 
+            transactions
+        WHERE 
+            id = ?`
 	_, err := r.MySQLHandler.conn.Exec(query, transactionID)
 	return err
 }

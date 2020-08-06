@@ -14,6 +14,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type DeleteGroupTransactionMsg struct {
+	Message string `json:"message"`
+}
+
 func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
@@ -191,7 +195,7 @@ func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) 
 	groupTransactionSender, err := h.DBRepo.GetGroupTransaction(groupTransactionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"トランザクションを取得できませんでした"}))
+			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"トランザクションを取得できませんでした。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -201,6 +205,61 @@ func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(groupTransactionSender); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	groupTransactionID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"transaction ID を正しく指定してください。"}))
+		return
+	}
+
+	if _, err := h.DBRepo.GetGroupTransaction(groupTransactionID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"こちらのトランザクションは既に削除されています。"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := h.DBRepo.DeleteGroupTransaction(groupTransactionID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&DeleteGroupTransactionMsg{"トランザクションを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
