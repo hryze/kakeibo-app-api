@@ -235,3 +235,18 @@ func (r *GroupBudgetsRepository) PutGroupCustomBudgets(groupCustomBudgets *model
 
 	return nil
 }
+
+func (r *GroupBudgetsRepository) DeleteGroupCustomBudgets(yearMonth time.Time, groupID int) error {
+	query := `
+        DELETE 
+        FROM
+            group_custom_budgets
+        WHERE
+            group_id = ?
+        AND
+            years_months = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupID, yearMonth)
+
+	return err
+}
