@@ -78,4 +78,5 @@ type GroupBudgetsRepository interface {
 	PutGroupStandardBudgets(groupStandardBudgets *model.GroupStandardBudgets, groupID int) error
 	GetGroupCustomBudgets(yearMonth time.Time, groupID int) (*model.GroupCustomBudgets, error)
 	PostGroupCustomBudgets(groupCustomBudgets *model.GroupCustomBudgets, yearMonth time.Time, groupID int) error
+	PutGroupCustomBudgets(groupCustomBudgets *model.GroupCustomBudgets, yearMonth time.Time, groupID int) error
 }

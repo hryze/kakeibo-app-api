@@ -43,6 +43,7 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/standard-budgets", h.PutGroupStandardBudgets).Methods("PUT")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/custom-budgets/{year_month:[0-9]{4}-[0-9]{2}}", h.GetGroupCustomBudgets).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/custom-budgets/{year_month:[0-9]{4}-[0-9]{2}}", h.PostGroupCustomBudgets).Methods("POST")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/custom-budgets/{year_month:[0-9]{4}-[0-9]{2}}", h.PutGroupCustomBudgets).Methods("PUT")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},

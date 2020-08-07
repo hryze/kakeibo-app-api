@@ -192,3 +192,46 @@ func (r *GroupBudgetsRepository) PostGroupCustomBudgets(groupCustomBudgets *mode
 	_, err := r.MySQLHandler.conn.Exec(query, queryArgs...)
 	return err
 }
+
+func (r *GroupBudgetsRepository) PutGroupCustomBudgets(groupCustomBudgets *model.GroupCustomBudgets, yearMonth time.Time, groupID int) error {
+	query := `
+	    UPDATE
+	        group_custom_budgets
+	    SET
+	        budget = ?
+	    WHERE
+	        group_id = ?
+        AND
+            years_months = ?
+	    AND
+	        big_category_id = ?`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		for _, groupCustomBudgetByCategory := range groupCustomBudgets.GroupCustomBudgets {
+			if _, err := r.MySQLHandler.conn.Exec(query, groupCustomBudgetByCategory.Budget, groupID, yearMonth, groupCustomBudgetByCategory.BigCategoryID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
