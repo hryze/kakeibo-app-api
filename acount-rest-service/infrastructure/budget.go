@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
@@ -77,8 +78,7 @@ func (r *BudgetsRepository) GetStandardBudgets(userID string) (*model.StandardBu
 }
 
 func (r *BudgetsRepository) PutStandardBudgets(standardBudgets *model.StandardBudgets, userID string) error {
-	for _, standardBudgetByCategory := range standardBudgets.StandardBudgets {
-		query := `
+	query := `
 	   UPDATE
 	       standard_budgets
 	   SET
@@ -88,10 +88,31 @@ func (r *BudgetsRepository) PutStandardBudgets(standardBudgets *model.StandardBu
 	   AND
 	       big_category_id = ?`
 
-		_, err := r.MySQLHandler.conn.Exec(query, standardBudgetByCategory.Budget, userID, standardBudgetByCategory.BigCategoryID)
-		if err != nil {
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		for _, standardBudgetByCategory := range standardBudgets.StandardBudgets {
+			if _, err := r.MySQLHandler.conn.Exec(query, standardBudgetByCategory.Budget, userID, standardBudgetByCategory.BigCategoryID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
 			return err
 		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
 	}
 
 	return nil
@@ -172,23 +193,43 @@ func (r *BudgetsRepository) PostCustomBudgets(customBudgets *model.CustomBudgets
 }
 
 func (r *BudgetsRepository) PutCustomBudgets(customBudgets *model.CustomBudgets, yearMonth time.Time, userID string) error {
-	for _, customBudgetByCategory := range customBudgets.CustomBudgets {
-		query := `
-	   UPDATE
-	       custom_budgets
-	   SET
-	       budget = ?
-	   WHERE
-	       user_id = ?
-       AND
-           years_months = ?
-	   AND
-	       big_category_id = ?`
+	query := `
+	    UPDATE
+	        custom_budgets
+	    SET
+	        budget = ?
+	    WHERE
+	        user_id = ?
+        AND
+            years_months = ?
+	    AND
+	        big_category_id = ?`
 
-		_, err := r.MySQLHandler.conn.Exec(query, customBudgetByCategory.Budget, userID, yearMonth, customBudgetByCategory.BigCategoryID)
-		if err != nil {
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		for _, customBudgetByCategory := range customBudgets.CustomBudgets {
+			if _, err := r.MySQLHandler.conn.Exec(query, customBudgetByCategory.Budget, userID, yearMonth, customBudgetByCategory.BigCategoryID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
 			return err
 		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
 	}
 
 	return nil

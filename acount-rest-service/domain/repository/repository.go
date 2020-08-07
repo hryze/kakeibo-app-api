@@ -74,4 +74,10 @@ type GroupTransactionsRepository interface {
 
 type GroupBudgetsRepository interface {
 	PostInitGroupStandardBudgets(groupID int) error
+	GetGroupStandardBudgets(groupID int) (*model.GroupStandardBudgets, error)
+	PutGroupStandardBudgets(groupStandardBudgets *model.GroupStandardBudgets, groupID int) error
+	GetGroupCustomBudgets(yearMonth time.Time, groupID int) (*model.GroupCustomBudgets, error)
+	PostGroupCustomBudgets(groupCustomBudgets *model.GroupCustomBudgets, yearMonth time.Time, groupID int) error
+	PutGroupCustomBudgets(groupCustomBudgets *model.GroupCustomBudgets, yearMonth time.Time, groupID int) error
+	DeleteGroupCustomBudgets(yearMonth time.Time, groupID int) error
 }

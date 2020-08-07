@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -41,16 +40,16 @@ func (e *UserIDValidationErrorMsg) Error() string {
 }
 
 func postInitGroupStandardBudgets(groupID int) error {
+	url := fmt.Sprintf("http://localhost:8081/groups/%d/standard-budgets", groupID)
+
 	request, err := http.NewRequest(
 		"POST",
-		"http://localhost:8081/groups/standard-budgets",
-		bytes.NewBuffer([]byte(fmt.Sprintf(`{"group_id":%d}`, groupID))),
+		url,
+		nil,
 	)
 	if err != nil {
 		return err
 	}
-
-	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
 	client := &http.Client{}
 	response, err := client.Do(request)
@@ -368,7 +367,7 @@ func (h *DBHandler) PostGroupUnapprovedUser(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&unapprovedUser); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
