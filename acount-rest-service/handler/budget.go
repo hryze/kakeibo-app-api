@@ -236,9 +236,15 @@ func (h *DBHandler) PutCustomBudgets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dbCustomBudgets, err := h.DBRepo.GetCustomBudgets(yearMonth, userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&customBudgets); err != nil {
+	if err := json.NewEncoder(w).Encode(&dbCustomBudgets); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
