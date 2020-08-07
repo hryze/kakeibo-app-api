@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
 )
@@ -77,7 +78,7 @@ func (r *GroupBudgetsRepository) GetGroupStandardBudgets(groupID int) (*model.Gr
 	return &groupStandardBudgets, nil
 }
 
-func (r *BudgetsRepository) PutGroupStandardBudgets(groupStandardBudgets *model.GroupStandardBudgets, groupID int) error {
+func (r *GroupBudgetsRepository) PutGroupStandardBudgets(groupStandardBudgets *model.GroupStandardBudgets, groupID int) error {
 	query := `
 	    UPDATE
 	        group_standard_budgets
@@ -116,4 +117,78 @@ func (r *BudgetsRepository) PutGroupStandardBudgets(groupStandardBudgets *model.
 	}
 
 	return nil
+}
+
+func (r *GroupBudgetsRepository) GetGroupCustomBudgets(yearMonth time.Time, groupID int) (*model.GroupCustomBudgets, error) {
+	query := `
+        SELECT
+            group_custom_budgets.big_category_id big_category_id,
+            big_categories.category_name big_category_name,
+            group_custom_budgets.budget budget
+        FROM
+            group_custom_budgets
+        LEFT JOIN
+            big_categories
+        ON
+            group_custom_budgets.big_category_id = big_categories.id
+        WHERE
+            group_custom_budgets.group_id = ?
+        AND
+            group_custom_budgets.years_months = ?
+        ORDER BY
+            group_custom_budgets.big_category_id`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, yearMonth)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groupCustomBudgetByCategoryList []model.GroupCustomBudgetByCategory
+	for rows.Next() {
+		var groupCustomBudgetByCategory model.GroupCustomBudgetByCategory
+		if err := rows.StructScan(&groupCustomBudgetByCategory); err != nil {
+			return nil, err
+		}
+		groupCustomBudgetByCategoryList = append(groupCustomBudgetByCategoryList, groupCustomBudgetByCategory)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	groupCustomBudgets := model.NewGroupCustomBudgets(groupCustomBudgetByCategoryList)
+
+	return &groupCustomBudgets, nil
+}
+
+func (r *GroupBudgetsRepository) PostGroupCustomBudgets(groupCustomBudgets *model.GroupCustomBudgets, yearMonth time.Time, groupID int) error {
+	query := `
+        INSERT INTO group_custom_budgets
+            (group_id, years_months, big_category_id, budget)
+        VALUES
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?),
+            (?,?,?,?)`
+
+	var queryArgs []interface{}
+	for _, groupCustomBudgetByCategory := range groupCustomBudgets.GroupCustomBudgets {
+		queryArgs = append(queryArgs, groupID, yearMonth, groupCustomBudgetByCategory.BigCategoryID, groupCustomBudgetByCategory.Budget)
+	}
+
+	_, err := r.MySQLHandler.conn.Exec(query, queryArgs...)
+	return err
 }
