@@ -111,9 +111,15 @@ func (h *DBHandler) PutStandardBudgets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dbStandardBudgets, err := h.DBRepo.GetStandardBudgets(userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&standardBudgets); err != nil {
+	if err := json.NewEncoder(w).Encode(&dbStandardBudgets); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
