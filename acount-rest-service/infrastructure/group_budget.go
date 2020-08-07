@@ -1,6 +1,10 @@
 package infrastructure
 
-import "github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
+import (
+	"database/sql"
+
+	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
+)
 
 type GroupBudgetsRepository struct {
 	*MySQLHandler
@@ -71,4 +75,45 @@ func (r *GroupBudgetsRepository) GetGroupStandardBudgets(groupID int) (*model.Gr
 	groupStandardBudgets := model.NewGroupStandardBudgets(groupStandardBudgetByCategoryList)
 
 	return &groupStandardBudgets, nil
+}
+
+func (r *BudgetsRepository) PutGroupStandardBudgets(groupStandardBudgets *model.GroupStandardBudgets, groupID int) error {
+	query := `
+	    UPDATE
+	        group_standard_budgets
+	    SET
+	        budget = ?
+	    WHERE
+	        group_id = ?
+	    AND
+	        big_category_id = ?`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		for _, groupStandardBudgetByCategory := range groupStandardBudgets.GroupStandardBudgets {
+			if _, err := r.MySQLHandler.conn.Exec(query, groupStandardBudgetByCategory.Budget, groupID, groupStandardBudgetByCategory.BigCategoryID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }

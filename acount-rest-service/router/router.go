@@ -40,6 +40,7 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/search", h.SearchGroupTransactionsList).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/standard-budgets", h.PostInitGroupStandardBudgets).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/standard-budgets", h.GetGroupStandardBudgets).Methods("GET")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/standard-budgets", h.PutGroupStandardBudgets).Methods("PUT")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
