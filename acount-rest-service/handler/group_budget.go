@@ -296,7 +296,7 @@ func (h *DBHandler) PutGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&dbGroupCustomBudgets); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

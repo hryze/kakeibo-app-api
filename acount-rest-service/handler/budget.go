@@ -312,32 +312,18 @@ func (h *DBHandler) GetYearlyBudgets(w http.ResponseWriter, r *http.Request) {
 	yearlyBudget := model.NewYearlyBudget(year)
 
 	for i, j := 0, 0; i < len(yearlyBudget.MonthlyBudgets); i++ {
-
-		for j < len(monthlyCustomBudgets) {
-
+		if j < len(monthlyCustomBudgets) {
 			if time.Month(i)+1 == monthlyCustomBudgets[j].Month.Month() {
 				yearlyBudget.YearlyTotalBudget += monthlyCustomBudgets[j].MonthlyTotalBudget
 				yearlyBudget.MonthlyBudgets[i] = monthlyCustomBudgets[j]
 				j++
-				break
+				continue
 			}
-
-			monthlyStandardBudget.Month.Time = year.AddDate(0, i, 0)
-			yearlyBudget.YearlyTotalBudget += monthlyStandardBudget.MonthlyTotalBudget
-			yearlyBudget.MonthlyBudgets[i] = monthlyStandardBudget
-			break
 		}
 
-		if j == len(monthlyCustomBudgets) {
-			j++
-			continue
-		}
-
-		if j > len(monthlyCustomBudgets) {
-			monthlyStandardBudget.Month.Time = year.AddDate(0, i, 0)
-			yearlyBudget.YearlyTotalBudget += monthlyStandardBudget.MonthlyTotalBudget
-			yearlyBudget.MonthlyBudgets[i] = monthlyStandardBudget
-		}
+		monthlyStandardBudget.Month.Time = year.AddDate(0, i, 0)
+		yearlyBudget.YearlyTotalBudget += monthlyStandardBudget.MonthlyTotalBudget
+		yearlyBudget.MonthlyBudgets[i] = monthlyStandardBudget
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
