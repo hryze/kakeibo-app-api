@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
@@ -176,4 +177,39 @@ func (r *GroupTodoRepository) GetMonthlyDueGroupTodoList(firstDay time.Time, las
 	}
 
 	return dueGroupTodoList, nil
+}
+
+func (r *GroupTodoRepository) GetGroupTodo(groupTodoId int) (*model.GroupTodo, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            implementation_date,
+            due_date,
+            todo_content,
+            complete_flag,
+            user_id
+        FROM
+            group_todo_list
+        WHERE
+            id = ?`
+
+	var groupTodo model.GroupTodo
+	if err := r.MySQLHandler.conn.QueryRowx(query, groupTodoId).StructScan(&groupTodo); err != nil {
+		return nil, err
+	}
+
+	return &groupTodo, nil
+}
+
+func (r *GroupTodoRepository) PostGroupTodo(groupTodo *model.GroupTodo, userID string, groupID int) (sql.Result, error) {
+	query := `
+        INSERT INTO group_todo_list
+            (implementation_date, due_date, todo_content, user_id, group_id)
+        VALUES
+            (?,?,?,?,?)`
+
+	result, err := r.MySQLHandler.conn.Exec(query, groupTodo.ImplementationDate, groupTodo.DueDate, groupTodo.TodoContent, userID, groupID)
+
+	return result, err
 }

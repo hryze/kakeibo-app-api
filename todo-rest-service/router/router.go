@@ -20,6 +20,7 @@ func Run() error {
 	router.HandleFunc("/todo-list/search", h.SearchTodoList).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/todo-list/{date:[0-9]{4}-[0-9]{2}-[0-9]{2}}", h.GetDailyGroupTodoList).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/todo-list/{year_month:[0-9]{4}-[0-9]{2}}", h.GetMonthlyGroupTodoList).Methods("GET")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/todo-list", h.PostGroupTodo).Methods("POST")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},

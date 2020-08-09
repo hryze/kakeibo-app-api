@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type GroupTodoList struct {
 	ImplementationGroupTodoList []GroupTodo `json:"implementation_todo_list"`
@@ -32,4 +35,12 @@ func NewSearchGroupTodoList(searchGroupTodoList []GroupTodo) SearchGroupTodoList
 	return SearchGroupTodoList{
 		SearchGroupTodoList: searchGroupTodoList,
 	}
+}
+
+func (t GroupTodo) ShowTodo() (string, error) {
+	b, err := json.Marshal(t)
+	if err != nil {
+		return string(b), err
+	}
+	return string(b), nil
 }

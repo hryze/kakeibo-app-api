@@ -22,6 +22,10 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+type Todos interface {
+	ShowTodo() (string, error)
+}
+
 type SearchQuery struct {
 	DateType     string
 	StartDate    string
@@ -54,14 +58,14 @@ func (e *TodoValidationErrorMsg) Error() string {
 	return string(b)
 }
 
-func validateTodo(todo *model.Todo) error {
+func validateTodo(todos Todos) error {
 	var todoValidationErrorMsg TodoValidationErrorMsg
 
 	validate := validator.New()
 	validate.RegisterCustomTypeFunc(validateValuer, model.Date{})
 	validate.RegisterValidation("date", dateValidation)
 	validate.RegisterValidation("blank", blankValidation)
-	err := validate.Struct(todo)
+	err := validate.Struct(todos)
 	if err == nil {
 		return nil
 	}

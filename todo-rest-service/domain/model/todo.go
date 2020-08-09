@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql/driver"
+	"encoding/json"
 	"errors"
 	"strings"
 	"time"
@@ -88,4 +89,12 @@ func (b *BitBool) Scan(src interface{}) error {
 	}
 	*b = bitBool[0] == 1
 	return nil
+}
+
+func (t Todo) ShowTodo() (string, error) {
+	b, err := json.Marshal(t)
+	if err != nil {
+		return string(b), err
+	}
+	return string(b), nil
 }
