@@ -213,3 +213,20 @@ func (r *GroupTodoRepository) PostGroupTodo(groupTodo *model.GroupTodo, userID s
 
 	return result, err
 }
+
+func (r *GroupTodoRepository) PutGroupTodo(groupTodo *model.GroupTodo, groupTodoID int) error {
+	query := `
+        UPDATE
+            group_todo_list
+        SET 
+            implementation_date = ?,
+            due_date = ?,
+            todo_content = ?,
+            complete_flag = ?
+        WHERE
+            id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupTodo.ImplementationDate, groupTodo.DueDate, groupTodo.TodoContent, groupTodo.CompleteFlag, groupTodoID)
+
+	return err
+}
