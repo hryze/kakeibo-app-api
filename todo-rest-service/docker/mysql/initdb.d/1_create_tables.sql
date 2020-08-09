@@ -14,3 +14,17 @@ CREATE TABLE todo_list
   user_id VARCHAR(10) NOT NULL,
   PRIMARY KEY(id)
 );
+
+CREATE TABLE group_todo_list
+(
+  id INT NOT NULL AUTO_INCREMENT,
+  posted_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  implementation_date DATE NOT NULL,
+  due_date DATE NOT NULL,
+  todo_content VARCHAR(100) NOT NULL,
+  complete_flag bit(1) NOT NULL DEFAULT b'0',
+  user_id VARCHAR(10) NOT NULL,
+  group_id INT NOT NULL,
+  PRIMARY KEY(id)
+);
