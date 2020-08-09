@@ -296,7 +296,7 @@ func (h *DBHandler) PutGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&dbGroupCustomBudgets); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -344,6 +344,76 @@ func (h *DBHandler) DeleteGroupCustomBudgets(w http.ResponseWriter, r *http.Requ
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&DeleteGroupCustomBudgetsMsg{"カスタム予算を削除しました。"}); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) GetYearlyGroupBudgets(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	year, err := time.Parse("2006", mux.Vars(r)["year"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年を正しく指定してください。"}))
+		return
+	}
+
+	monthlyGroupStandardBudget, err := h.DBRepo.GetMonthlyGroupStandardBudget(groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	monthlyGroupCustomBudgets, err := h.DBRepo.GetMonthlyGroupCustomBudgets(year, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	yearlyBudget := model.NewYearlyGroupBudget(year)
+
+	for i, j := 0, 0; i < len(yearlyBudget.GroupMonthlyBudgets); i++ {
+		if j < len(monthlyGroupCustomBudgets) {
+			if time.Month(i)+1 == monthlyGroupCustomBudgets[j].Month.Month() {
+				yearlyBudget.YearlyTotalBudget += monthlyGroupCustomBudgets[j].MonthlyTotalBudget
+				yearlyBudget.GroupMonthlyBudgets[i] = monthlyGroupCustomBudgets[j]
+				j++
+				continue
+			}
+		}
+
+		monthlyGroupStandardBudget.Month.Time = year.AddDate(0, i, 0)
+		yearlyBudget.YearlyTotalBudget += monthlyGroupStandardBudget.MonthlyTotalBudget
+		yearlyBudget.GroupMonthlyBudgets[i] = monthlyGroupStandardBudget
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(yearlyBudget); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

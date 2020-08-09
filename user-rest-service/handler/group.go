@@ -460,7 +460,7 @@ func (h *DBHandler) PostGroupApprovedUser(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&approvedUser); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

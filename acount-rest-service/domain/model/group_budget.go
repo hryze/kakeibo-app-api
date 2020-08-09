@@ -22,13 +22,13 @@ type GroupCustomBudgetByCategory struct {
 	Budget          int    `json:"budget"            db:"budget"`
 }
 
-type GroupYearlyBudget struct {
+type YearlyGroupBudget struct {
 	Year                time.Time            `json:"year"`
 	YearlyTotalBudget   int                  `json:"yearly_total_budget"`
-	GroupMonthlyBudgets []GroupMonthlyBudget `json:"monthly_budgets"`
+	GroupMonthlyBudgets []MonthlyGroupBudget `json:"monthly_budgets"`
 }
 
-type GroupMonthlyBudget struct {
+type MonthlyGroupBudget struct {
 	Month              Months `json:"month"                db:"years_months"`
 	BudgetType         string `json:"budget_type"`
 	MonthlyTotalBudget int    `json:"monthly_total_budget" db:"total_budget"`
@@ -42,10 +42,10 @@ func NewGroupCustomBudgets(groupCustomBudgetByCategoryList []GroupCustomBudgetBy
 	return GroupCustomBudgets{GroupCustomBudgets: groupCustomBudgetByCategoryList}
 }
 
-func NewGroupYearlyBudget(year time.Time) GroupYearlyBudget {
-	return GroupYearlyBudget{
+func NewYearlyGroupBudget(year time.Time) YearlyGroupBudget {
+	return YearlyGroupBudget{
 		Year:                year,
-		GroupMonthlyBudgets: make([]GroupMonthlyBudget, 12),
+		GroupMonthlyBudgets: make([]MonthlyGroupBudget, 12),
 	}
 }
 
