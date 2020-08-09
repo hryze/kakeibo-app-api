@@ -8,8 +8,8 @@ import (
 )
 
 type TodoList struct {
-	ImplementationTodoList []Todo `json:"implementation_todo_list,omitempty"`
-	DueTodoList            []Todo `json:"due_todo_list,omitempty"`
+	ImplementationTodoList []Todo `json:"implementation_todo_list"`
+	DueTodoList            []Todo `json:"due_todo_list"`
 }
 
 type SearchTodoList struct {
@@ -31,9 +31,9 @@ type Date struct {
 
 type BitBool bool
 
-func NewTodoList(implementationTodoListTodoList []Todo, dueTodoList []Todo) TodoList {
+func NewTodoList(implementationTodoList []Todo, dueTodoList []Todo) TodoList {
 	return TodoList{
-		ImplementationTodoList: implementationTodoListTodoList,
+		ImplementationTodoList: implementationTodoList,
 		DueTodoList:            dueTodoList,
 	}
 }

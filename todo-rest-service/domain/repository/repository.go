@@ -10,6 +10,7 @@ import (
 type DBRepository interface {
 	AuthRepository
 	TodoRepository
+	GroupTodoRepository
 }
 
 type AuthRepository interface {
@@ -26,4 +27,9 @@ type TodoRepository interface {
 	PutTodo(todo *model.Todo, todoID int) error
 	DeleteTodo(todoID int) error
 	SearchTodoList(query string) ([]model.Todo, error)
+}
+
+type GroupTodoRepository interface {
+	GetDailyImplementationGroupTodoList(date time.Time, groupID int) ([]model.GroupTodo, error)
+	GetDailyDueGroupTodoList(date time.Time, groupID int) ([]model.GroupTodo, error)
 }
