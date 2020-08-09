@@ -32,4 +32,6 @@ type TodoRepository interface {
 type GroupTodoRepository interface {
 	GetDailyImplementationGroupTodoList(date time.Time, groupID int) ([]model.GroupTodo, error)
 	GetDailyDueGroupTodoList(date time.Time, groupID int) ([]model.GroupTodo, error)
+	GetMonthlyImplementationGroupTodoList(firstDay time.Time, lastDay time.Time, groupID int) ([]model.GroupTodo, error)
+	GetMonthlyDueGroupTodoList(firstDay time.Time, lastDay time.Time, groupID int) ([]model.GroupTodo, error)
 }
