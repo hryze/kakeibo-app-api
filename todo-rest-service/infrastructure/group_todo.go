@@ -28,7 +28,7 @@ func (r *GroupTodoRepository) GetDailyImplementationGroupTodoList(date time.Time
         AND
             implementation_date = ?
         ORDER BY
-            implementation_date`
+            implementation_date, updated_date DESC`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, date)
 	if err != nil {
@@ -69,7 +69,7 @@ func (r *GroupTodoRepository) GetDailyDueGroupTodoList(date time.Time, groupID i
         AND
             due_date = ?
         ORDER BY
-            due_date`
+            due_date, updated_date DESC`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, date)
 	if err != nil {
@@ -112,7 +112,7 @@ func (r *GroupTodoRepository) GetMonthlyImplementationGroupTodoList(firstDay tim
         AND
             implementation_date <= ?
         ORDER BY
-            implementation_date`
+            implementation_date, updated_date DESC`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, firstDay, lastDay)
 	if err != nil {
@@ -155,7 +155,7 @@ func (r *GroupTodoRepository) GetMonthlyDueGroupTodoList(firstDay time.Time, las
         AND
             due_date <= ?
         ORDER BY
-            due_date`
+            due_date, updated_date DESC`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, firstDay, lastDay)
 	if err != nil {
@@ -242,4 +242,27 @@ func (r *GroupTodoRepository) DeleteGroupTodo(groupTodoID int) error {
 	_, err := r.MySQLHandler.conn.Exec(query, groupTodoID)
 
 	return err
+}
+
+func (r *TodoRepository) SearchGroupTodoList(groupTodoSqlQuery string) ([]model.GroupTodo, error) {
+	rows, err := r.MySQLHandler.conn.Queryx(groupTodoSqlQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var searchGroupTodoList []model.GroupTodo
+	for rows.Next() {
+		var searchGroupTodo model.GroupTodo
+		if err := rows.StructScan(&searchGroupTodo); err != nil {
+			return nil, err
+		}
+		searchGroupTodoList = append(searchGroupTodoList, searchGroupTodo)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return searchGroupTodoList, nil
 }

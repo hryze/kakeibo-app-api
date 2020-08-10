@@ -26,7 +26,7 @@ type Todos interface {
 	ShowTodo() (string, error)
 }
 
-type SearchQuery struct {
+type TodoSearchQuery struct {
 	DateType     string
 	StartDate    string
 	EndDate      string
@@ -139,7 +139,7 @@ func blankValidation(fl validator.FieldLevel) bool {
 	return true
 }
 
-func NewSearchQuery(urlQuery url.Values, userID string) (*SearchQuery, error) {
+func NewTodoSearchQuery(urlQuery url.Values, userID string) (*TodoSearchQuery, error) {
 	startDate, err := generateStartDate(urlQuery.Get("start_date"))
 	if err != nil {
 		return nil, err
@@ -150,7 +150,7 @@ func NewSearchQuery(urlQuery url.Values, userID string) (*SearchQuery, error) {
 		return nil, err
 	}
 
-	return &SearchQuery{
+	return &TodoSearchQuery{
 		DateType:     urlQuery.Get("date_type"),
 		StartDate:    startDate,
 		EndDate:      endDate,
@@ -191,7 +191,7 @@ func generateEndDate(date string) (string, error) {
 	return endDate.String(), nil
 }
 
-func generateSqlQuery(searchQuery *SearchQuery) (string, error) {
+func generateTodoSqlQuery(todoSearchQuery *TodoSearchQuery) (string, error) {
 	query := `
         SELECT
             id,
@@ -238,9 +238,9 @@ func generateSqlQuery(searchQuery *SearchQuery) (string, error) {
         {{ end }}
 
         {{ with $SortType := .SortType}}
-        {{ $SortType }}
+        {{ $SortType }}, updated_date DESC
         {{ else }}
-        ASC
+        ASC, updated_date DESC
         {{ end }}
 
         {{ with $Limit := .Limit}}
@@ -249,12 +249,12 @@ func generateSqlQuery(searchQuery *SearchQuery) (string, error) {
         {{ end }}`
 
 	var buffer bytes.Buffer
-	queryTemplate, err := template.New("queryTemplate").Parse(query)
+	todoSqlQueryTemplate, err := template.New("TodoSqlQueryTemplate").Parse(query)
 	if err != nil {
 		return "", err
 	}
 
-	if err := queryTemplate.Execute(&buffer, searchQuery); err != nil {
+	if err := todoSqlQueryTemplate.Execute(&buffer, todoSearchQuery); err != nil {
 		return "", err
 	}
 
@@ -500,19 +500,19 @@ func (h *DBHandler) SearchTodoList(w http.ResponseWriter, r *http.Request) {
 
 	urlQuery := r.URL.Query()
 
-	searchQuery, err := NewSearchQuery(urlQuery, userID)
+	todoSearchQuery, err := NewTodoSearchQuery(urlQuery, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"日付を正しく指定してください。"}))
 		return
 	}
 
-	query, err := generateSqlQuery(searchQuery)
+	todoSqlQuery, err := generateTodoSqlQuery(todoSearchQuery)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dbSearchTodoList, err := h.DBRepo.SearchTodoList(query)
+	dbSearchTodoList, err := h.DBRepo.SearchTodoList(todoSqlQuery)
 
 	if len(dbSearchTodoList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")

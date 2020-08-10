@@ -26,7 +26,7 @@ type TodoRepository interface {
 	PostTodo(todo *model.Todo, userID string) (sql.Result, error)
 	PutTodo(todo *model.Todo, todoID int) error
 	DeleteTodo(todoID int) error
-	SearchTodoList(query string) ([]model.Todo, error)
+	SearchTodoList(todoSqlQuery string) ([]model.Todo, error)
 }
 
 type GroupTodoRepository interface {
@@ -38,4 +38,5 @@ type GroupTodoRepository interface {
 	GetGroupTodo(groupTodoId int) (*model.GroupTodo, error)
 	PutGroupTodo(groupTodo *model.GroupTodo, groupTodoID int) error
 	DeleteGroupTodo(groupTodoID int) error
+	SearchGroupTodoList(groupTodoSqlQuery string) ([]model.GroupTodo, error)
 }

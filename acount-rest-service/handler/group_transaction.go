@@ -92,7 +92,7 @@ func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery)
         {{ if eq (len .UsersID) 1 }}
         {{ range $i, $UserID := .UsersID }}
         AND
-            user_id = "{{ $UserID }}"
+            group_transactions.user_id = "{{ $UserID }}"
         {{ end }}
         {{ end }}
 
@@ -100,7 +100,7 @@ func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery)
         {{ range $i, $UserID := .UsersID }}
         {{ if eq $i 0}}
         AND
-            user_id IN("{{ $UserID }}"
+            group_transactions.user_id IN("{{ $UserID }}"
         {{ end }}
         {{ if gt $i 0 }}
         ,"{{ $UserID }}"
