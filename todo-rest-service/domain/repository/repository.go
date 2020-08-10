@@ -37,4 +37,5 @@ type GroupTodoRepository interface {
 	PostGroupTodo(groupTodo *model.GroupTodo, userID string, groupID int) (sql.Result, error)
 	GetGroupTodo(groupTodoId int) (*model.GroupTodo, error)
 	PutGroupTodo(groupTodo *model.GroupTodo, groupTodoID int) error
+	DeleteGroupTodo(groupTodoID int) error
 }

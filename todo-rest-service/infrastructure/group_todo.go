@@ -230,3 +230,16 @@ func (r *GroupTodoRepository) PutGroupTodo(groupTodo *model.GroupTodo, groupTodo
 
 	return err
 }
+
+func (r *GroupTodoRepository) DeleteGroupTodo(groupTodoID int) error {
+	query := `
+        DELETE
+        FROM
+            group_todo_list
+        WHERE
+            id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupTodoID)
+
+	return err
+}
