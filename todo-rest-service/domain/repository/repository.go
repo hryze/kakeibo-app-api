@@ -10,6 +10,7 @@ import (
 type DBRepository interface {
 	AuthRepository
 	TodoRepository
+	GroupTodoRepository
 }
 
 type AuthRepository interface {
@@ -25,5 +26,17 @@ type TodoRepository interface {
 	PostTodo(todo *model.Todo, userID string) (sql.Result, error)
 	PutTodo(todo *model.Todo, todoID int) error
 	DeleteTodo(todoID int) error
-	SearchTodoList(query string) ([]model.Todo, error)
+	SearchTodoList(todoSqlQuery string) ([]model.Todo, error)
+}
+
+type GroupTodoRepository interface {
+	GetDailyImplementationGroupTodoList(date time.Time, groupID int) ([]model.GroupTodo, error)
+	GetDailyDueGroupTodoList(date time.Time, groupID int) ([]model.GroupTodo, error)
+	GetMonthlyImplementationGroupTodoList(firstDay time.Time, lastDay time.Time, groupID int) ([]model.GroupTodo, error)
+	GetMonthlyDueGroupTodoList(firstDay time.Time, lastDay time.Time, groupID int) ([]model.GroupTodo, error)
+	PostGroupTodo(groupTodo *model.GroupTodo, userID string, groupID int) (sql.Result, error)
+	GetGroupTodo(groupTodoId int) (*model.GroupTodo, error)
+	PutGroupTodo(groupTodo *model.GroupTodo, groupTodoID int) error
+	DeleteGroupTodo(groupTodoID int) error
+	SearchGroupTodoList(groupTodoSqlQuery string) ([]model.GroupTodo, error)
 }

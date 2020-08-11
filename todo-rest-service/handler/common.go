@@ -2,8 +2,13 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
+	"time"
 
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/repository"
 )
@@ -93,4 +98,52 @@ func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (stri
 		return "", err
 	}
 	return userID, nil
+}
+
+func verifyGroupAffiliation(groupID int, userID string) error {
+	url := fmt.Sprintf("http://localhost:8080/groups/%d/users/%s", groupID, userID)
+
+	request, err := http.NewRequest(
+		"GET",
+		url,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			MaxIdleConns:          500,
+			MaxIdleConnsPerHost:   100,
+			IdleConnTimeout:       90 * time.Second,
+			ResponseHeaderTimeout: 10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		},
+		Timeout: 60 * time.Second,
+	}
+
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		io.Copy(ioutil.Discard, response.Body)
+		response.Body.Close()
+	}()
+
+	if response.StatusCode == http.StatusBadRequest {
+		return &BadRequestErrorMsg{"指定されたグループに所属していません。"}
+	}
+
+	if response.StatusCode == http.StatusInternalServerError {
+		return &InternalServerErrorMsg{"500 Internal Server Error"}
+	}
+
+	return nil
 }

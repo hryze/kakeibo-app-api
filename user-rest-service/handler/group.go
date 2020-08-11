@@ -5,9 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 
@@ -51,12 +55,30 @@ func postInitGroupStandardBudgets(groupID int) error {
 		return err
 	}
 
-	client := &http.Client{}
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			MaxIdleConns:          500,
+			MaxIdleConnsPerHost:   100,
+			IdleConnTimeout:       90 * time.Second,
+			ResponseHeaderTimeout: 10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		},
+		Timeout: 60 * time.Second,
+	}
+
 	response, err := client.Do(request)
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
+
+	defer func() {
+		io.Copy(ioutil.Discard, response.Body)
+		response.Body.Close()
+	}()
 
 	if response.StatusCode == http.StatusCreated {
 		return nil

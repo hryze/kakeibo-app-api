@@ -27,7 +27,7 @@ func (r *TodoRepository) GetDailyImplementationTodoList(date time.Time, userID s
         AND
             implementation_date = ?
         ORDER BY
-            implementation_date`
+            implementation_date, updated_date DESC`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, date)
 	if err != nil {
@@ -66,7 +66,7 @@ func (r *TodoRepository) GetDailyDueTodoList(date time.Time, userID string) ([]m
         AND
             due_date = ?
         ORDER BY
-            due_date`
+            due_date, updated_date DESC`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, date)
 	if err != nil {
@@ -107,7 +107,7 @@ func (r *TodoRepository) GetMonthlyImplementationTodoList(firstDay time.Time, la
         AND
             implementation_date <= ?
         ORDER BY
-            implementation_date`
+            implementation_date, updated_date DESC`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, firstDay, lastDay)
 	if err != nil {
@@ -148,7 +148,7 @@ func (r *TodoRepository) GetMonthlyDueTodoList(firstDay time.Time, lastDay time.
         AND
             due_date <= ?
         ORDER BY
-            due_date`
+            due_date, updated_date DESC`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, firstDay, lastDay)
 	if err != nil {
@@ -234,8 +234,8 @@ func (r *TodoRepository) DeleteTodo(todoID int) error {
 	return err
 }
 
-func (r *TodoRepository) SearchTodoList(query string) ([]model.Todo, error) {
-	rows, err := r.MySQLHandler.conn.Queryx(query)
+func (r *TodoRepository) SearchTodoList(todoSqlQuery string) ([]model.Todo, error) {
+	rows, err := r.MySQLHandler.conn.Queryx(todoSqlQuery)
 	if err != nil {
 		return nil, err
 	}
