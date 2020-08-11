@@ -1,7 +1,13 @@
 package router
 
 import (
+	"context"
+	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/injector"
@@ -32,8 +38,31 @@ func Run() error {
 		AllowCredentials: true,
 	})
 
-	if err := http.ListenAndServe(":8082", corsWrapper.Handler(router)); err != nil {
+	srv := &http.Server{
+		Addr:    ":8082",
+		Handler: corsWrapper.Handler(router),
+	}
+
+	errorCh := make(chan error, 1)
+	go func() {
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			errorCh <- err
+		}
+	}()
+
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, syscall.SIGTERM, syscall.SIGINT)
+
+	select {
+	case err := <-errorCh:
 		return err
+	case s := <-signalCh:
+		log.Printf("SIGNAL %s received", s.String())
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(ctx); err != nil {
+			return err
+		}
 	}
 
 	return nil
