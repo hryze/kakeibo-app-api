@@ -54,7 +54,7 @@ type UserPaymentAmount struct {
 
 type GroupAccountsList struct {
 	GroupID                   int            `json:"group_id"`
-	Month                     Months         `json:"month"`
+	Month                     time.Time      `json:"month"`
 	GroupTotalPaymentAmount   int            `json:"group_total_payment_amount"`
 	GroupAveragePaymentAmount int            `json:"group_average_payment_amount"`
 	GroupRemainingAmount      int            `json:"group_remaining_amount"`
@@ -62,14 +62,14 @@ type GroupAccountsList struct {
 }
 
 type GroupAccount struct {
-	ID                  int     `json:"id"                   db:"id"`
-	GroupID             int     `json:"group_id"             db:"group_id"`
-	Month               Months  `json:"month"                db:"years_months"`
-	Payer               string  `json:"payer_user_id"        db:"payer_user_id"`
-	Recipient           string  `json:"recipient_user_id"    db:"recipient_user_id"`
-	PaymentAmount       int     `json:"payment_amount"       db:"payment_amount"`
-	PaymentConfirmation BitBool `json:"payment_confirmation" db:"payment_confirmation"`
-	ReceiptConfirmation BitBool `json:"receipt_confirmation" db:"receipt_confirmation"`
+	ID                  int       `json:"id"                   db:"id"`
+	GroupID             int       `json:"group_id"             db:"group_id"`
+	Month               time.Time `json:"month"                db:"years_months"`
+	Payer               string    `json:"payer_user_id"        db:"payer_user_id"`
+	Recipient           string    `json:"recipient_user_id"    db:"recipient_user_id"`
+	PaymentAmount       int       `json:"payment_amount"       db:"payment_amount"`
+	PaymentConfirmation BitBool   `json:"payment_confirmation" db:"payment_confirmation"`
+	ReceiptConfirmation BitBool   `json:"receipt_confirmation" db:"receipt_confirmation"`
 }
 
 type BitBool bool
@@ -127,7 +127,7 @@ func NewGroupAccountsList(userPaymentAmountList []UserPaymentAmount, groupID int
 	}
 
 	groupAccountsList.GroupID = groupID
-	groupAccountsList.Month.Time = month
+	groupAccountsList.Month = month
 	groupAccountsList.GroupAveragePaymentAmount = int(math.Round((float64(groupAccountsList.GroupTotalPaymentAmount)) / float64(len(userPaymentAmountList))))
 	groupAccountsList.GroupRemainingAmount = groupAccountsList.GroupTotalPaymentAmount - groupAccountsList.GroupAveragePaymentAmount*len(userPaymentAmountList)
 

@@ -214,43 +214,6 @@ func (r *GroupTransactionsRepository) GetUserPaymentAmountList(groupID int, firs
 	return userPaymentAmountList, nil
 }
 
-func (r *GroupTransactionsRepository) PostGroupAccountsList(groupAccountsList []model.GroupAccount, yearMonth time.Time, groupID int) error {
-	query := `
-        INSERT INTO group_accounts
-            (years_months, payer_user_id, recipient_user_id, payment_amount, group_id)
-        VALUES
-            (?,?,?,?,?)`
-
-	tx, err := r.MySQLHandler.conn.Begin()
-	if err != nil {
-		return err
-	}
-
-	transactions := func(tx *sql.Tx) error {
-		for _, groupAccount := range groupAccountsList {
-			if _, err := r.MySQLHandler.conn.Exec(query, yearMonth, groupAccount.Payer, groupAccount.Recipient, groupAccount.PaymentAmount, groupID); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-
-	if err := transactions(tx); err != nil {
-		if err := tx.Rollback(); err != nil {
-			return err
-		}
-
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (r *GroupTransactionsRepository) GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error) {
 	query := `
         SELECT
@@ -289,4 +252,81 @@ func (r *GroupTransactionsRepository) GetGroupAccountsList(yearMonth time.Time, 
 	}
 
 	return groupAccountsList, nil
+}
+
+func (r *GroupTransactionsRepository) PostGroupAccountsList(groupAccountsList []model.GroupAccount, yearMonth time.Time, groupID int) error {
+	query := `
+        INSERT INTO group_accounts
+            (years_months, payer_user_id, recipient_user_id, payment_amount, group_id)
+        VALUES
+            (?,?,?,?,?)`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		for _, groupAccount := range groupAccountsList {
+			if _, err := r.MySQLHandler.conn.Exec(query, yearMonth, groupAccount.Payer, groupAccount.Recipient, groupAccount.PaymentAmount, groupID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *GroupTransactionsRepository) PutGroupAccountsList(groupAccountsList []model.GroupAccount) error {
+	query := `
+        UPDATE
+            group_accounts
+        SET 
+            payment_confirmation = ?,
+            receipt_confirmation = ?
+        WHERE
+            id = ?`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		for _, groupAccount := range groupAccountsList {
+			if _, err := r.MySQLHandler.conn.Exec(query, groupAccount.PaymentConfirmation, groupAccount.ReceiptConfirmation, groupAccount.ID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }
