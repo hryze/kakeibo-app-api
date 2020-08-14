@@ -38,6 +38,10 @@ type DeleteContentMsg struct {
 	Message string `json:"message"`
 }
 
+type GroupTransactionProcessLockMsg struct {
+	Message string `json:"message"`
+}
+
 func NewGroupTransactionsSearchQuery(urlQuery url.Values, groupID string) GroupTransactionsSearchQuery {
 	startDate := trimDate(urlQuery.Get("start_date"))
 	endDate := trimDate(urlQuery.Get("end_date"))
@@ -57,6 +61,10 @@ func NewGroupTransactionsSearchQuery(urlQuery url.Values, groupID string) GroupT
 		GroupID:         groupID,
 		UsersID:         urlQuery["user_id"],
 	}
+}
+
+func (e *GroupTransactionProcessLockMsg) Error() string {
+	return e.Message
 }
 
 func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery) (string, error) {
@@ -249,6 +257,10 @@ func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *ht
 	}
 }
 
+//func findMonthlyGroupTransactionsAccount(h *DBHandler, yearMonth time.Time, groupID int) []model.GroupAccount {
+//
+//}
+
 func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
@@ -279,6 +291,17 @@ func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request)
 	var groupTransactionReceiver model.GroupTransactionReceiver
 	if err := json.NewDecoder(r.Body).Decode(&groupTransactionReceiver); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	yearMonth := time.Date(groupTransactionReceiver.TransactionDate.Time.Year(), groupTransactionReceiver.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(yearMonth, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	} else if len(dbGroupAccountsList) != 0 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockMsg{"当月のグループでの取引は会計済みのため追加できません。"}))
 		return
 	}
 
@@ -343,6 +366,17 @@ func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) 
 	var groupTransactionReceiver model.GroupTransactionReceiver
 	if err := json.NewDecoder(r.Body).Decode(&groupTransactionReceiver); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	yearMonth := time.Date(groupTransactionReceiver.TransactionDate.Time.Year(), groupTransactionReceiver.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(yearMonth, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	} else if len(dbGroupAccountsList) != 0 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockMsg{"当月のグループでの取引は会計済みのため更新できません。"}))
 		return
 	}
 
@@ -413,12 +447,24 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if _, err := h.DBRepo.GetGroupTransaction(groupTransactionID); err != nil {
+	groupTransaction, err := h.DBRepo.GetGroupTransaction(groupTransactionID)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"こちらのトランザクションは既に削除されています。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	yearMonth := time.Date(groupTransaction.TransactionDate.Time.Year(), groupTransaction.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(yearMonth, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	} else if len(dbGroupAccountsList) != 0 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockMsg{"当月のグループでの取引は会計済みのため削除できません。"}))
 		return
 	}
 
