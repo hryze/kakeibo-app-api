@@ -34,7 +34,7 @@ type GroupTransactionsSearchQuery struct {
 	UsersID         []string
 }
 
-type DeleteGroupTransactionMsg struct {
+type DeleteContentMsg struct {
 	Message string `json:"message"`
 }
 
@@ -429,7 +429,7 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&DeleteGroupTransactionMsg{"トランザクションを削除しました。"}); err != nil {
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"トランザクションを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -569,7 +569,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 	if len(dbGroupAccountsList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"当月の会計履歴は見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -760,6 +760,69 @@ func (h *DBHandler) PutMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(groupAccountsList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) DeleteMonthlyGroupTransactionsAccount(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	yearMonth, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		return
+	}
+
+	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(yearMonth, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(dbGroupAccountsList) == 0 {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		return
+	}
+
+	if err := h.DBRepo.DeleteGroupAccountsList(yearMonth, groupID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"グループ会計データを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

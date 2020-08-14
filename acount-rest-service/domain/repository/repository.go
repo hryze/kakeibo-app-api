@@ -74,6 +74,7 @@ type GroupTransactionsRepository interface {
 	GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error)
 	PostGroupAccountsList(groupAccountsList []model.GroupAccount, yearMonth time.Time, groupID int) error
 	PutGroupAccountsList(groupAccountsList []model.GroupAccount) error
+	DeleteGroupAccountsList(yearMonth time.Time, groupID int) error
 }
 
 type GroupBudgetsRepository interface {

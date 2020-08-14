@@ -330,3 +330,18 @@ func (r *GroupTransactionsRepository) PutGroupAccountsList(groupAccountsList []m
 
 	return nil
 }
+
+func (r *GroupTransactionsRepository) DeleteGroupAccountsList(yearMonth time.Time, groupID int) error {
+	query := `
+        DELETE
+        FROM 
+            group_accounts
+        WHERE 
+            group_id = ?
+        AND
+            years_months = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupID, yearMonth)
+
+	return err
+}
