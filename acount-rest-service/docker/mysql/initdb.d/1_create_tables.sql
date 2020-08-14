@@ -148,3 +148,16 @@ CREATE TABLE group_custom_budgets
     REFERENCES big_categories(id)
     ON DELETE RESTRICT ON UPDATE CASCADE
 );
+
+CREATE TABLE group_accounts
+(
+  id INT NOT NULL AUTO_INCREMENT,
+  years_months DATE NOT NULL,
+  payer_user_id VARCHAR(10) NOT NULL,
+  recipient_user_id VARCHAR(10) NOT NULL,
+  payment_amount INT NOT NULL,
+  payment_confirmation bit(1) NOT NULL DEFAULT b'0',
+  receipt_confirmation bit(1) NOT NULL DEFAULT b'0',
+  group_id INT NOT NULL,
+  PRIMARY KEY(id)
+);
