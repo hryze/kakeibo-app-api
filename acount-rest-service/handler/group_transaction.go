@@ -264,10 +264,6 @@ func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *ht
 	}
 }
 
-//func findMonthlyGroupTransactionsAccount(h *DBHandler, yearMonth time.Time, groupID int) []model.GroupAccount {
-//
-//}
-
 func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
