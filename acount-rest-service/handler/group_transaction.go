@@ -38,7 +38,11 @@ type DeleteContentMsg struct {
 	Message string `json:"message"`
 }
 
-type GroupTransactionProcessLockMsg struct {
+type GroupTransactionProcessLockErrorMsg struct {
+	Message string `json:"message"`
+}
+
+type GroupAccountConflictErrorMsg struct {
 	Message string `json:"message"`
 }
 
@@ -63,10 +67,13 @@ func NewGroupTransactionsSearchQuery(urlQuery url.Values, groupID string) GroupT
 	}
 }
 
-func (e *GroupTransactionProcessLockMsg) Error() string {
+func (e *GroupTransactionProcessLockErrorMsg) Error() string {
 	return e.Message
 }
 
+func (e *GroupAccountConflictErrorMsg) Error() string {
+	return e.Message
+}
 func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery) (string, error) {
 	query := `
         SELECT
@@ -301,7 +308,7 @@ func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request)
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	} else if len(dbGroupAccountsList) != 0 {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockMsg{"当月のグループでの取引は会計済みのため追加できません。"}))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{"当月のグループでの取引は会計済みのため追加できません。"}))
 		return
 	}
 
@@ -376,7 +383,7 @@ func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) 
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	} else if len(dbGroupAccountsList) != 0 {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockMsg{"当月のグループでの取引は会計済みのため更新できません。"}))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{"当月のグループでの取引は会計済みのため更新できません。"}))
 		return
 	}
 
@@ -464,7 +471,7 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	} else if len(dbGroupAccountsList) != 0 {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockMsg{"当月のグループでの取引は会計済みのため削除できません。"}))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{"当月のグループでの取引は会計済みのため削除できません。"}))
 		return
 	}
 
@@ -666,6 +673,15 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 		return
 	}
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
+
+	conflictCheckGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(firstDay, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	} else if len(conflictCheckGroupAccountsList) != 0 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &GroupAccountConflictErrorMsg{"当月のグループでの取引は会計済みです。"}))
+		return
+	}
 
 	userPaymentAmountList, err := h.DBRepo.GetUserPaymentAmountList(groupID, firstDay, lastDay)
 	if err != nil {
