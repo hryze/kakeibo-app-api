@@ -30,6 +30,7 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/todo-list/{id:[0-9]+}", h.PutGroupTodo).Methods("PUT")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/todo-list/{id:[0-9]+}", h.DeleteGroupTodo).Methods("DELETE")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/todo-list/search", h.SearchGroupTodoList).Methods("GET")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks/users", h.PostGroupTasksUser).Methods("POST")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
