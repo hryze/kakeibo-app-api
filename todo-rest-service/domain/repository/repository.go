@@ -11,6 +11,7 @@ type DBRepository interface {
 	AuthRepository
 	TodoRepository
 	GroupTodoRepository
+	GroupTasksRepository
 }
 
 type AuthRepository interface {
@@ -39,4 +40,9 @@ type GroupTodoRepository interface {
 	PutGroupTodo(groupTodo *model.GroupTodo, groupTodoID int) error
 	DeleteGroupTodo(groupTodoID int) error
 	SearchGroupTodoList(groupTodoSqlQuery string) ([]model.GroupTodo, error)
+}
+
+type GroupTasksRepository interface {
+	GetGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (*model.GroupTasksUser, error)
+	PostGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (sql.Result, error)
 }
