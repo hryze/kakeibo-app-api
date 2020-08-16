@@ -16,6 +16,10 @@ type GroupTasksUser struct {
 	GroupID int    `json:"group_id" db:"group_id"`
 }
 
+type GroupTasksList struct {
+	GroupTasksList []GroupTask `json:"group_tasks_list"`
+}
+
 type GroupTask struct {
 	ID               int        `json:"id"                   db:"id"`
 	BaseDate         NullTime   `json:"base_date"            db:"base_date"`
