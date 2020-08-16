@@ -33,6 +33,7 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks/users", h.PostGroupTasksUser).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks", h.PostGroupTask).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks/{id:[0-9]+}", h.PutGroupTask).Methods("PUT")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks/{id:[0-9]+}", h.DeleteGroupTask).Methods("DELETE")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},

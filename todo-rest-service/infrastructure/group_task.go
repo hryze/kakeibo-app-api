@@ -77,7 +77,7 @@ func (r *GroupTasksRepository) PostGroupTask(groupTask model.GroupTask, groupID 
 	return result, err
 }
 
-func (r *GroupTasksRepository) PutGroupTask(groupTask *model.GroupTask, groupTodoID int) error {
+func (r *GroupTasksRepository) PutGroupTask(groupTask *model.GroupTask, groupTasksID int) error {
 	query := `
         UPDATE
             group_tasks
@@ -90,7 +90,20 @@ func (r *GroupTasksRepository) PutGroupTask(groupTask *model.GroupTask, groupTod
         WHERE
             id = ?`
 
-	_, err := r.MySQLHandler.conn.Exec(query, groupTask.BaseDate, groupTask.CycleType, groupTask.Cycle, groupTask.TaskName, groupTask.GroupTasksUserID, groupTodoID)
+	_, err := r.MySQLHandler.conn.Exec(query, groupTask.BaseDate, groupTask.CycleType, groupTask.Cycle, groupTask.TaskName, groupTask.GroupTasksUserID, groupTasksID)
+
+	return err
+}
+
+func (r *GroupTasksRepository) DeleteGroupTask(groupTasksID int) error {
+	query := `
+        DELETE
+        FROM
+            group_tasks
+        WHERE
+            id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupTasksID)
 
 	return err
 }
