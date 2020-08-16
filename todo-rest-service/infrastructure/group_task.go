@@ -41,3 +41,38 @@ func (r *GroupTasksRepository) PostGroupTasksUser(groupTasksUser model.GroupTask
 
 	return result, err
 }
+
+func (r *GroupTasksRepository) GetGroupTask(groupTasksID int) (*model.GroupTask, error) {
+	query := `
+        SELECT
+            id,
+            base_date,
+            cycle_type,
+            cycle,
+            task_name,
+            group_id,
+            group_tasks_users_id
+        FROM
+            group_tasks
+        WHERE
+            id = ?`
+
+	var groupTask model.GroupTask
+	if err := r.MySQLHandler.conn.QueryRowx(query, groupTasksID).StructScan(&groupTask); err != nil {
+		return nil, err
+	}
+
+	return &groupTask, nil
+}
+
+func (r *GroupTasksRepository) PostGroupTask(groupTask model.GroupTask, groupID int) (sql.Result, error) {
+	query := `
+        INSERT INTO group_tasks
+            (task_name, group_id)
+        VALUES
+            (?,?)`
+
+	result, err := r.MySQLHandler.conn.Exec(query, groupTask.TaskName, groupID)
+
+	return result, err
+}
