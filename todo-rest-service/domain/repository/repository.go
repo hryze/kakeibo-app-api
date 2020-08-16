@@ -47,4 +47,5 @@ type GroupTasksRepository interface {
 	PostGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (sql.Result, error)
 	GetGroupTask(groupTasksID int) (*model.GroupTask, error)
 	PostGroupTask(groupTask model.GroupTask, groupID int) (sql.Result, error)
+	PutGroupTask(groupTask *model.GroupTask, groupTodoID int) error
 }

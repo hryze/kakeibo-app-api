@@ -76,3 +76,21 @@ func (r *GroupTasksRepository) PostGroupTask(groupTask model.GroupTask, groupID 
 
 	return result, err
 }
+
+func (r *GroupTasksRepository) PutGroupTask(groupTask *model.GroupTask, groupTodoID int) error {
+	query := `
+        UPDATE
+            group_tasks
+        SET 
+            base_date = ?,
+            cycle_type = ?,
+            cycle = ?,
+            task_name = ?,
+            group_tasks_users_id = ?
+        WHERE
+            id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupTask.BaseDate, groupTask.CycleType, groupTask.Cycle, groupTask.TaskName, groupTask.GroupTasksUserID, groupTodoID)
+
+	return err
+}

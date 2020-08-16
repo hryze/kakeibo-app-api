@@ -6,6 +6,8 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"strings"
+	"time"
 )
 
 type GroupTasksUser struct {
@@ -48,12 +50,13 @@ func (nt *NullTime) UnmarshalJSON(b []byte) error {
 	if bytes.Equal(b, []byte("null")) {
 		return nil
 	}
-	err := json.Unmarshal(b, &nt.Time)
-	if err == nil {
-		nt.Valid = true
-		return nil
+	trimData := strings.Trim(string(b), "\"")[:10]
+	dateTime, err := time.Parse("2006-01-02", trimData)
+	if err != nil {
+		return err
 	}
-	return err
+	nt.Time, nt.Valid = dateTime, true
+	return nil
 }
 
 func (ns *NullString) MarshalJSON() ([]byte, error) {
@@ -100,11 +103,11 @@ func (ni *NullInt) Scan(value interface{}) error {
 		return nil
 	}
 
-	intValue, ok := value.(int)
+	intValue, ok := value.(int64)
 	if !ok {
 		return errors.New("type assertion error")
 	}
-	ni.Int, ni.Valid = intValue, true
+	ni.Int, ni.Valid = int(intValue), true
 	return nil
 }
 
@@ -112,5 +115,5 @@ func (ni NullInt) Value() (driver.Value, error) {
 	if !ni.Valid {
 		return nil, nil
 	}
-	return ni.Int, nil
+	return int64(ni.Int), nil
 }
