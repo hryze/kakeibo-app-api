@@ -70,6 +70,11 @@ type GroupTransactionsRepository interface {
 	PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int) error
 	DeleteGroupTransaction(groupTransactionID int) error
 	SearchGroupTransactionsList(query string) ([]model.GroupTransactionSender, error)
+	GetUserPaymentAmountList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error)
+	GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error)
+	PostGroupAccountsList(groupAccountsList []model.GroupAccount, yearMonth time.Time, groupID int) error
+	PutGroupAccountsList(groupAccountsList []model.GroupAccount) error
+	DeleteGroupAccountsList(yearMonth time.Time, groupID int) error
 }
 
 type GroupBudgetsRepository interface {

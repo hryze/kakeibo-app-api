@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -33,7 +34,15 @@ type GroupTransactionsSearchQuery struct {
 	UsersID         []string
 }
 
-type DeleteGroupTransactionMsg struct {
+type DeleteContentMsg struct {
+	Message string `json:"message"`
+}
+
+type GroupTransactionProcessLockErrorMsg struct {
+	Message string `json:"message"`
+}
+
+type GroupAccountConflictErrorMsg struct {
 	Message string `json:"message"`
 }
 
@@ -58,6 +67,13 @@ func NewGroupTransactionsSearchQuery(urlQuery url.Values, groupID string) GroupT
 	}
 }
 
+func (e *GroupTransactionProcessLockErrorMsg) Error() string {
+	return e.Message
+}
+
+func (e *GroupAccountConflictErrorMsg) Error() string {
+	return e.Message
+}
 func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery) (string, error) {
 	query := `
         SELECT
@@ -281,6 +297,17 @@ func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	yearMonth := time.Date(groupTransactionReceiver.TransactionDate.Time.Year(), groupTransactionReceiver.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(yearMonth, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	} else if len(dbGroupAccountsList) != 0 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{"当月のグループでの取引は会計済みのため追加できません。"}))
+		return
+	}
+
 	if err := validateTransaction(&groupTransactionReceiver); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
@@ -342,6 +369,17 @@ func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) 
 	var groupTransactionReceiver model.GroupTransactionReceiver
 	if err := json.NewDecoder(r.Body).Decode(&groupTransactionReceiver); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	yearMonth := time.Date(groupTransactionReceiver.TransactionDate.Time.Year(), groupTransactionReceiver.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(yearMonth, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	} else if len(dbGroupAccountsList) != 0 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{"当月のグループでの取引は会計済みのため更新できません。"}))
 		return
 	}
 
@@ -412,12 +450,24 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if _, err := h.DBRepo.GetGroupTransaction(groupTransactionID); err != nil {
+	groupTransaction, err := h.DBRepo.GetGroupTransaction(groupTransactionID)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"こちらのトランザクションは既に削除されています。"}))
 			return
 		}
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	yearMonth := time.Date(groupTransaction.TransactionDate.Time.Year(), groupTransaction.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(yearMonth, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	} else if len(dbGroupAccountsList) != 0 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{"当月のグループでの取引は会計済みのため削除できません。"}))
 		return
 	}
 
@@ -428,7 +478,7 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&DeleteGroupTransactionMsg{"トランザクションを削除しました。"}); err != nil {
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"トランザクションを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -498,6 +548,339 @@ func (h *DBHandler) SearchGroupTransactionsList(w http.ResponseWriter, r *http.R
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&groupTransactionsList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	firstDay, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		return
+	}
+	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
+
+	userPaymentAmountList, err := h.DBRepo.GetUserPaymentAmountList(groupID, firstDay, lastDay)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(userPaymentAmountList) == 0 {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"当月の取引履歴は見つかりませんでした。"}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		return
+	}
+
+	groupAccountsList := model.NewGroupAccountsList(userPaymentAmountList, groupID, firstDay)
+
+	for i := 0; i < len(userPaymentAmountList); i++ {
+		userPaymentAmountList[i].PaymentAmountToUser = userPaymentAmountList[i].TotalPaymentAmount - groupAccountsList.GroupAveragePaymentAmount
+	}
+
+	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(firstDay, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(dbGroupAccountsList) == 0 {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		return
+	}
+
+	groupAccountsList.GroupAccountsList = dbGroupAccountsList
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(groupAccountsList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	firstDay, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		return
+	}
+	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
+
+	conflictCheckGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(firstDay, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	} else if len(conflictCheckGroupAccountsList) != 0 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &GroupAccountConflictErrorMsg{"当月のグループでの取引は会計済みです。"}))
+		return
+	}
+
+	userPaymentAmountList, err := h.DBRepo.GetUserPaymentAmountList(groupID, firstDay, lastDay)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupAccountsList := model.NewGroupAccountsList(userPaymentAmountList, groupID, firstDay)
+
+	for i := 0; i < len(userPaymentAmountList); i++ {
+		userPaymentAmountList[i].PaymentAmountToUser = userPaymentAmountList[i].TotalPaymentAmount - groupAccountsList.GroupAveragePaymentAmount
+	}
+
+	payerList := model.NewPayerList(userPaymentAmountList)
+	recipientList := model.NewRecipientList(userPaymentAmountList)
+
+	for i, payer := range payerList.PayerList {
+		for j, recipient := range recipientList.RecipientList {
+			if payer.PaymentAmountToUser+recipient.PaymentAmountToUser == 0 && payer.PaymentAmountToUser != 0 && recipient.PaymentAmountToUser != 0 {
+				groupAccount := model.GroupAccount{
+					Recipient:     recipient.UserID,
+					Payer:         payer.UserID,
+					PaymentAmount: recipient.PaymentAmountToUser,
+				}
+
+				groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, groupAccount)
+
+				payerList.PayerList[i].PaymentAmountToUser = 0
+				recipientList.RecipientList[j].PaymentAmountToUser = 0
+			}
+		}
+	}
+
+	for i, j := 0, 0; i < len(recipientList.RecipientList) && j < len(payerList.PayerList); {
+		if recipientList.RecipientList[i].PaymentAmountToUser == 0 {
+			i++
+			j = 0
+			continue
+		}
+
+		if payerList.PayerList[j].PaymentAmountToUser == 0 {
+			j++
+			continue
+		}
+
+		groupAccount := model.GroupAccount{
+			Recipient: recipientList.RecipientList[i].UserID,
+			Payer:     payerList.PayerList[j].UserID,
+		}
+
+		remainingAmount := recipientList.RecipientList[i].PaymentAmountToUser + payerList.PayerList[j].PaymentAmountToUser
+
+		switch {
+		case remainingAmount == 0:
+			groupAccount.PaymentAmount = recipientList.RecipientList[i].PaymentAmountToUser
+			groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, groupAccount)
+
+			recipientList.RecipientList[i].PaymentAmountToUser = 0
+			payerList.PayerList[j].PaymentAmountToUser = 0
+			i++
+			j++
+		case remainingAmount < 0:
+			groupAccount.PaymentAmount = recipientList.RecipientList[i].PaymentAmountToUser
+			groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, groupAccount)
+
+			recipientList.RecipientList[i].PaymentAmountToUser = 0
+			payerList.PayerList[j].PaymentAmountToUser = remainingAmount
+			i++
+		case remainingAmount > 0:
+			groupAccount.PaymentAmount = int(math.Abs(float64(payerList.PayerList[j].PaymentAmountToUser)))
+			groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, groupAccount)
+
+			recipientList.RecipientList[i].PaymentAmountToUser = remainingAmount
+			payerList.PayerList[j].PaymentAmountToUser = 0
+			j++
+		}
+	}
+
+	if err := h.DBRepo.PostGroupAccountsList(groupAccountsList.GroupAccountsList, firstDay, groupID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(firstDay, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupAccountsList.GroupAccountsList = dbGroupAccountsList
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(groupAccountsList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) PutMonthlyGroupTransactionsAccount(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	var groupAccountsList model.GroupAccountsList
+	if err := json.NewDecoder(r.Body).Decode(&groupAccountsList); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := h.DBRepo.PutGroupAccountsList(groupAccountsList.GroupAccountsList); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(groupAccountsList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) DeleteMonthlyGroupTransactionsAccount(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	yearMonth, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		return
+	}
+
+	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(yearMonth, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(dbGroupAccountsList) == 0 {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		return
+	}
+
+	if err := h.DBRepo.DeleteGroupAccountsList(yearMonth, groupID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"グループ会計データを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

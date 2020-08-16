@@ -175,3 +175,173 @@ func (r *GroupTransactionsRepository) SearchGroupTransactionsList(query string) 
 
 	return groupTransactionsList, nil
 }
+
+func (r *GroupTransactionsRepository) GetUserPaymentAmountList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error) {
+	query := `
+        SELECT
+            user_id,
+            SUM(amount) total_payment_amount
+        FROM
+            group_transactions
+        WHERE
+            group_id = ?
+        AND
+            transaction_date >= ?
+        AND
+            transaction_date < ?
+        GROUP BY
+            user_id`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, firstDay, lastDay)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var userPaymentAmountList []model.UserPaymentAmount
+	for rows.Next() {
+		var userPaymentAmount model.UserPaymentAmount
+		if err := rows.StructScan(&userPaymentAmount); err != nil {
+			return nil, err
+		}
+		userPaymentAmountList = append(userPaymentAmountList, userPaymentAmount)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return userPaymentAmountList, nil
+}
+
+func (r *GroupTransactionsRepository) GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error) {
+	query := `
+        SELECT
+            id,
+            years_months,
+            payer_user_id,
+            recipient_user_id,
+            payment_amount,
+            payment_confirmation,
+            receipt_confirmation,
+            group_id
+        FROM
+            group_accounts
+        WHERE
+            group_id = ?
+        AND
+            years_months = ?`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, yearMonth)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groupAccountsList []model.GroupAccount
+	for rows.Next() {
+		var groupAccount model.GroupAccount
+		if err := rows.StructScan(&groupAccount); err != nil {
+			return nil, err
+		}
+		groupAccountsList = append(groupAccountsList, groupAccount)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return groupAccountsList, nil
+}
+
+func (r *GroupTransactionsRepository) PostGroupAccountsList(groupAccountsList []model.GroupAccount, yearMonth time.Time, groupID int) error {
+	query := `
+        INSERT INTO group_accounts
+            (years_months, payer_user_id, recipient_user_id, payment_amount, group_id)
+        VALUES
+            (?,?,?,?,?)`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		for _, groupAccount := range groupAccountsList {
+			if _, err := r.MySQLHandler.conn.Exec(query, yearMonth, groupAccount.Payer, groupAccount.Recipient, groupAccount.PaymentAmount, groupID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *GroupTransactionsRepository) PutGroupAccountsList(groupAccountsList []model.GroupAccount) error {
+	query := `
+        UPDATE
+            group_accounts
+        SET 
+            payment_confirmation = ?,
+            receipt_confirmation = ?
+        WHERE
+            id = ?`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		for _, groupAccount := range groupAccountsList {
+			if _, err := r.MySQLHandler.conn.Exec(query, groupAccount.PaymentConfirmation, groupAccount.ReceiptConfirmation, groupAccount.ID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *GroupTransactionsRepository) DeleteGroupAccountsList(yearMonth time.Time, groupID int) error {
+	query := `
+        DELETE
+        FROM 
+            group_accounts
+        WHERE 
+            group_id = ?
+        AND
+            years_months = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupID, yearMonth)
+
+	return err
+}
