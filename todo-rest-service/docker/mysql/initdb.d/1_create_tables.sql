@@ -28,3 +28,27 @@ CREATE TABLE group_todo_list
   group_id INT NOT NULL,
   PRIMARY KEY(id)
 );
+
+CREATE TABLE group_tasks_users
+(
+  id INT NOT NULL AUTO_INCREMENT,
+  user_id VARCHAR(10) NOT NULL,
+  group_id INT NOT NULL,
+  PRIMARY KEY(id),
+  UNIQUE uq_group_tasks_users(user_id, group_id)
+);
+
+CREATE TABLE group_tasks
+(
+  id INT NOT NULL AUTO_INCREMENT,
+  base_date DATETIME DEFAULT NULL,
+  cycle_type ENUM('every', 'consecutive', 'none') DEFAULT NULL,
+  cycle INT DEFAULT NULL,
+  task_name VARCHAR(20) NOT NULL,
+  group_id INT NOT NULL,
+  group_tasks_users_id INT DEFAULT NULL,
+  PRIMARY KEY(id),
+  FOREIGN KEY fk_group_tasks_users_id(group_tasks_users_id)
+    REFERENCES group_tasks_users(id)
+    ON DELETE SET NULL ON UPDATE CASCADE
+);
