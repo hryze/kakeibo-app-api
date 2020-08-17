@@ -10,10 +10,15 @@ import (
 	"time"
 )
 
+type GroupTasksListForEachUser struct {
+	GroupTasksUsersList []GroupTasksUser `json:"group_tasks_list_for_each_user"`
+}
+
 type GroupTasksUser struct {
-	ID      int    `json:"id"       db:"id"`
-	UserID  string `json:"user_id"  db:"user_id"`
-	GroupID int    `json:"group_id" db:"group_id"`
+	ID        int         `json:"id"          db:"id"`
+	UserID    string      `json:"user_id"     db:"user_id"`
+	GroupID   int         `json:"group_id"    db:"group_id"`
+	TasksList []GroupTask `json:"tasks_list"`
 }
 
 type GroupTasksList struct {
@@ -28,6 +33,18 @@ type GroupTask struct {
 	TaskName         string     `json:"task_name"            db:"task_name"`
 	GroupID          int        `json:"group_id"             db:"group_id"`
 	GroupTasksUserID NullInt    `json:"group_tasks_users_id" db:"group_tasks_users_id"`
+}
+
+func NewGroupTasksListForEachUser(groupTasksUsersList []GroupTasksUser) GroupTasksListForEachUser {
+	return GroupTasksListForEachUser{
+		GroupTasksUsersList: groupTasksUsersList,
+	}
+}
+
+func NewGroupTasksList(groupTasksList []GroupTask) GroupTasksList {
+	return GroupTasksList{
+		GroupTasksList: groupTasksList,
+	}
 }
 
 type NullTime struct {

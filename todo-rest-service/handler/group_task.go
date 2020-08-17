@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 
@@ -72,6 +73,130 @@ func validateGroupTaskName(groupTask *model.GroupTask) error {
 	}
 
 	return nil
+}
+
+func generateNextBaseDate(today time.Time, baseDate time.Time, cycleDate int) time.Time {
+	nextBaseDate := baseDate
+
+	for today.After(nextBaseDate) {
+		nextBaseDate = nextBaseDate.AddDate(0, 0, cycleDate)
+	}
+
+	nextBaseDate = nextBaseDate.AddDate(0, 0, -cycleDate)
+
+	return nextBaseDate
+}
+
+func generateNextGroupTasksUserID(groupTaskAssignedToUser model.GroupTask, groupTasksUsersList []model.GroupTasksUser) int {
+	var nextGroupTasksUserID int
+
+	for i, groupTasksUser := range groupTasksUsersList {
+		if groupTasksUser.ID == groupTaskAssignedToUser.GroupTasksUserID.Int {
+			if i+1 == len(groupTasksUsersList) {
+				nextGroupTasksUserID = groupTasksUsersList[0].ID
+				break
+			}
+
+			nextGroupTasksUserID = groupTasksUsersList[i+1].ID
+			break
+		}
+	}
+
+	return nextGroupTasksUserID
+}
+
+func (h *DBHandler) GetGroupTasksListForEachUser(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	groupTasksUsersList, err := h.DBRepo.GetGroupTasksUsersList(groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupTasksListAssignedToUser, err := h.DBRepo.GetGroupTasksListAssignedToUser(groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	today := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 23, 59, 59, 0, time.UTC)
+
+	for i := 0; i < len(groupTasksListAssignedToUser); i++ {
+		baseDate := groupTasksListAssignedToUser[i].BaseDate.Time
+		cycleDate := groupTasksListAssignedToUser[i].Cycle.Int
+		taskEndDate := baseDate.AddDate(0, 0, cycleDate).Add(-1 * time.Second)
+
+		if !today.After(taskEndDate) {
+			continue
+		}
+
+		if groupTasksListAssignedToUser[i].CycleType.String == "none" {
+			groupTasksListAssignedToUser[i].BaseDate.Valid = false
+			groupTasksListAssignedToUser[i].CycleType.Valid = false
+			groupTasksListAssignedToUser[i].Cycle.Valid = false
+			groupTasksListAssignedToUser[i].GroupTasksUserID.Valid = false
+
+			if err := h.DBRepo.PutGroupTask(&groupTasksListAssignedToUser[i], groupTasksListAssignedToUser[i].ID); err != nil {
+				errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+				return
+			}
+
+			continue
+		}
+
+		nextBaseDate := generateNextBaseDate(today, baseDate, cycleDate)
+		nextGroupTasksUserID := generateNextGroupTasksUserID(groupTasksListAssignedToUser[i], groupTasksUsersList)
+
+		groupTasksListAssignedToUser[i].BaseDate.Time = nextBaseDate
+		groupTasksListAssignedToUser[i].GroupTasksUserID.Int = nextGroupTasksUserID
+
+		if err := h.DBRepo.PutGroupTask(&groupTasksListAssignedToUser[i], groupTasksListAssignedToUser[i].ID); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	for i := 0; i < len(groupTasksUsersList); i++ {
+		for j := 0; j < len(groupTasksListAssignedToUser); j++ {
+			if groupTasksUsersList[i].ID == groupTasksListAssignedToUser[j].GroupTasksUserID.Int {
+				groupTasksUsersList[i].TasksList = append(groupTasksUsersList[i].TasksList, groupTasksListAssignedToUser[j])
+			}
+		}
+	}
+
+	groupTasksListForEachUser := model.NewGroupTasksListForEachUser(groupTasksUsersList)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(groupTasksListForEachUser); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *DBHandler) PostGroupTasksUser(w http.ResponseWriter, r *http.Request) {
@@ -184,9 +309,11 @@ func (h *DBHandler) GetGroupTasksList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	senderGroupTasksList := model.NewGroupTasksList(groupTasksList)
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(groupTasksList); err != nil {
+	if err := json.NewEncoder(w).Encode(senderGroupTasksList); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

@@ -43,9 +43,11 @@ type GroupTodoRepository interface {
 }
 
 type GroupTasksRepository interface {
+	GetGroupTasksUsersList(groupID int) ([]model.GroupTasksUser, error)
+	GetGroupTasksListAssignedToUser(groupID int) ([]model.GroupTask, error)
 	GetGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (*model.GroupTasksUser, error)
 	PostGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (sql.Result, error)
-	GetGroupTasksList(groupID int) (*model.GroupTasksList, error)
+	GetGroupTasksList(groupID int) ([]model.GroupTask, error)
 	GetGroupTask(groupTasksID int) (*model.GroupTask, error)
 	PostGroupTask(groupTask model.GroupTask, groupID int) (sql.Result, error)
 	PutGroupTask(groupTask *model.GroupTask, groupTasksID int) error
