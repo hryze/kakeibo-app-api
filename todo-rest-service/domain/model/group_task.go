@@ -91,12 +91,11 @@ func (ns *NullString) UnmarshalJSON(b []byte) error {
 	if bytes.Equal(b, []byte("null")) {
 		return nil
 	}
-	err := json.Unmarshal(b, &ns.String)
-	if err == nil {
-		ns.Valid = true
-		return nil
+	if err := json.Unmarshal(b, &ns.String); err != nil {
+		return err
 	}
-	return err
+	ns.Valid = true
+	return nil
 }
 
 func (ni *NullInt) MarshalJSON() ([]byte, error) {
@@ -110,12 +109,11 @@ func (ni *NullInt) UnmarshalJSON(b []byte) error {
 	if bytes.Equal(b, []byte("null")) {
 		return nil
 	}
-	err := json.Unmarshal(b, &ni.Int)
-	if err == nil {
-		ni.Valid = true
-		return nil
+	if err := json.Unmarshal(b, &ni.Int); err != nil {
+		return err
 	}
-	return err
+	ni.Valid = true
+	return nil
 }
 
 func (ni *NullInt) Scan(value interface{}) error {
