@@ -24,7 +24,7 @@ func (h *DBHandler) PostInitGroupStandardBudgets(w http.ResponseWriter, r *http.
 		return
 	}
 
-	if err := h.DBRepo.PostInitGroupStandardBudgets(groupID); err != nil {
+	if err := h.GroupBudgetsRepo.PostInitGroupStandardBudgets(groupID); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -59,7 +59,7 @@ func (h *DBHandler) GetGroupStandardBudgets(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	groupStandardBudgets, err := h.DBRepo.GetGroupStandardBudgets(groupID)
+	groupStandardBudgets, err := h.GroupBudgetsRepo.GetGroupStandardBudgets(groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -111,12 +111,12 @@ func (h *DBHandler) PutGroupStandardBudgets(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if err := h.DBRepo.PutGroupStandardBudgets(&groupStandardBudgets, groupID); err != nil {
+	if err := h.GroupBudgetsRepo.PutGroupStandardBudgets(&groupStandardBudgets, groupID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dbGroupStandardBudgets, err := h.DBRepo.GetGroupStandardBudgets(groupID)
+	dbGroupStandardBudgets, err := h.GroupBudgetsRepo.GetGroupStandardBudgets(groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -163,7 +163,7 @@ func (h *DBHandler) GetGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	dbGroupCustomBudgets, err := h.DBRepo.GetGroupCustomBudgets(yearMonth, groupID)
+	dbGroupCustomBudgets, err := h.GroupBudgetsRepo.GetGroupCustomBudgets(yearMonth, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -221,12 +221,12 @@ func (h *DBHandler) PostGroupCustomBudgets(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := h.DBRepo.PostGroupCustomBudgets(&groupCustomBudgets, yearMonth, groupID); err != nil {
+	if err := h.GroupBudgetsRepo.PostGroupCustomBudgets(&groupCustomBudgets, yearMonth, groupID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dbGroupCustomBudgets, err := h.DBRepo.GetGroupCustomBudgets(yearMonth, groupID)
+	dbGroupCustomBudgets, err := h.GroupBudgetsRepo.GetGroupCustomBudgets(yearMonth, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -284,12 +284,12 @@ func (h *DBHandler) PutGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := h.DBRepo.PutGroupCustomBudgets(&groupCustomBudgets, yearMonth, groupID); err != nil {
+	if err := h.GroupBudgetsRepo.PutGroupCustomBudgets(&groupCustomBudgets, yearMonth, groupID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dbGroupCustomBudgets, err := h.DBRepo.GetGroupCustomBudgets(yearMonth, groupID)
+	dbGroupCustomBudgets, err := h.GroupBudgetsRepo.GetGroupCustomBudgets(yearMonth, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -336,7 +336,7 @@ func (h *DBHandler) DeleteGroupCustomBudgets(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if err := h.DBRepo.DeleteGroupCustomBudgets(yearMonth, groupID); err != nil {
+	if err := h.GroupBudgetsRepo.DeleteGroupCustomBudgets(yearMonth, groupID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -382,13 +382,13 @@ func (h *DBHandler) GetYearlyGroupBudgets(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	monthlyGroupStandardBudget, err := h.DBRepo.GetMonthlyGroupStandardBudget(groupID)
+	monthlyGroupStandardBudget, err := h.GroupBudgetsRepo.GetMonthlyGroupStandardBudget(groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	monthlyGroupCustomBudgets, err := h.DBRepo.GetMonthlyGroupCustomBudgets(year, groupID)
+	monthlyGroupCustomBudgets, err := h.GroupBudgetsRepo.GetMonthlyGroupCustomBudgets(year, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return

@@ -86,17 +86,17 @@ func (h *DBHandler) GetGroupCategoriesList(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	groupBigCategoriesList, err := h.DBRepo.GetGroupBigCategoriesList()
+	groupBigCategoriesList, err := h.GroupCategoriesRepo.GetGroupBigCategoriesList()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	groupMediumCategoriesList, err := h.DBRepo.GetGroupMediumCategoriesList()
+	groupMediumCategoriesList, err := h.GroupCategoriesRepo.GetGroupMediumCategoriesList()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	groupCustomCategoriesList, err := h.DBRepo.GetGroupCustomCategoriesList(groupID)
+	groupCustomCategoriesList, err := h.GroupCategoriesRepo.GetGroupCustomCategoriesList(groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -174,7 +174,7 @@ func (h *DBHandler) PostGroupCustomCategory(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if err := h.DBRepo.FindGroupCustomCategory(&groupCustomCategory, groupID); err != sql.ErrNoRows {
+	if err := h.GroupCategoriesRepo.FindGroupCustomCategory(&groupCustomCategory, groupID); err != sql.ErrNoRows {
 		if err == nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &GroupCustomCategoryConflictErrorMsg{"中カテゴリーの登録に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
@@ -183,7 +183,7 @@ func (h *DBHandler) PostGroupCustomCategory(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	result, err := h.DBRepo.PostGroupCustomCategory(&groupCustomCategory, groupID)
+	result, err := h.GroupCategoriesRepo.PostGroupCustomCategory(&groupCustomCategory, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -248,7 +248,7 @@ func (h *DBHandler) PutGroupCustomCategory(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := h.DBRepo.FindGroupCustomCategory(&groupCustomCategory, groupID); err != sql.ErrNoRows {
+	if err := h.GroupCategoriesRepo.FindGroupCustomCategory(&groupCustomCategory, groupID); err != sql.ErrNoRows {
 		if err == nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &CustomCategoryConflictErrorMsg{"中カテゴリーの更新に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
@@ -257,7 +257,7 @@ func (h *DBHandler) PutGroupCustomCategory(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := h.DBRepo.PutGroupCustomCategory(&groupCustomCategory); err != nil {
+	if err := h.GroupCategoriesRepo.PutGroupCustomCategory(&groupCustomCategory); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -303,12 +303,12 @@ func (h *DBHandler) DeleteGroupCustomCategory(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if err := h.DBRepo.FindGroupCustomCategoryID(groupCustomCategoryID); err != nil {
+	if err := h.GroupCategoriesRepo.FindGroupCustomCategoryID(groupCustomCategoryID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"指定された中カテゴリーは既に削除されています。"}))
 		return
 	}
 
-	if err := h.DBRepo.DeleteGroupCustomCategory(groupCustomCategoryID); err != nil {
+	if err := h.GroupCategoriesRepo.DeleteGroupCustomCategory(groupCustomCategoryID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}

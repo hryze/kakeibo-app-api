@@ -14,7 +14,13 @@ import (
 )
 
 type DBHandler struct {
-	DBRepo repository.DBRepository
+	AuthRepo              repository.AuthRepository
+	TransactionsRepo      repository.TransactionsRepository
+	CategoriesRepo        repository.CategoriesRepository
+	BudgetsRepo           repository.BudgetsRepository
+	GroupTransactionsRepo repository.GroupTransactionsRepository
+	GroupCategoriesRepo   repository.GroupCategoriesRepository
+	GroupBudgetsRepo      repository.GroupBudgetsRepository
 }
 
 type HTTPError struct {
@@ -32,11 +38,6 @@ type AuthenticationErrorMsg struct {
 
 type InternalServerErrorMsg struct {
 	Message string `json:"message"`
-}
-
-func NewDBHandler(DBRepo repository.DBRepository) *DBHandler {
-	DBHandler := DBHandler{DBRepo: DBRepo}
-	return &DBHandler
 }
 
 func NewHTTPError(status int, err error) error {
@@ -93,7 +94,7 @@ func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (stri
 		return "", err
 	}
 	sessionID := cookie.Value
-	userID, err := h.DBRepo.GetUserID(sessionID)
+	userID, err := h.AuthRepo.GetUserID(sessionID)
 	if err != nil {
 		return "", err
 	}

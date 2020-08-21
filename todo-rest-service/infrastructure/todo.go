@@ -11,6 +11,10 @@ type TodoRepository struct {
 	*MySQLHandler
 }
 
+func NewTodoRepository(mysqlHandler *MySQLHandler) *TodoRepository {
+	return &TodoRepository{mysqlHandler}
+}
+
 func (r *TodoRepository) GetDailyImplementationTodoList(date time.Time, userID string) ([]model.Todo, error) {
 	query := `
         SELECT

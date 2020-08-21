@@ -11,6 +11,10 @@ type GroupTransactionsRepository struct {
 	*MySQLHandler
 }
 
+func NewGroupTransactionsRepository(mysqlHandler *MySQLHandler) *GroupTransactionsRepository {
+	return &GroupTransactionsRepository{mysqlHandler}
+}
+
 func (r *GroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionSender, error) {
 	query := `
         SELECT

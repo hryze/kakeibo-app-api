@@ -10,6 +10,10 @@ type GroupCategoriesRepository struct {
 	*MySQLHandler
 }
 
+func NewGroupCategoriesRepository(mysqlHandler *MySQLHandler) *GroupCategoriesRepository {
+	return &GroupCategoriesRepository{mysqlHandler}
+}
+
 func (r *GroupCategoriesRepository) GetGroupBigCategoriesList() ([]model.GroupBigCategory, error) {
 	query := `
         SELECT
@@ -163,7 +167,7 @@ func (r *GroupCategoriesRepository) FindGroupCustomCategoryID(groupCustomCategor
 	return err
 }
 
-func (r *CategoriesRepository) DeleteGroupCustomCategory(groupCustomCategoryID int) error {
+func (r *GroupCategoriesRepository) DeleteGroupCustomCategory(groupCustomCategoryID int) error {
 	query := `
         DELETE 
         FROM 

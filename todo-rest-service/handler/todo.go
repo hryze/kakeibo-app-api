@@ -278,13 +278,13 @@ func (h *DBHandler) GetDailyTodoList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	implementationTodoList, err := h.DBRepo.GetDailyImplementationTodoList(date, userID)
+	implementationTodoList, err := h.TodoRepo.GetDailyImplementationTodoList(date, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dueTodoList, err := h.DBRepo.GetDailyDueTodoList(date, userID)
+	dueTodoList, err := h.TodoRepo.GetDailyDueTodoList(date, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -329,13 +329,13 @@ func (h *DBHandler) GetMonthlyTodoList(w http.ResponseWriter, r *http.Request) {
 	}
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
-	implementationTodoList, err := h.DBRepo.GetMonthlyImplementationTodoList(firstDay, lastDay, userID)
+	implementationTodoList, err := h.TodoRepo.GetMonthlyImplementationTodoList(firstDay, lastDay, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dueTodoList, err := h.DBRepo.GetMonthlyDueTodoList(firstDay, lastDay, userID)
+	dueTodoList, err := h.TodoRepo.GetMonthlyDueTodoList(firstDay, lastDay, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -384,7 +384,7 @@ func (h *DBHandler) PostTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.DBRepo.PostTodo(&todo, userID)
+	result, err := h.TodoRepo.PostTodo(&todo, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -396,7 +396,7 @@ func (h *DBHandler) PostTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbTodo, err := h.DBRepo.GetTodo(int(lastInsertId))
+	dbTodo, err := h.TodoRepo.GetTodo(int(lastInsertId))
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -438,12 +438,12 @@ func (h *DBHandler) PutTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.DBRepo.PutTodo(&todo, todoID); err != nil {
+	if err := h.TodoRepo.PutTodo(&todo, todoID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dbTodo, err := h.DBRepo.GetTodo(todoID)
+	dbTodo, err := h.TodoRepo.GetTodo(todoID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -474,7 +474,7 @@ func (h *DBHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.DBRepo.DeleteTodo(todoID); err != nil {
+	if err := h.TodoRepo.DeleteTodo(todoID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -512,7 +512,7 @@ func (h *DBHandler) SearchTodoList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbSearchTodoList, err := h.DBRepo.SearchTodoList(todoSqlQuery)
+	dbSearchTodoList, err := h.TodoRepo.SearchTodoList(todoSqlQuery)
 
 	if len(dbSearchTodoList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")

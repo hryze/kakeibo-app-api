@@ -7,16 +7,6 @@ import (
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
 )
 
-type DBRepository interface {
-	AuthRepository
-	CategoriesRepository
-	TransactionsRepository
-	BudgetsRepository
-	GroupCategoriesRepository
-	GroupTransactionsRepository
-	GroupBudgetsRepository
-}
-
 type AuthRepository interface {
 	GetUserID(sessionID string) (string, error)
 }

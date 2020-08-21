@@ -69,17 +69,17 @@ func (h *DBHandler) GetCategoriesList(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	bigCategoriesList, err := h.DBRepo.GetBigCategoriesList()
+	bigCategoriesList, err := h.CategoriesRepo.GetBigCategoriesList()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	mediumCategoriesList, err := h.DBRepo.GetMediumCategoriesList()
+	mediumCategoriesList, err := h.CategoriesRepo.GetMediumCategoriesList()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	customCategoriesList, err := h.DBRepo.GetCustomCategoriesList(userID)
+	customCategoriesList, err := h.CategoriesRepo.GetCustomCategoriesList(userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -138,7 +138,7 @@ func (h *DBHandler) PostCustomCategory(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
-	if err := h.DBRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
+	if err := h.CategoriesRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
 		if err == nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &CustomCategoryConflictErrorMsg{"中カテゴリーの登録に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
@@ -146,7 +146,7 @@ func (h *DBHandler) PostCustomCategory(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	result, err := h.DBRepo.PostCustomCategory(&customCategory, userID)
+	result, err := h.CategoriesRepo.PostCustomCategory(&customCategory, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -190,7 +190,7 @@ func (h *DBHandler) PutCustomCategory(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
-	if err := h.DBRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
+	if err := h.CategoriesRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
 		if err == nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &CustomCategoryConflictErrorMsg{"中カテゴリーの更新に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
@@ -198,7 +198,7 @@ func (h *DBHandler) PutCustomCategory(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
-	if err := h.DBRepo.PutCustomCategory(&customCategory); err != nil {
+	if err := h.CategoriesRepo.PutCustomCategory(&customCategory); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -226,7 +226,7 @@ func (h *DBHandler) DeleteCustomCategory(w http.ResponseWriter, r *http.Request)
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"custom category ID を正しく指定してください。"}))
 		return
 	}
-	if err := h.DBRepo.DeleteCustomCategory(customCategoryID); err != nil {
+	if err := h.CategoriesRepo.DeleteCustomCategory(customCategoryID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}

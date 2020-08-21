@@ -237,7 +237,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *ht
 	}
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
-	dbGroupTransactionsList, err := h.DBRepo.GetMonthlyGroupTransactionsList(groupID, firstDay, lastDay)
+	dbGroupTransactionsList, err := h.GroupTransactionsRepo.GetMonthlyGroupTransactionsList(groupID, firstDay, lastDay)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -299,7 +299,7 @@ func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request)
 
 	yearMonth := time.Date(groupTransactionReceiver.TransactionDate.Time.Year(), groupTransactionReceiver.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
 
-	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(yearMonth, groupID)
+	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(yearMonth, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -313,7 +313,7 @@ func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	result, err := h.DBRepo.PostGroupTransaction(&groupTransactionReceiver, groupID, userID)
+	result, err := h.GroupTransactionsRepo.PostGroupTransaction(&groupTransactionReceiver, groupID, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -325,7 +325,7 @@ func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	dbGroupTransactionSender, err := h.DBRepo.GetGroupTransaction(int(lastInsertId))
+	dbGroupTransactionSender, err := h.GroupTransactionsRepo.GetGroupTransaction(int(lastInsertId))
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -374,7 +374,7 @@ func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) 
 
 	yearMonth := time.Date(groupTransactionReceiver.TransactionDate.Time.Year(), groupTransactionReceiver.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
 
-	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(yearMonth, groupID)
+	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(yearMonth, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -394,12 +394,12 @@ func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if err := h.DBRepo.PutGroupTransaction(&groupTransactionReceiver, groupTransactionID); err != nil {
+	if err := h.GroupTransactionsRepo.PutGroupTransaction(&groupTransactionReceiver, groupTransactionID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	groupTransactionSender, err := h.DBRepo.GetGroupTransaction(groupTransactionID)
+	groupTransactionSender, err := h.GroupTransactionsRepo.GetGroupTransaction(groupTransactionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"トランザクションを取得できませんでした。"}))
@@ -450,7 +450,7 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	groupTransaction, err := h.DBRepo.GetGroupTransaction(groupTransactionID)
+	groupTransaction, err := h.GroupTransactionsRepo.GetGroupTransaction(groupTransactionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"こちらのトランザクションは既に削除されています。"}))
@@ -462,7 +462,7 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 
 	yearMonth := time.Date(groupTransaction.TransactionDate.Time.Year(), groupTransaction.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
 
-	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(yearMonth, groupID)
+	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(yearMonth, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -471,7 +471,7 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := h.DBRepo.DeleteGroupTransaction(groupTransactionID); err != nil {
+	if err := h.GroupTransactionsRepo.DeleteGroupTransaction(groupTransactionID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -526,7 +526,7 @@ func (h *DBHandler) SearchGroupTransactionsList(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	dbGroupTransactionsList, err := h.DBRepo.SearchGroupTransactionsList(query)
+	dbGroupTransactionsList, err := h.GroupTransactionsRepo.SearchGroupTransactionsList(query)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -586,7 +586,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 	}
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
-	userPaymentAmountList, err := h.DBRepo.GetUserPaymentAmountList(groupID, firstDay, lastDay)
+	userPaymentAmountList, err := h.GroupTransactionsRepo.GetUserPaymentAmountList(groupID, firstDay, lastDay)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -609,7 +609,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 		userPaymentAmountList[i].PaymentAmountToUser = userPaymentAmountList[i].TotalPaymentAmount - groupAccountsList.GroupAveragePaymentAmount
 	}
 
-	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(firstDay, groupID)
+	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(firstDay, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -670,7 +670,7 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 	}
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
-	conflictCheckGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(firstDay, groupID)
+	conflictCheckGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(firstDay, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -679,7 +679,7 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 		return
 	}
 
-	userPaymentAmountList, err := h.DBRepo.GetUserPaymentAmountList(groupID, firstDay, lastDay)
+	userPaymentAmountList, err := h.GroupTransactionsRepo.GetUserPaymentAmountList(groupID, firstDay, lastDay)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -756,12 +756,12 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 		}
 	}
 
-	if err := h.DBRepo.PostGroupAccountsList(groupAccountsList.GroupAccountsList, firstDay, groupID); err != nil {
+	if err := h.GroupTransactionsRepo.PostGroupAccountsList(groupAccountsList.GroupAccountsList, firstDay, groupID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(firstDay, groupID)
+	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(firstDay, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -810,7 +810,7 @@ func (h *DBHandler) PutMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 		return
 	}
 
-	if err := h.DBRepo.PutGroupAccountsList(groupAccountsList.GroupAccountsList); err != nil {
+	if err := h.GroupTransactionsRepo.PutGroupAccountsList(groupAccountsList.GroupAccountsList); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -856,7 +856,7 @@ func (h *DBHandler) DeleteMonthlyGroupTransactionsAccount(w http.ResponseWriter,
 		return
 	}
 
-	dbGroupAccountsList, err := h.DBRepo.GetGroupAccountsList(yearMonth, groupID)
+	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(yearMonth, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -873,7 +873,7 @@ func (h *DBHandler) DeleteMonthlyGroupTransactionsAccount(w http.ResponseWriter,
 		return
 	}
 
-	if err := h.DBRepo.DeleteGroupAccountsList(yearMonth, groupID); err != nil {
+	if err := h.GroupTransactionsRepo.DeleteGroupAccountsList(yearMonth, groupID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
