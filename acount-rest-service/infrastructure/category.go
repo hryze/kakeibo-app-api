@@ -10,6 +10,10 @@ type CategoriesRepository struct {
 	*MySQLHandler
 }
 
+func NewCategoriesRepository(mysqlHandler *MySQLHandler) *CategoriesRepository {
+	return &CategoriesRepository{mysqlHandler}
+}
+
 func (r *CategoriesRepository) GetBigCategoriesList() ([]model.BigCategory, error) {
 	query := `
         SELECT

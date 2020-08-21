@@ -11,6 +11,10 @@ type BudgetsRepository struct {
 	*MySQLHandler
 }
 
+func NewBudgetsRepository(mysqlHandler *MySQLHandler) *BudgetsRepository {
+	return &BudgetsRepository{mysqlHandler}
+}
+
 func (r *BudgetsRepository) PostInitStandardBudgets(userID string) error {
 	query := `
         INSERT INTO standard_budgets

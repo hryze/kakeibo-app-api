@@ -27,13 +27,49 @@ func InjectRedis() *infrastructure.RedisHandler {
 	return redisHandler
 }
 
-func InjectDBRepository() *infrastructure.DBRepository {
-	mySQLHandler := InjectMySQL()
+func InjectAuthRepository() *infrastructure.AuthRepository {
 	redisHandler := InjectRedis()
-	return infrastructure.NewDBRepository(mySQLHandler, redisHandler)
+	return infrastructure.NewAuthRepository(redisHandler)
+}
+
+func InjectTransactionsRepository() *infrastructure.TransactionsRepository {
+	mySQLHandler := InjectMySQL()
+	return infrastructure.NewTransactionsRepository(mySQLHandler)
+}
+
+func InjectCategoriesRepository() *infrastructure.CategoriesRepository {
+	mySQLHandler := InjectMySQL()
+	return infrastructure.NewCategoriesRepository(mySQLHandler)
+}
+
+func InjectBudgetsRepository() *infrastructure.BudgetsRepository {
+	mySQLHandler := InjectMySQL()
+	return infrastructure.NewBudgetsRepository(mySQLHandler)
+}
+
+func InjectGroupTransactionsRepository() *infrastructure.GroupTransactionsRepository {
+	mySQLHandler := InjectMySQL()
+	return infrastructure.NewGroupTransactionsRepository(mySQLHandler)
+}
+
+func InjectGroupCategoriesRepository() *infrastructure.GroupCategoriesRepository {
+	mySQLHandler := InjectMySQL()
+	return infrastructure.NewGroupCategoriesRepository(mySQLHandler)
+}
+
+func InjectGroupBudgetsRepository() *infrastructure.GroupBudgetsRepository {
+	mySQLHandler := InjectMySQL()
+	return infrastructure.NewGroupBudgetsRepository(mySQLHandler)
 }
 
 func InjectDBHandler() *handler.DBHandler {
-	DBRepository := InjectDBRepository()
-	return handler.NewDBHandler(DBRepository)
+	return &handler.DBHandler{
+		AuthRepo:              InjectAuthRepository(),
+		TransactionsRepo:      InjectTransactionsRepository(),
+		CategoriesRepo:        InjectCategoriesRepository(),
+		BudgetsRepo:           InjectBudgetsRepository(),
+		GroupTransactionsRepo: InjectGroupTransactionsRepository(),
+		GroupCategoriesRepo:   InjectGroupCategoriesRepository(),
+		GroupBudgetsRepo:      InjectGroupBudgetsRepository(),
+	}
 }

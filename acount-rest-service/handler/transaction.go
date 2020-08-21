@@ -366,7 +366,7 @@ func (h *DBHandler) GetMonthlyTransactionsList(w http.ResponseWriter, r *http.Re
 	}
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
-	dbTransactionsList, err := h.DBRepo.GetMonthlyTransactionsList(userID, firstDay, lastDay)
+	dbTransactionsList, err := h.TransactionsRepo.GetMonthlyTransactionsList(userID, firstDay, lastDay)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -415,7 +415,7 @@ func (h *DBHandler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.DBRepo.PostTransaction(&transactionReceiver, userID)
+	result, err := h.TransactionsRepo.PostTransaction(&transactionReceiver, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -427,7 +427,7 @@ func (h *DBHandler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var transactionSender model.TransactionSender
-	dbTransactionSender, err := h.DBRepo.GetTransaction(&transactionSender, int(lastInsertId))
+	dbTransactionSender, err := h.TransactionsRepo.GetTransaction(&transactionSender, int(lastInsertId))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"トランザクションを取得できませんでした"}))
@@ -473,13 +473,13 @@ func (h *DBHandler) PutTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.DBRepo.PutTransaction(&transactionReceiver, transactionID); err != nil {
+	if err := h.TransactionsRepo.PutTransaction(&transactionReceiver, transactionID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
 	var transactionSender model.TransactionSender
-	dbTransactionSender, err := h.DBRepo.GetTransaction(&transactionSender, transactionID)
+	dbTransactionSender, err := h.TransactionsRepo.GetTransaction(&transactionSender, transactionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"トランザクションを取得できませんでした"}))
@@ -514,7 +514,7 @@ func (h *DBHandler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.DBRepo.DeleteTransaction(transactionID); err != nil {
+	if err := h.TransactionsRepo.DeleteTransaction(transactionID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -548,7 +548,7 @@ func (h *DBHandler) SearchTransactionsList(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	dbTransactionsList, err := h.DBRepo.SearchTransactionsList(query)
+	dbTransactionsList, err := h.TransactionsRepo.SearchTransactionsList(query)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return

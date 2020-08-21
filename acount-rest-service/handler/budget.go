@@ -51,7 +51,7 @@ func (h *DBHandler) PostInitStandardBudgets(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if err := h.DBRepo.PostInitStandardBudgets(userID.UserID); err != nil {
+	if err := h.BudgetsRepo.PostInitStandardBudgets(userID.UserID); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -70,7 +70,7 @@ func (h *DBHandler) GetStandardBudgets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	standardBudgets, err := h.DBRepo.GetStandardBudgets(userID)
+	standardBudgets, err := h.BudgetsRepo.GetStandardBudgets(userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -106,12 +106,12 @@ func (h *DBHandler) PutStandardBudgets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.DBRepo.PutStandardBudgets(&standardBudgets, userID); err != nil {
+	if err := h.BudgetsRepo.PutStandardBudgets(&standardBudgets, userID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dbStandardBudgets, err := h.DBRepo.GetStandardBudgets(userID)
+	dbStandardBudgets, err := h.BudgetsRepo.GetStandardBudgets(userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -142,7 +142,7 @@ func (h *DBHandler) GetCustomBudgets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbCustomBudgets, err := h.DBRepo.GetCustomBudgets(yearMonth, userID)
+	dbCustomBudgets, err := h.BudgetsRepo.GetCustomBudgets(yearMonth, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -184,12 +184,12 @@ func (h *DBHandler) PostCustomBudgets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.DBRepo.PostCustomBudgets(&customBudgets, yearMonth, userID); err != nil {
+	if err := h.BudgetsRepo.PostCustomBudgets(&customBudgets, yearMonth, userID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dbCustomBudgets, err := h.DBRepo.GetCustomBudgets(yearMonth, userID)
+	dbCustomBudgets, err := h.BudgetsRepo.GetCustomBudgets(yearMonth, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -231,12 +231,12 @@ func (h *DBHandler) PutCustomBudgets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.DBRepo.PutCustomBudgets(&customBudgets, yearMonth, userID); err != nil {
+	if err := h.BudgetsRepo.PutCustomBudgets(&customBudgets, yearMonth, userID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dbCustomBudgets, err := h.DBRepo.GetCustomBudgets(yearMonth, userID)
+	dbCustomBudgets, err := h.BudgetsRepo.GetCustomBudgets(yearMonth, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -267,7 +267,7 @@ func (h *DBHandler) DeleteCustomBudgets(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if err := h.DBRepo.DeleteCustomBudgets(yearMonth, userID); err != nil {
+	if err := h.BudgetsRepo.DeleteCustomBudgets(yearMonth, userID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -297,13 +297,13 @@ func (h *DBHandler) GetYearlyBudgets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	monthlyStandardBudget, err := h.DBRepo.GetMonthlyStandardBudget(userID)
+	monthlyStandardBudget, err := h.BudgetsRepo.GetMonthlyStandardBudget(userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	monthlyCustomBudgets, err := h.DBRepo.GetMonthlyCustomBudgets(year, userID)
+	monthlyCustomBudgets, err := h.BudgetsRepo.GetMonthlyCustomBudgets(year, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
