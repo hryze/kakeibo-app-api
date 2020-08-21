@@ -5,12 +5,12 @@ import (
 )
 
 type UserRepository struct {
-	*MySQLHandler
 	*RedisHandler
+	*MySQLHandler
 }
 
-func NewUserRepository(mysqlHandler *MySQLHandler, redisHandler *RedisHandler) *UserRepository {
-	return &UserRepository{mysqlHandler, redisHandler}
+func NewUserRepository(redisHandler *RedisHandler, mysqlHandler *MySQLHandler) *UserRepository {
+	return &UserRepository{redisHandler, mysqlHandler}
 }
 
 func (r *UserRepository) FindUserID(userID string) error {

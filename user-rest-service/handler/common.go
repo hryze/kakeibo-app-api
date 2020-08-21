@@ -31,14 +31,6 @@ type InternalServerErrorMsg struct {
 	Message string `json:"message"`
 }
 
-func NewDBHandler(authRepo repository.AuthRepository, userRepo repository.UserRepository, groupRepo repository.GroupRepository) *DBHandler {
-	return &DBHandler{
-		AuthRepo:  authRepo,
-		UserRepo:  userRepo,
-		GroupRepo: groupRepo,
-	}
-}
-
 func NewHTTPError(status int, err error) error {
 	switch status {
 	case http.StatusInternalServerError:
