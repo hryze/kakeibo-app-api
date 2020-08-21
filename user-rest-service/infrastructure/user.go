@@ -9,6 +9,10 @@ type UserRepository struct {
 	*RedisHandler
 }
 
+func NewUserRepository(mysqlHandler *MySQLHandler, redisHandler *RedisHandler) *UserRepository {
+	return &UserRepository{mysqlHandler, redisHandler}
+}
+
 func (r *UserRepository) FindUserID(userID string) error {
 	var dbUserID string
 	query := "SELECT user_id FROM users WHERE user_id = ?"

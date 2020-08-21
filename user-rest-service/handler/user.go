@@ -82,12 +82,12 @@ func validateUser(users Users) error {
 func checkForUniqueUser(h *DBHandler, signUpUser *model.SignUpUser) error {
 	var userConflictErrorMsg UserConflictErrorMsg
 
-	errID := h.DBRepo.FindUserID(signUpUser.ID)
+	errID := h.UserRepo.FindUserID(signUpUser.ID)
 	if errID != nil && errID != sql.ErrNoRows {
 		return errID
 	}
 
-	errEmail := h.DBRepo.FindEmail(signUpUser.Email)
+	errEmail := h.UserRepo.FindEmail(signUpUser.Email)
 	if errEmail != nil && errEmail != sql.ErrNoRows {
 		return errEmail
 	}
@@ -175,13 +175,13 @@ func (h *DBHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	signUpUser.Password = string(hash)
-	if err := h.DBRepo.CreateUser(&signUpUser); err != nil {
+	if err := h.UserRepo.CreateUser(&signUpUser); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
 	if err := postInitStandardBudgets(signUpUser.ID); err != nil {
-		if err := h.DBRepo.DeleteUser(&signUpUser); err != nil {
+		if err := h.UserRepo.DeleteUser(&signUpUser); err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
@@ -210,7 +210,7 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	password := loginUser.Password
-	dbUser, err := h.DBRepo.FindUser(&loginUser)
+	dbUser, err := h.UserRepo.FindUser(&loginUser)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"認証に失敗しました"}))
@@ -229,7 +229,7 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	sessionID := uuid.New().String()
 	expiration := 86400 * 30
-	if err := h.DBRepo.SetSessionID(sessionID, loginUser.ID, expiration); err != nil {
+	if err := h.UserRepo.SetSessionID(sessionID, loginUser.ID, expiration); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -256,7 +256,7 @@ func (h *DBHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sessionID := cookie.Value
-	if err := h.DBRepo.DeleteSessionID(sessionID); err != nil {
+	if err := h.UserRepo.DeleteSessionID(sessionID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}

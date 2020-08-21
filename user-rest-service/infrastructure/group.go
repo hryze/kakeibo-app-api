@@ -11,6 +11,10 @@ type GroupRepository struct {
 	*MySQLHandler
 }
 
+func NewGroupRepository(mysqlHandler *MySQLHandler) *GroupRepository {
+	return &GroupRepository{mysqlHandler}
+}
+
 func (r *GroupRepository) GetApprovedGroupList(userID string) ([]model.ApprovedGroup, error) {
 	query := `
        SELECT
