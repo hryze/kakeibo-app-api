@@ -7,13 +7,6 @@ import (
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 )
 
-type DBRepository interface {
-	AuthRepository
-	TodoRepository
-	GroupTodoRepository
-	GroupTasksRepository
-}
-
 type AuthRepository interface {
 	GetUserID(sessionID string) (string, error)
 }

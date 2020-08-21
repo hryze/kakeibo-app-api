@@ -10,6 +10,10 @@ type GroupTasksRepository struct {
 	*MySQLHandler
 }
 
+func NewGroupTasksRepository(mysqlHandler *MySQLHandler) *GroupTasksRepository {
+	return &GroupTasksRepository{mysqlHandler}
+}
+
 func (r *GroupTasksRepository) GetGroupTasksUsersList(groupID int) ([]model.GroupTasksUser, error) {
 	query := `
         SELECT

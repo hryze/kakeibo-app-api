@@ -11,6 +11,10 @@ type GroupTodoRepository struct {
 	*MySQLHandler
 }
 
+func NewGroupTodoRepository(mysqlHandler *MySQLHandler) *GroupTodoRepository {
+	return &GroupTodoRepository{mysqlHandler}
+}
+
 func (r *GroupTodoRepository) GetDailyImplementationGroupTodoList(date time.Time, groupID int) ([]model.GroupTodo, error) {
 	query := `
         SELECT
@@ -244,7 +248,7 @@ func (r *GroupTodoRepository) DeleteGroupTodo(groupTodoID int) error {
 	return err
 }
 
-func (r *TodoRepository) SearchGroupTodoList(groupTodoSqlQuery string) ([]model.GroupTodo, error) {
+func (r *GroupTodoRepository) SearchGroupTodoList(groupTodoSqlQuery string) ([]model.GroupTodo, error) {
 	rows, err := r.MySQLHandler.conn.Queryx(groupTodoSqlQuery)
 	if err != nil {
 		return nil, err

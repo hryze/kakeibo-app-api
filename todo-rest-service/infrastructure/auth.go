@@ -8,6 +8,10 @@ type AuthRepository struct {
 	*RedisHandler
 }
 
+func NewAuthRepository(redisHandler *RedisHandler) *AuthRepository {
+	return &AuthRepository{redisHandler}
+}
+
 func (r *AuthRepository) GetUserID(sessionID string) (string, error) {
 	conn := r.RedisHandler.pool.Get()
 	defer conn.Close()

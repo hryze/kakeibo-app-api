@@ -52,13 +52,13 @@ func (h *DBHandler) GetDailyGroupTodoList(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	implementationGroupTodoList, err := h.DBRepo.GetDailyImplementationGroupTodoList(date, groupID)
+	implementationGroupTodoList, err := h.GroupTodoRepo.GetDailyImplementationGroupTodoList(date, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dueGroupTodoList, err := h.DBRepo.GetDailyDueGroupTodoList(date, groupID)
+	dueGroupTodoList, err := h.GroupTodoRepo.GetDailyDueGroupTodoList(date, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -119,13 +119,13 @@ func (h *DBHandler) GetMonthlyGroupTodoList(w http.ResponseWriter, r *http.Reque
 	}
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
-	implementationGroupTodoList, err := h.DBRepo.GetMonthlyImplementationGroupTodoList(firstDay, lastDay, groupID)
+	implementationGroupTodoList, err := h.GroupTodoRepo.GetMonthlyImplementationGroupTodoList(firstDay, lastDay, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dueGroupTodoList, err := h.DBRepo.GetMonthlyDueGroupTodoList(firstDay, lastDay, groupID)
+	dueGroupTodoList, err := h.GroupTodoRepo.GetMonthlyDueGroupTodoList(firstDay, lastDay, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -190,7 +190,7 @@ func (h *DBHandler) PostGroupTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.DBRepo.PostGroupTodo(&groupTodo, userID, groupID)
+	result, err := h.GroupTodoRepo.PostGroupTodo(&groupTodo, userID, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -202,7 +202,7 @@ func (h *DBHandler) PostGroupTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbGroupTodo, err := h.DBRepo.GetGroupTodo(int(lastInsertId))
+	dbGroupTodo, err := h.GroupTodoRepo.GetGroupTodo(int(lastInsertId))
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -260,12 +260,12 @@ func (h *DBHandler) PutGroupTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.DBRepo.PutGroupTodo(&groupTodo, groupTodoID); err != nil {
+	if err := h.GroupTodoRepo.PutGroupTodo(&groupTodo, groupTodoID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dbGroupTodo, err := h.DBRepo.GetGroupTodo(int(groupTodoID))
+	dbGroupTodo, err := h.GroupTodoRepo.GetGroupTodo(int(groupTodoID))
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -312,7 +312,7 @@ func (h *DBHandler) DeleteGroupTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.DBRepo.DeleteGroupTodo(groupTodoID); err != nil {
+	if err := h.GroupTodoRepo.DeleteGroupTodo(groupTodoID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -502,7 +502,7 @@ func (h *DBHandler) SearchGroupTodoList(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	dbSearchGroupTodoList, err := h.DBRepo.SearchGroupTodoList(groupTodoSqlQuery)
+	dbSearchGroupTodoList, err := h.GroupTodoRepo.SearchGroupTodoList(groupTodoSqlQuery)
 
 	if len(dbSearchGroupTodoList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
