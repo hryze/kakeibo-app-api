@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 )
 
@@ -149,7 +151,7 @@ func TestDBHandler_Login(t *testing.T) {
 	}
 
 	if len(cookies.Value) < 0 {
-		t.Errorf("want = , got = %d", len(cookies.Value))
+		t.Errorf("want = more than 1, got = %d", len(cookies.Value))
 	}
 
 	if !time.Now().Before(cookies.Expires) {
@@ -175,5 +177,45 @@ func TestDBHandler_Login(t *testing.T) {
 
 	if responseJson.Email != "test@icloud.com" {
 		t.Errorf("want = test@icloud.com, got = %s", responseJson.Email)
+	}
+}
+
+func TestDBHandler_Logout(t *testing.T) {
+	h := DBHandler{UserRepo: TestUserRepository{}}
+
+	r := httptest.NewRequest("DELETE", "/logout", nil)
+	w := httptest.NewRecorder()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.Logout(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		t.Errorf("want = 200, got = %d", res.StatusCode)
+	}
+
+	if res.Header.Get("Content-Type") != "application/json; charset=UTF-8" {
+		t.Errorf("want = application/json; charset=UTF-8, got = %s", res.Header.Get("Content-Type"))
+	}
+
+	if len(res.Cookies()[0].Value) != 0 {
+		t.Errorf("want = 0, got = %d", len(res.Cookies()[0].Value))
+	}
+
+	var responseJson LogoutMsg
+	if err := json.NewDecoder(res.Body).Decode(&responseJson); err != nil {
+		t.Errorf("error: %#v, res: %#v", err, w)
+	}
+
+	if responseJson.Message != "ログアウトしました" {
+		t.Errorf("want = ログアウトしました, got = %s", responseJson.Message)
 	}
 }
