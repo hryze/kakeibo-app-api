@@ -225,11 +225,11 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"認証に失敗しました"}))
 		return
 	}
-	loginUser.Password = ""
+	dbUser.Password = ""
 
 	sessionID := uuid.New().String()
 	expiration := 86400 * 30
-	if err := h.UserRepo.SetSessionID(sessionID, loginUser.ID, expiration); err != nil {
+	if err := h.UserRepo.SetSessionID(sessionID, dbUser.ID, expiration); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -243,7 +243,7 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(&loginUser); err != nil {
+	if err := json.NewEncoder(w).Encode(&dbUser); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

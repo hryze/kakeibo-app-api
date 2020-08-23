@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 )
@@ -31,7 +34,12 @@ func (t TestUserRepository) DeleteUser(signUpUser *model.SignUpUser) error {
 }
 
 func (t TestUserRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUser, error) {
-	return &model.LoginUser{}, nil
+	return &model.LoginUser{
+		ID:       "testID",
+		Name:     "testName",
+		Email:    "test@icloud.com",
+		Password: "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy",
+	}, nil
 }
 
 func (t TestUserRepository) SetSessionID(sessionID string, loginUserID string, expiration int) error {
@@ -78,24 +86,136 @@ func TestDBHandler_SignUp(t *testing.T) {
 
 	h.SignUp(w, r)
 
-	if w.Code != http.StatusCreated {
-		t.Errorf("want = 201, got = %d", w.Code)
+	res := w.Result()
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusCreated {
+		t.Errorf("want = 201, got = %d", res.StatusCode)
+	}
+
+	if res.Header.Get("Content-Type") != "application/json; charset=UTF-8" {
+		t.Errorf("want = application/json; charset=UTF-8, got = %s", res.Header.Get("Content-Type"))
 	}
 
 	var responseJson model.SignUpUser
-	if err := json.NewDecoder(w.Body).Decode(&responseJson); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&responseJson); err != nil {
 		t.Errorf("error: %#v, res: %#v", err, w)
 	}
 
-	if responseJson.ID != requestJson.ID {
-		t.Errorf("want = %s, got = %s", requestJson.ID, responseJson.ID)
+	if responseJson.ID != "testID" {
+		t.Errorf("want = testID, got = %s", responseJson.ID)
 	}
 
-	if responseJson.Name != requestJson.Name {
-		t.Errorf("want = %s, got = %s", requestJson.Name, responseJson.Name)
+	if responseJson.Name != "testName" {
+		t.Errorf("want = testName, got = %s", responseJson.Name)
 	}
 
-	if responseJson.Email != requestJson.Email {
-		t.Errorf("want = %s, got = %s", requestJson.Email, responseJson.Email)
+	if responseJson.Email != "test@icloud.com" {
+		t.Errorf("want = test@icloud.com, got = %s", responseJson.Email)
+	}
+}
+
+func TestDBHandler_Login(t *testing.T) {
+	h := DBHandler{UserRepo: TestUserRepository{}}
+
+	requestJson := model.LoginUser{
+		Email:    "test@icloud.com",
+		Password: "testPassword",
+	}
+
+	b, err := json.Marshal(&requestJson)
+	if err != nil {
+		t.Fatalf("error: %#v", err)
+	}
+
+	r := httptest.NewRequest("POST", "/login", bytes.NewBuffer(b))
+	w := httptest.NewRecorder()
+
+	h.Login(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusCreated {
+		t.Errorf("want = 201, got = %d", res.StatusCode)
+	}
+
+	if res.Header.Get("Content-Type") != "application/json; charset=UTF-8" {
+		t.Errorf("want = application/json; charset=UTF-8, got = %s", res.Header.Get("Content-Type"))
+	}
+
+	cookies := res.Cookies()[0]
+
+	if cookies.Name != "session_id" {
+		t.Errorf("want = session_id, got = %s", cookies.Name)
+	}
+
+	if len(cookies.Value) < 0 {
+		t.Errorf("want = more than 1, got = %d", len(cookies.Value))
+	}
+
+	if !time.Now().Before(cookies.Expires) {
+		t.Errorf("want = true, got = %t", time.Now().Before(cookies.Expires))
+	}
+
+	if !cookies.HttpOnly {
+		t.Errorf("want = true, got = %t", cookies.HttpOnly)
+	}
+
+	var responseJson model.LoginUser
+	if err := json.NewDecoder(res.Body).Decode(&responseJson); err != nil {
+		t.Errorf("error: %#v, res: %#v", err, w)
+	}
+
+	if responseJson.ID != "testID" {
+		t.Errorf("want = testID, got = %s", responseJson.ID)
+	}
+
+	if responseJson.Name != "testName" {
+		t.Errorf("want = testName, got = %s", responseJson.Name)
+	}
+
+	if responseJson.Email != "test@icloud.com" {
+		t.Errorf("want = test@icloud.com, got = %s", responseJson.Email)
+	}
+}
+
+func TestDBHandler_Logout(t *testing.T) {
+	h := DBHandler{UserRepo: TestUserRepository{}}
+
+	r := httptest.NewRequest("DELETE", "/logout", nil)
+	w := httptest.NewRecorder()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.Logout(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		t.Errorf("want = 200, got = %d", res.StatusCode)
+	}
+
+	if res.Header.Get("Content-Type") != "application/json; charset=UTF-8" {
+		t.Errorf("want = application/json; charset=UTF-8, got = %s", res.Header.Get("Content-Type"))
+	}
+
+	if len(res.Cookies()[0].Value) != 0 {
+		t.Errorf("want = 0, got = %d", len(res.Cookies()[0].Value))
+	}
+
+	var responseJson LogoutMsg
+	if err := json.NewDecoder(res.Body).Decode(&responseJson); err != nil {
+		t.Errorf("error: %#v, res: %#v", err, w)
+	}
+
+	if responseJson.Message != "ログアウトしました" {
+		t.Errorf("want = ログアウトしました, got = %s", responseJson.Message)
 	}
 }
