@@ -45,7 +45,7 @@ func AssertResponseBody(t *testing.T, res *http.Response, path string) {
 	var got bytes.Buffer
 	err = json.Indent(&got, body, "", "  ")
 	if err != nil {
-		t.Fatalf("unexpected error by json.Indent '%#v'", err)
+		t.Fatalf("unexpected error by json.Indent() '%#v'", err)
 	}
 
 	if diff := cmp.Diff(want, got.String()); len(diff) != 0 {

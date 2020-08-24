@@ -57,7 +57,7 @@ func TestDBHandler_SignUp(t *testing.T) {
 
 	listener, err := net.Listen("tcp", "127.0.0.1:8081")
 	if err != nil {
-		t.Fatalf("error: %#v", err)
+		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
 	}
 
 	ts := httptest.Server{
