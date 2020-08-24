@@ -63,8 +63,14 @@ func validateTodo(todos Todos) error {
 
 	validate := validator.New()
 	validate.RegisterCustomTypeFunc(validateValuer, model.Date{})
-	validate.RegisterValidation("date", dateValidation)
-	validate.RegisterValidation("blank", blankValidation)
+	if err := validate.RegisterValidation("date", dateValidation); err != nil {
+		return err
+	}
+
+	if err := validate.RegisterValidation("blank", blankValidation); err != nil {
+		return err
+	}
+
 	err := validate.Struct(todos)
 	if err == nil {
 		return nil
@@ -513,6 +519,10 @@ func (h *DBHandler) SearchTodoList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dbSearchTodoList, err := h.TodoRepo.SearchTodoList(todoSqlQuery)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
 
 	if len(dbSearchTodoList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")

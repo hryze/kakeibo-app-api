@@ -144,7 +144,7 @@ func postInitStandardBudgets(userID string) error {
 	}
 
 	defer func() {
-		io.Copy(ioutil.Discard, response.Body)
+		_, _ = io.Copy(ioutil.Discard, response.Body)
 		response.Body.Close()
 	}()
 

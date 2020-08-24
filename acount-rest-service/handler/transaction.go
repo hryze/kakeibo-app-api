@@ -68,9 +68,18 @@ func validateTransaction(transactionReceivers TransactionReceivers) error {
 
 	validate := validator.New()
 	validate.RegisterCustomTypeFunc(validateValuer, model.Date{}, model.NullString{}, model.NullInt64{})
-	validate.RegisterValidation("blank", blankValidation)
-	validate.RegisterValidation("date", dateValidation)
-	validate.RegisterValidation("either_id", eitherIDValidation)
+	if err := validate.RegisterValidation("blank", blankValidation); err != nil {
+		return err
+	}
+
+	if err := validate.RegisterValidation("date", dateValidation); err != nil {
+		return err
+	}
+
+	if err := validate.RegisterValidation("either_id", eitherIDValidation); err != nil {
+		return err
+	}
+
 	err := validate.Struct(transactionReceivers)
 	if err == nil {
 		return nil

@@ -18,40 +18,40 @@ type MockGroupRepository struct{ repository.GroupRepository }
 
 func (t MockGroupRepository) GetApprovedGroupList(userID string) ([]model.ApprovedGroup, error) {
 	return []model.ApprovedGroup{
-		{1, "group1", make([]model.ApprovedUser, 0), make([]model.UnapprovedUser, 0)},
-		{2, "group2", make([]model.ApprovedUser, 0), make([]model.UnapprovedUser, 0)},
-		{3, "group3", make([]model.ApprovedUser, 0), make([]model.UnapprovedUser, 0)},
+		{GroupID: 1, GroupName: "group1", ApprovedUsersList: make([]model.ApprovedUser, 0), UnapprovedUsersList: make([]model.UnapprovedUser, 0)},
+		{GroupID: 2, GroupName: "group2", ApprovedUsersList: make([]model.ApprovedUser, 0), UnapprovedUsersList: make([]model.UnapprovedUser, 0)},
+		{GroupID: 3, GroupName: "group3", ApprovedUsersList: make([]model.ApprovedUser, 0), UnapprovedUsersList: make([]model.UnapprovedUser, 0)},
 	}, nil
 }
 
 func (t MockGroupRepository) GetUnApprovedGroupList(userID string) ([]model.UnapprovedGroup, error) {
 	return []model.UnapprovedGroup{
-		{4, "group4", make([]model.ApprovedUser, 0), make([]model.UnapprovedUser, 0)},
-		{5, "group5", make([]model.ApprovedUser, 0), make([]model.UnapprovedUser, 0)},
+		{GroupID: 4, GroupName: "group4", ApprovedUsersList: make([]model.ApprovedUser, 0), UnapprovedUsersList: make([]model.UnapprovedUser, 0)},
+		{GroupID: 5, GroupName: "group5", ApprovedUsersList: make([]model.ApprovedUser, 0), UnapprovedUsersList: make([]model.UnapprovedUser, 0)},
 	}, nil
 }
 
 func (t MockGroupRepository) GetApprovedUsersList(approvedGroupIDList []interface{}) ([]model.ApprovedUser, error) {
 	return []model.ApprovedUser{
-		{1, "userID1", "userName1"},
-		{1, "userID2", "userName2"},
-		{2, "userID1", "userName1"},
-		{3, "userID1", "userName1"},
-		{3, "userID2", "userName2"},
-		{4, "userID2", "userName2"},
-		{4, "userID4", "userName4"},
-		{5, "userID4", "userName4"},
+		{GroupID: 1, UserID: "userID1", UserName: "userName1"},
+		{GroupID: 1, UserID: "userID2", UserName: "userName2"},
+		{GroupID: 2, UserID: "userID1", UserName: "userName1"},
+		{GroupID: 3, UserID: "userID1", UserName: "userName1"},
+		{GroupID: 3, UserID: "userID2", UserName: "userName2"},
+		{GroupID: 4, UserID: "userID2", UserName: "userName2"},
+		{GroupID: 4, UserID: "userID4", UserName: "userName4"},
+		{GroupID: 5, UserID: "userID4", UserName: "userName4"},
 	}, nil
 }
 
 func (t MockGroupRepository) GetUnapprovedUsersList(unapprovedGroupIDList []interface{}) ([]model.UnapprovedUser, error) {
 	return []model.UnapprovedUser{
-		{1, "userID3", "userName3"},
-		{2, "userID3", "userName3"},
-		{2, "userID4", "userName4"},
-		{4, "userID1", "userName1"},
-		{4, "userID3", "userName3"},
-		{5, "userID1", "userName1"},
+		{GroupID: 1, UserID: "userID3", UserName: "userName3"},
+		{GroupID: 2, UserID: "userID3", UserName: "userName3"},
+		{GroupID: 2, UserID: "userID4", UserName: "userName4"},
+		{GroupID: 4, UserID: "userID1", UserName: "userName1"},
+		{GroupID: 4, UserID: "userID3", UserName: "userName3"},
+		{GroupID: 5, UserID: "userID1", UserName: "userName1"},
 	}, nil
 }
 

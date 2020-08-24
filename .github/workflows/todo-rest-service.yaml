@@ -1,9 +1,9 @@
-name: Build
+name: todo-rest-service
 on: [pull_request]
 defaults:
   run:
     shell: bash
-    working-directory: user-rest-service
+    working-directory: todo-rest-service
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,9 +18,9 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-#      - uses: golangci/golangci-lint-action@v2
-#        with:
-#          version: v1.30
-#          args: --timeout=3m0s
+      - uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.30
+          args: --timeout=3m0s
       - name: Run tests
         run: go test -race -v ./...
