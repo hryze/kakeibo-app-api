@@ -1,0 +1,115 @@
+{
+  "approved_group_list": [
+    {
+      "group_id": 1,
+      "group_name": "group1",
+      "approved_users_list": [
+        {
+          "group_id": 1,
+          "user_id": "userID1",
+          "user_name": "userName1"
+        },
+        {
+          "group_id": 1,
+          "user_id": "userID2",
+          "user_name": "userName2"
+        }
+      ],
+      "unapproved_users_list": [
+        {
+          "group_id": 1,
+          "user_id": "userID3",
+          "user_name": "userName3"
+        }
+      ]
+    },
+    {
+      "group_id": 2,
+      "group_name": "group2",
+      "approved_users_list": [
+        {
+          "group_id": 2,
+          "user_id": "userID1",
+          "user_name": "userName1"
+        }
+      ],
+      "unapproved_users_list": [
+        {
+          "group_id": 2,
+          "user_id": "userID3",
+          "user_name": "userName3"
+        },
+        {
+          "group_id": 2,
+          "user_id": "userID4",
+          "user_name": "userName4"
+        }
+      ]
+    },
+    {
+      "group_id": 3,
+      "group_name": "group3",
+      "approved_users_list": [
+        {
+          "group_id": 3,
+          "user_id": "userID1",
+          "user_name": "userName1"
+        },
+        {
+          "group_id": 3,
+          "user_id": "userID2",
+          "user_name": "userName2"
+        }
+      ],
+      "unapproved_users_list": []
+    }
+  ],
+  "unapproved_group_list": [
+    {
+      "group_id": 4,
+      "group_name": "group4",
+      "approved_users_list": [
+        {
+          "group_id": 4,
+          "user_id": "userID2",
+          "user_name": "userName2"
+        },
+        {
+          "group_id": 4,
+          "user_id": "userID4",
+          "user_name": "userName4"
+        }
+      ],
+      "unapproved_users_list": [
+        {
+          "group_id": 4,
+          "user_id": "userID1",
+          "user_name": "userName1"
+        },
+        {
+          "group_id": 4,
+          "user_id": "userID3",
+          "user_name": "userName3"
+        }
+      ]
+    },
+    {
+      "group_id": 5,
+      "group_name": "group5",
+      "approved_users_list": [
+        {
+          "group_id": 5,
+          "user_id": "userID4",
+          "user_name": "userName4"
+        }
+      ],
+      "unapproved_users_list": [
+        {
+          "group_id": 5,
+          "user_id": "userID1",
+          "user_name": "userName1"
+        }
+      ]
+    }
+  ]
+}
