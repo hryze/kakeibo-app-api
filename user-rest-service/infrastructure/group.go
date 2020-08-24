@@ -35,9 +35,12 @@ func (r *GroupRepository) GetApprovedGroupList(userID string) ([]model.ApprovedG
 	}
 	defer rows.Close()
 
-	var approvedGroupList []model.ApprovedGroup
+	approvedGroupList := make([]model.ApprovedGroup, 0)
 	for rows.Next() {
-		var approvedGroup model.ApprovedGroup
+		approvedGroup := model.ApprovedGroup{
+			ApprovedUsersList:   make([]model.ApprovedUser, 0),
+			UnapprovedUsersList: make([]model.UnapprovedUser, 0),
+		}
 		if err := rows.StructScan(&approvedGroup); err != nil {
 			return nil, err
 		}
@@ -70,9 +73,13 @@ func (r *GroupRepository) GetUnApprovedGroupList(userID string) ([]model.Unappro
 	}
 	defer rows.Close()
 
-	var unapprovedGroupList []model.UnapprovedGroup
+	unapprovedGroupList := make([]model.UnapprovedGroup, 0)
 	for rows.Next() {
-		var unapprovedGroup model.UnapprovedGroup
+		unapprovedGroup := model.UnapprovedGroup{
+			ApprovedUsersList:   make([]model.ApprovedUser, 0),
+			UnapprovedUsersList: make([]model.UnapprovedUser, 0),
+		}
+
 		if err := rows.StructScan(&unapprovedGroup); err != nil {
 			return nil, err
 		}
