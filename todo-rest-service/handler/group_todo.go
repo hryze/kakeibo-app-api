@@ -503,6 +503,10 @@ func (h *DBHandler) SearchGroupTodoList(w http.ResponseWriter, r *http.Request) 
 	}
 
 	dbSearchGroupTodoList, err := h.GroupTodoRepo.SearchGroupTodoList(groupTodoSqlQuery)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
 
 	if len(dbSearchGroupTodoList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
