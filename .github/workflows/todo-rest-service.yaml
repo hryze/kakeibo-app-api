@@ -1,5 +1,8 @@
 name: todo-rest-service
 on: [pull_request]
+  paths:
+    - todo-rest-service/**
+    - .github/workflows/todo-rest-service.yaml
 defaults:
   run:
     shell: bash
