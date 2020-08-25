@@ -1,8 +1,9 @@
 name: user-rest-service
-on: [pull_request]
-  paths:
-    - user-rest-service/**
-    - .github/workflows/user-rest-service.yaml
+on:
+  pull_request:
+    paths:
+      - user-rest-service/**
+      - .github/workflows/user-rest-service.yaml
 defaults:
   run:
     shell: bash
