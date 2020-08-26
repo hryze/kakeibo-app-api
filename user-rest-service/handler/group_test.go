@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gorilla/mux"
+
 	"github.com/google/uuid"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
@@ -83,6 +85,10 @@ func (t MockGroupRepository) GetGroup(groupID int) (*model.Group, error) {
 	}, nil
 }
 
+func (t MockGroupRepository) PutGroup(group *model.Group, groupID int) error {
+	return nil
+}
+
 func TestDBHandler_GetGroupList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:  MockAuthRepository{},
@@ -147,4 +153,33 @@ func TestDBHandler_PostGroup(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
 	testutil.AssertResponseBody(t, res, "./testdata/group/post_group/response.json.golden")
+}
+
+func TestDBHandler_PutGroup(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:  MockAuthRepository{},
+		GroupRepo: MockGroupRepository{},
+	}
+
+	r := httptest.NewRequest("PUT", "/group/1", strings.NewReader(testutil.GetJsonFromTestData(t, "./testdata/group/put_group/request.json")))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PutGroup(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, "./testdata/group/put_group/response.json.golden")
 }
