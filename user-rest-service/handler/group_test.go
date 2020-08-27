@@ -23,8 +23,16 @@ type MockGroupRepository struct {
 	repository.GroupRepository
 }
 
+type MockUserRepositoryForGroup struct {
+	repository.UserRepository
+}
+
 type MockSqlResult struct {
 	sql.Result
+}
+
+func (t MockUserRepositoryForGroup) FindUserID(userID string) error {
+	return nil
 }
 
 func (r MockSqlResult) LastInsertId() (int64, error) {
@@ -87,6 +95,26 @@ func (t MockGroupRepository) GetGroup(groupID int) (*model.Group, error) {
 
 func (t MockGroupRepository) PutGroup(group *model.Group, groupID int) error {
 	return nil
+}
+
+func (t MockGroupRepository) PostUnapprovedUser(unapprovedUser *model.UnapprovedUser, groupID int) (sql.Result, error) {
+	return MockSqlResult{}, nil
+}
+
+func (t MockGroupRepository) GetUnapprovedUser(groupUnapprovedUsersID int) (*model.UnapprovedUser, error) {
+	return &model.UnapprovedUser{
+		GroupID:  1,
+		UserID:   "userID2",
+		UserName: "userName2",
+	}, nil
+}
+
+func (t MockGroupRepository) FindApprovedUser(groupID int, userID string) error {
+	return sql.ErrNoRows
+}
+
+func (t MockGroupRepository) FindUnapprovedUser(groupID int, userID string) error {
+	return sql.ErrNoRows
 }
 
 func TestDBHandler_GetGroupList(t *testing.T) {
@@ -182,4 +210,34 @@ func TestDBHandler_PutGroup(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, "./testdata/group/put_group/response.json.golden")
+}
+
+func TestDBHandler_PostGroupUnapprovedUser(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:  MockAuthRepository{},
+		UserRepo:  MockUserRepositoryForGroup{},
+		GroupRepo: MockGroupRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/group/1/users", strings.NewReader(testutil.GetJsonFromTestData(t, "./testdata/group/post_group_unapproved_user/request.json")))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostGroupUnapprovedUser(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, "./testdata/group/post_group_unapproved_user/response.json.golden")
 }
