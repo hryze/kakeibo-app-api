@@ -118,11 +118,26 @@ func (t MockGroupRepository) FindApprovedUser(groupID int, userID string) error 
 }
 
 func (t MockGroupRepository) FindUnapprovedUser(groupID int, userID string) error {
-	return sql.ErrNoRows
+	if groupID == 1 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
 
 func (t MockGroupRepository) DeleteGroupApprovedUser(groupID int, userID string) error {
 	return nil
+}
+
+func (t MockGroupRepository) PostGroupApprovedUserAndDeleteGroupUnapprovedUser(groupID int, userID string) (sql.Result, error) {
+	return MockSqlResult{}, nil
+}
+func (t MockGroupRepository) GetApprovedUser(approvedUsersID int) (*model.ApprovedUser, error) {
+	return &model.ApprovedUser{
+		GroupID:  2,
+		UserID:   "userID1",
+		UserName: "userName1",
+	}, nil
 }
 
 func TestDBHandler_GetGroupList(t *testing.T) {
@@ -277,4 +292,33 @@ func TestDBHandler_DeleteGroupApprovedUser(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, "./testdata/group/delete_group_approved_user/response.json.golden")
+}
+
+func TestDBHandler_PostGroupApprovedUser(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:  MockAuthRepository{},
+		GroupRepo: MockGroupRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/groups/2/users/approved", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "2",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostGroupApprovedUser(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, "./testdata/group/post_group_approved_user/response.json.golden")
 }
