@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
 	"github.com/gorilla/mux"
 
 	"github.com/google/uuid"
@@ -355,4 +357,27 @@ func TestDBHandler_DeleteGroupUnapprovedUser(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, "./testdata/group/delete_group_unapproved_user/response.json.golden")
+}
+
+func TestDBHandler_VerifyGroupAffiliation(t *testing.T) {
+	h := DBHandler{
+		GroupRepo: MockGroupRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/2/users/userID1", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "2",
+		"user_id":  "userID1",
+	})
+
+	h.VerifyGroupAffiliation(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	if diff := cmp.Diff(http.StatusOK, res.StatusCode); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
 }
