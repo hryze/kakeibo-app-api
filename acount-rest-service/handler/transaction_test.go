@@ -25,7 +25,7 @@ func (t MockTransactionsRepository) GetMonthlyTransactionsList(userID string, fi
 			ID:                 3,
 			TransactionType:    "expense",
 			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC)},
-			TransactionDate:    model.Date{Time: time.Date(2020, 7, 15, 0, 0, 0, 0, time.UTC)},
+			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 15, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 			Amount:             1300,
@@ -37,7 +37,7 @@ func (t MockTransactionsRepository) GetMonthlyTransactionsList(userID string, fi
 			ID:                 2,
 			TransactionType:    "income",
 			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC)},
-			TransactionDate:    model.Date{Time: time.Date(2020, 7, 10, 0, 0, 0, 0, time.UTC)},
+			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 10, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "賞与", Valid: true}},
 			Amount:             200000,
@@ -49,7 +49,7 @@ func (t MockTransactionsRepository) GetMonthlyTransactionsList(userID string, fi
 			ID:                 1,
 			TransactionType:    "expense",
 			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
-			TransactionDate:    model.Date{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
 			Amount:             15000,
@@ -86,5 +86,5 @@ func TestDBHandler_GetMonthlyTransactionsList(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, "./testdata/transaction/get_monthly_transactions_list/response.json.golden")
+	testutil.AssertResponseBody(t, res, "./testdata/transaction/get_monthly_transactions_list/response.json.golden", &model.TransactionsList{}, &model.TransactionsList{})
 }

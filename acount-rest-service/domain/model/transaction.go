@@ -18,7 +18,7 @@ type TransactionSender struct {
 	ID                 int        `json:"id"                   db:"id"`
 	TransactionType    string     `json:"transaction_type"     db:"transaction_type"`
 	UpdatedDate        DateTime   `json:"updated_date"         db:"updated_date"`
-	TransactionDate    Date       `json:"transaction_date"     db:"transaction_date"`
+	TransactionDate    SenderDate `json:"transaction_date"     db:"transaction_date"`
 	Shop               NullString `json:"shop"                 db:"shop"`
 	Memo               NullString `json:"memo"                 db:"memo"`
 	Amount             int        `json:"amount"               db:"amount"`
@@ -28,21 +28,25 @@ type TransactionSender struct {
 }
 
 type TransactionReceiver struct {
-	TransactionType  string     `json:"transaction_type"   db:"transaction_type"   validate:"required,oneof=expense income"`
-	TransactionDate  Date       `json:"transaction_date"   db:"transaction_date"   validate:"required,date"`
-	Shop             NullString `json:"shop"               db:"shop"               validate:"omitempty,max=20,blank"`
-	Memo             NullString `json:"memo"               db:"memo"               validate:"omitempty,max=50,blank"`
-	Amount           int        `json:"amount"             db:"amount"             validate:"required,min=1"`
-	BigCategoryID    int        `json:"big_category_id"    db:"big_category_id"    validate:"required,min=1,max=17,either_id"`
-	MediumCategoryID NullInt64  `json:"medium_category_id" db:"medium_category_id" validate:"omitempty,min=1,max=99"`
-	CustomCategoryID NullInt64  `json:"custom_category_id" db:"custom_category_id" validate:"omitempty,min=1"`
+	TransactionType  string       `json:"transaction_type"   db:"transaction_type"   validate:"required,oneof=expense income"`
+	TransactionDate  ReceiverDate `json:"transaction_date"   db:"transaction_date"   validate:"required,date"`
+	Shop             NullString   `json:"shop"               db:"shop"               validate:"omitempty,max=20,blank"`
+	Memo             NullString   `json:"memo"               db:"memo"               validate:"omitempty,max=50,blank"`
+	Amount           int          `json:"amount"             db:"amount"             validate:"required,min=1"`
+	BigCategoryID    int          `json:"big_category_id"    db:"big_category_id"    validate:"required,min=1,max=17,either_id"`
+	MediumCategoryID NullInt64    `json:"medium_category_id" db:"medium_category_id" validate:"omitempty,min=1,max=99"`
+	CustomCategoryID NullInt64    `json:"custom_category_id" db:"custom_category_id" validate:"omitempty,min=1"`
 }
 
 type DateTime struct {
 	time.Time
 }
 
-type Date struct {
+type SenderDate struct {
+	time.Time
+}
+
+type ReceiverDate struct {
 	time.Time
 }
 
@@ -71,7 +75,7 @@ func (dt DateTime) Value() (driver.Value, error) {
 	return dt.Time, nil
 }
 
-func (d *Date) Scan(value interface{}) error {
+func (d *SenderDate) Scan(value interface{}) error {
 	date, ok := value.(time.Time)
 	if !ok {
 		return errors.New("type assertion error")
@@ -80,18 +84,41 @@ func (d *Date) Scan(value interface{}) error {
 	return nil
 }
 
-func (d Date) Value() (driver.Value, error) {
+func (d SenderDate) Value() (driver.Value, error) {
 	return d.Time, nil
 }
 
-func (d *Date) MarshalJSON() ([]byte, error) {
-	date := d.Time.Format("01/02")
+func (d *SenderDate) MarshalJSON() ([]byte, error) {
+	date := d.Time.Format("2006/01/02")
 	dayOfWeeks := [...]string{"日", "月", "火", "水", "木", "金", "土"}
 	dayOfWeek := dayOfWeeks[d.Time.Weekday()]
 	return []byte(`"` + date + `(` + dayOfWeek + `)` + `"`), nil
 }
 
-func (d *Date) UnmarshalJSON(data []byte) error {
+func (d *SenderDate) UnmarshalJSON(data []byte) error {
+	trimData := strings.Trim(string(data), "\"")[:10]
+	date, err := time.Parse("2006/01/02", trimData)
+	if err != nil {
+		return err
+	}
+	d.Time = date
+	return nil
+}
+
+func (d *ReceiverDate) Scan(value interface{}) error {
+	date, ok := value.(time.Time)
+	if !ok {
+		return errors.New("type assertion error")
+	}
+	d.Time = date
+	return nil
+}
+
+func (d ReceiverDate) Value() (driver.Value, error) {
+	return d.Time, nil
+}
+
+func (d *ReceiverDate) UnmarshalJSON(data []byte) error {
 	trimData := strings.Trim(string(data), "\"")[:10]
 	date, err := time.Parse("2006-01-02", trimData)
 	if err != nil {
