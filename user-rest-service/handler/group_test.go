@@ -169,7 +169,7 @@ func TestDBHandler_GetGroupList(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, "./testdata/group/get_group_list/response.json.golden")
+	testutil.AssertResponseBody(t, res, &model.GroupList{}, &model.GroupList{})
 }
 
 func TestDBHandler_PostGroup(t *testing.T) {
@@ -194,7 +194,7 @@ func TestDBHandler_PostGroup(t *testing.T) {
 		GroupRepo: MockGroupRepository{},
 	}
 
-	r := httptest.NewRequest("POST", "/groups", strings.NewReader(testutil.GetJsonFromTestData(t, "./testdata/group/post_group/request.json")))
+	r := httptest.NewRequest("POST", "/groups", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
@@ -210,7 +210,7 @@ func TestDBHandler_PostGroup(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, "./testdata/group/post_group/response.json.golden")
+	testutil.AssertResponseBody(t, res, &model.Group{}, &model.Group{})
 }
 
 func TestDBHandler_PutGroup(t *testing.T) {
@@ -219,7 +219,7 @@ func TestDBHandler_PutGroup(t *testing.T) {
 		GroupRepo: MockGroupRepository{},
 	}
 
-	r := httptest.NewRequest("PUT", "/groups/1", strings.NewReader(testutil.GetJsonFromTestData(t, "./testdata/group/put_group/request.json")))
+	r := httptest.NewRequest("PUT", "/groups/1", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
@@ -239,7 +239,7 @@ func TestDBHandler_PutGroup(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, "./testdata/group/put_group/response.json.golden")
+	testutil.AssertResponseBody(t, res, &model.Group{}, &model.Group{})
 }
 
 func TestDBHandler_PostGroupUnapprovedUser(t *testing.T) {
@@ -249,7 +249,7 @@ func TestDBHandler_PostGroupUnapprovedUser(t *testing.T) {
 		GroupRepo: MockGroupRepository{},
 	}
 
-	r := httptest.NewRequest("POST", "/groups/1/users", strings.NewReader(testutil.GetJsonFromTestData(t, "./testdata/group/post_group_unapproved_user/request.json")))
+	r := httptest.NewRequest("POST", "/groups/1/users", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
@@ -269,7 +269,7 @@ func TestDBHandler_PostGroupUnapprovedUser(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, "./testdata/group/post_group_unapproved_user/response.json.golden")
+	testutil.AssertResponseBody(t, res, &model.UnapprovedUser{}, &model.UnapprovedUser{})
 }
 
 func TestDBHandler_DeleteGroupApprovedUser(t *testing.T) {
@@ -298,7 +298,7 @@ func TestDBHandler_DeleteGroupApprovedUser(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, "./testdata/group/delete_group_approved_user/response.json.golden")
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }
 
 func TestDBHandler_PostGroupApprovedUser(t *testing.T) {
@@ -327,7 +327,7 @@ func TestDBHandler_PostGroupApprovedUser(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, "./testdata/group/post_group_approved_user/response.json.golden")
+	testutil.AssertResponseBody(t, res, &model.ApprovedUser{}, &model.ApprovedUser{})
 }
 
 func TestDBHandler_DeleteGroupUnapprovedUser(t *testing.T) {
@@ -356,7 +356,7 @@ func TestDBHandler_DeleteGroupUnapprovedUser(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, "./testdata/group/delete_group_unapproved_user/response.json.golden")
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }
 
 func TestDBHandler_VerifyGroupAffiliation(t *testing.T) {
