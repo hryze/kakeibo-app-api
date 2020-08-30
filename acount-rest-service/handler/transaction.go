@@ -67,7 +67,7 @@ func validateTransaction(transactionReceivers TransactionReceivers) error {
 	var transactionValidationErrorMsg TransactionValidationErrorMsg
 
 	validate := validator.New()
-	validate.RegisterCustomTypeFunc(validateValuer, model.Date{}, model.NullString{}, model.NullInt64{})
+	validate.RegisterCustomTypeFunc(validateValuer, model.ReceiverDate{}, model.NullString{}, model.NullInt64{})
 	if err := validate.RegisterValidation("blank", blankValidation); err != nil {
 		return err
 	}

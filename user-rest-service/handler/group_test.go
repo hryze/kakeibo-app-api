@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
 	"github.com/gorilla/mux"
 
 	"github.com/google/uuid"
@@ -110,11 +112,39 @@ func (t MockGroupRepository) GetUnapprovedUser(groupUnapprovedUsersID int) (*mod
 }
 
 func (t MockGroupRepository) FindApprovedUser(groupID int, userID string) error {
-	return sql.ErrNoRows
+	if groupID == 1 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
 
 func (t MockGroupRepository) FindUnapprovedUser(groupID int, userID string) error {
-	return sql.ErrNoRows
+	if groupID == 1 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
+
+func (t MockGroupRepository) PostGroupApprovedUserAndDeleteGroupUnapprovedUser(groupID int, userID string) (sql.Result, error) {
+	return MockSqlResult{}, nil
+}
+
+func (t MockGroupRepository) GetApprovedUser(approvedUsersID int) (*model.ApprovedUser, error) {
+	return &model.ApprovedUser{
+		GroupID:  2,
+		UserID:   "userID1",
+		UserName: "userName1",
+	}, nil
+}
+
+func (t MockGroupRepository) DeleteGroupApprovedUser(groupID int, userID string) error {
+	return nil
+}
+
+func (t MockGroupRepository) DeleteGroupUnapprovedUser(groupID int, userID string) error {
+	return nil
 }
 
 func TestDBHandler_GetGroupList(t *testing.T) {
@@ -189,7 +219,7 @@ func TestDBHandler_PutGroup(t *testing.T) {
 		GroupRepo: MockGroupRepository{},
 	}
 
-	r := httptest.NewRequest("PUT", "/group/1", strings.NewReader(testutil.GetJsonFromTestData(t, "./testdata/group/put_group/request.json")))
+	r := httptest.NewRequest("PUT", "/groups/1", strings.NewReader(testutil.GetJsonFromTestData(t, "./testdata/group/put_group/request.json")))
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
@@ -219,7 +249,7 @@ func TestDBHandler_PostGroupUnapprovedUser(t *testing.T) {
 		GroupRepo: MockGroupRepository{},
 	}
 
-	r := httptest.NewRequest("POST", "/group/1/users", strings.NewReader(testutil.GetJsonFromTestData(t, "./testdata/group/post_group_unapproved_user/request.json")))
+	r := httptest.NewRequest("POST", "/groups/1/users", strings.NewReader(testutil.GetJsonFromTestData(t, "./testdata/group/post_group_unapproved_user/request.json")))
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
@@ -240,4 +270,114 @@ func TestDBHandler_PostGroupUnapprovedUser(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
 	testutil.AssertResponseBody(t, res, "./testdata/group/post_group_unapproved_user/response.json.golden")
+}
+
+func TestDBHandler_DeleteGroupApprovedUser(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:  MockAuthRepository{},
+		GroupRepo: MockGroupRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/groups/2/users", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "2",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteGroupApprovedUser(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, "./testdata/group/delete_group_approved_user/response.json.golden")
+}
+
+func TestDBHandler_PostGroupApprovedUser(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:  MockAuthRepository{},
+		GroupRepo: MockGroupRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/groups/2/users/approved", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "2",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostGroupApprovedUser(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, "./testdata/group/post_group_approved_user/response.json.golden")
+}
+
+func TestDBHandler_DeleteGroupUnapprovedUser(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:  MockAuthRepository{},
+		GroupRepo: MockGroupRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/groups/2/users/unapproved", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "2",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteGroupUnapprovedUser(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, "./testdata/group/delete_group_unapproved_user/response.json.golden")
+}
+
+func TestDBHandler_VerifyGroupAffiliation(t *testing.T) {
+	h := DBHandler{
+		GroupRepo: MockGroupRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/2/users/userID1", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "2",
+		"user_id":  "userID1",
+	})
+
+	h.VerifyGroupAffiliation(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	if diff := cmp.Diff(http.StatusOK, res.StatusCode); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
 }
