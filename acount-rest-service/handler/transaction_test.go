@@ -86,5 +86,5 @@ func TestDBHandler_GetMonthlyTransactionsList(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, "./testdata/transaction/get_monthly_transactions_list/response.json.golden", &model.TransactionsList{}, &model.TransactionsList{})
+	testutil.AssertResponseBody(t, res, &model.TransactionsList{}, &model.TransactionsList{})
 }

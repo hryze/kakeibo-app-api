@@ -4,18 +4,22 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 )
 
-func GetRequestJsonFromTestData(t *testing.T, path string) string {
+func GetRequestJsonFromTestData(t *testing.T) string {
 	t.Helper()
 
-	byteData, err := ioutil.ReadFile(path)
+	requestFilePath := filepath.Join("testdata", t.Name(), "request.json")
+
+	byteData, err := ioutil.ReadFile(requestFilePath)
 	if err != nil {
 		t.Fatalf("unexpected error while opening file '%#v'", err)
 	}
+
 	return string(byteData)
 }
 
@@ -31,10 +35,12 @@ func AssertResponseHeader(t *testing.T, res *http.Response, wantStatusCode int) 
 	}
 }
 
-func AssertResponseBody(t *testing.T, res *http.Response, path string, wantStruct interface{}, gotStruct interface{}) {
+func AssertResponseBody(t *testing.T, res *http.Response, wantStruct interface{}, gotStruct interface{}) {
 	t.Helper()
 
-	wantData, err := ioutil.ReadFile(path)
+	goldenFilePath := filepath.Join("testdata", t.Name(), "response.json.golden")
+
+	wantData, err := ioutil.ReadFile(goldenFilePath)
 	if err != nil {
 		t.Fatalf("unexpected error by ioutil.ReadFile '%#v'", err)
 	}
