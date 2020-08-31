@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -17,6 +18,14 @@ import (
 
 type MockTransactionsRepository struct {
 	repository.TransactionsRepository
+}
+
+type MockSqlResult struct {
+	sql.Result
+}
+
+func (r MockSqlResult) LastInsertId() (int64, error) {
+	return 1, nil
 }
 
 func (t MockTransactionsRepository) GetMonthlyTransactionsList(userID string, firstDay time.Time, lastDay time.Time) ([]model.TransactionSender, error) {
@@ -60,6 +69,25 @@ func (t MockTransactionsRepository) GetMonthlyTransactionsList(userID string, fi
 	}, nil
 }
 
+func (t MockTransactionsRepository) PostTransaction(transaction *model.TransactionReceiver, userID string) (sql.Result, error) {
+	return MockSqlResult{}, nil
+}
+
+func (t MockTransactionsRepository) GetTransaction(transactionSender *model.TransactionSender, transactionID int) (*model.TransactionSender, error) {
+	return &model.TransactionSender{
+		ID:                 1,
+		TransactionType:    "expense",
+		UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+		TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+		Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
+		Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
+		Amount:             15000,
+		BigCategoryName:    "日用品",
+		MediumCategoryName: model.NullString{NullString: sql.NullString{String: "家具", Valid: true}},
+		CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+	}, nil
+}
+
 func TestDBHandler_GetMonthlyTransactionsList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},
@@ -87,4 +115,33 @@ func TestDBHandler_GetMonthlyTransactionsList(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.TransactionsList{}, &model.TransactionsList{})
+}
+
+func TestDBHandler_PostTransaction(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		TransactionsRepo: MockTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/transactions", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"year_month": "2020-07",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostTransaction(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.TransactionSender{}, &model.TransactionSender{})
 }

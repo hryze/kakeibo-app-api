@@ -69,7 +69,7 @@ func TestDBHandler_SignUp(t *testing.T) {
 
 	h := DBHandler{UserRepo: MockUserRepository{}}
 
-	r := httptest.NewRequest("POST", "/signup", strings.NewReader(testutil.GetJsonFromTestData(t, "./testdata/user/signup/request.json")))
+	r := httptest.NewRequest("POST", "/TestDBHandler_SignUp", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	h.SignUp(w, r)
@@ -78,13 +78,13 @@ func TestDBHandler_SignUp(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, "./testdata/user/signup/response.json.golden")
+	testutil.AssertResponseBody(t, res, &model.SignUpUser{}, &model.SignUpUser{})
 }
 
 func TestDBHandler_Login(t *testing.T) {
 	h := DBHandler{UserRepo: MockUserRepository{}}
 
-	r := httptest.NewRequest("POST", "/login", strings.NewReader(testutil.GetJsonFromTestData(t, "./testdata/user/login/request.json")))
+	r := httptest.NewRequest("POST", "/TestDBHandler_Login", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	h.Login(w, r)
@@ -93,14 +93,14 @@ func TestDBHandler_Login(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, "./testdata/user/login/response.json.golden")
+	testutil.AssertResponseBody(t, res, &model.LoginUser{}, &model.LoginUser{})
 	testutil.AssertSetResponseCookie(t, res)
 }
 
 func TestDBHandler_Logout(t *testing.T) {
 	h := DBHandler{UserRepo: MockUserRepository{}}
 
-	r := httptest.NewRequest("DELETE", "/logout", nil)
+	r := httptest.NewRequest("DELETE", "/TestDBHandler_Logout", nil)
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
@@ -116,6 +116,6 @@ func TestDBHandler_Logout(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, "./testdata/user/logout/response.json.golden")
+	testutil.AssertResponseBody(t, res, &LogoutMsg{}, &LogoutMsg{})
 	testutil.AssertDeleteResponseCookie(t, res)
 }
