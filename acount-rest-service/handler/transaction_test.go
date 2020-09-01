@@ -96,6 +96,35 @@ func (t MockTransactionsRepository) DeleteTransaction(transactionID int) error {
 	return nil
 }
 
+func (t MockTransactionsRepository) SearchTransactionsList(query string) ([]model.TransactionSender, error) {
+	return []model.TransactionSender{
+		{
+			ID:                 1,
+			TransactionType:    "expense",
+			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+			Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
+			Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
+			Amount:             15000,
+			BigCategoryName:    "日用品",
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "家具", Valid: true}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+		},
+		{
+			ID:                 3,
+			TransactionType:    "expense",
+			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC)},
+			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 15, 0, 0, 0, 0, time.UTC)},
+			Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			Amount:             1300,
+			BigCategoryName:    "食費",
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+		},
+	}, nil
+}
+
 func TestDBHandler_GetMonthlyTransactionsList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},
@@ -210,4 +239,46 @@ func TestDBHandler_DeleteTransaction(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &DeleteTransactionMsg{}, &DeleteTransactionMsg{})
+}
+
+func TestDBHandler_SearchTransactionsList(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		TransactionsRepo: MockTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/transactions/search", nil)
+	w := httptest.NewRecorder()
+
+	urlQuery := r.URL.Query()
+
+	params := map[string]string{
+		"start_date":       "2020-07-01T00:00:00.0000",
+		"end_date":         "2020-07-15T00:00:00.0000",
+		"transaction_type": "expense",
+		"sort":             "amount",
+		"sort_type":        "desc",
+		"shop":             "コストコ",
+	}
+
+	for k, v := range params {
+		urlQuery.Add(k, v)
+	}
+
+	r.URL.RawQuery = urlQuery.Encode()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.SearchTransactionsList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.TransactionsList{}, &model.TransactionsList{})
 }
