@@ -92,6 +92,10 @@ func (t MockTransactionsRepository) PutTransaction(transaction *model.Transactio
 	return nil
 }
 
+func (t MockTransactionsRepository) DeleteTransaction(transactionID int) error {
+	return nil
+}
+
 func TestDBHandler_GetMonthlyTransactionsList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},
@@ -177,4 +181,33 @@ func TestDBHandler_PutTransaction(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.TransactionSender{}, &model.TransactionSender{})
+}
+
+func TestDBHandler_DeleteTransaction(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		TransactionsRepo: MockTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/transactions/1", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteTransaction(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteTransactionMsg{}, &DeleteTransactionMsg{})
 }
