@@ -8,6 +8,7 @@
       "shop": null,
       "memo": null,
       "amount": 1300,
+      "user_id": "userID1",
       "big_category_name": "食費",
       "medium_category_name": null,
       "custom_category_name": "米"
@@ -20,6 +21,7 @@
       "shop": null,
       "memo": "賞与",
       "amount": 200000,
+      "user_id": "userID2",
       "big_category_name": "収入",
       "medium_category_name": "賞与",
       "custom_category_name": null
@@ -32,6 +34,7 @@
       "shop": "ニトリ",
       "memo": "ベッド購入",
       "amount": 15000,
+      "user_id": "userID1",
       "big_category_name": "日用品",
       "medium_category_name": "家具",
       "custom_category_name": null
