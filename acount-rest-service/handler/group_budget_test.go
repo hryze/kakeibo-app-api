@@ -52,6 +52,7 @@ func (m MockGroupBudgetsRepository) GetGroupStandardBudgets(groupID int) (*model
 func (m MockGroupBudgetsRepository) PutGroupStandardBudgets(groupStandardBudgets *model.GroupStandardBudgets, groupID int) error {
 	return nil
 }
+
 func (m MockGroupBudgetsRepository) GetGroupCustomBudgets(yearMonth time.Time, groupID int) (*model.GroupCustomBudgets, error) {
 	return &model.GroupCustomBudgets{
 		GroupCustomBudgets: []model.GroupCustomBudgetByCategory{
@@ -73,6 +74,10 @@ func (m MockGroupBudgetsRepository) GetGroupCustomBudgets(yearMonth time.Time, g
 			{BigCategoryID: 17, BigCategoryName: "その他", Budget: 0},
 		},
 	}, nil
+}
+
+func (m MockGroupBudgetsRepository) PostGroupCustomBudgets(groupCustomBudgets *model.GroupCustomBudgets, yearMonth time.Time, groupID int) error {
+	return nil
 }
 
 func TestDBHandler_PostInitGroupStandardBudgets(t *testing.T) {
@@ -192,5 +197,38 @@ func TestDBHandler_GetGroupCustomBudgets(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.GroupCustomBudgets{}, &model.GroupCustomBudgets{})
+}
+
+func TestDBHandler_PostGroupCustomBudgets(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		GroupBudgetsRepo: MockGroupBudgetsRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/groups/1/custom-budgets/2020-07", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id":   "1",
+		"year_month": "2020-07",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostGroupCustomBudgets(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
 	testutil.AssertResponseBody(t, res, &model.GroupCustomBudgets{}, &model.GroupCustomBudgets{})
 }
