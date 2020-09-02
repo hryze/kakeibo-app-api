@@ -76,6 +76,10 @@ func (m MockBudgetsRepository) GetCustomBudgets(yearMonth time.Time, userID stri
 	}, nil
 }
 
+func (m MockBudgetsRepository) PostCustomBudgets(customBudgets *model.CustomBudgets, yearMonth time.Time, userID string) error {
+	return nil
+}
+
 func TestDBHandler_PostInitStandardBudgets(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:    MockAuthRepository{},
@@ -171,5 +175,34 @@ func TestDBHandler_GetCustomBudgets(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.CustomBudgets{}, &model.CustomBudgets{})
+}
+
+func TestDBHandler_PostCustomBudgets(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:    MockAuthRepository{},
+		BudgetsRepo: MockBudgetsRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/custom-budgets/2020-07", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"year_month": "2020-07",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostCustomBudgets(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
 	testutil.AssertResponseBody(t, res, &model.CustomBudgets{}, &model.CustomBudgets{})
 }
