@@ -84,6 +84,10 @@ func (m MockGroupBudgetsRepository) PutGroupCustomBudgets(groupCustomBudgets *mo
 	return nil
 }
 
+func (m MockGroupBudgetsRepository) DeleteGroupCustomBudgets(yearMonth time.Time, groupID int) error {
+	return nil
+}
+
 func TestDBHandler_PostInitGroupStandardBudgets(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},
@@ -268,4 +272,37 @@ func TestDBHandler_PutGroupCustomBudgets(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupCustomBudgets{}, &model.GroupCustomBudgets{})
+}
+
+func TestDBHandler_DeleteGroupCustomBudgets(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		GroupBudgetsRepo: MockGroupBudgetsRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/groups/1/custom-budgets/2020-07", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id":   "1",
+		"year_month": "2020-07",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteGroupCustomBudgets(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteGroupCustomBudgetsMsg{}, &DeleteGroupCustomBudgetsMsg{})
 }
