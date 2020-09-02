@@ -15,12 +15,9 @@ import (
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/testutil"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/repository"
 )
 
-type MockBudgetsRepository struct {
-	repository.BudgetsRepository
-}
+type MockBudgetsRepository struct{}
 
 func (m MockBudgetsRepository) PostInitStandardBudgets(userID string) error {
 	return nil

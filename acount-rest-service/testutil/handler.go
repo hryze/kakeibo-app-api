@@ -3,12 +3,35 @@ package testutil
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net"
 	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 )
+
+func SetUpMockServer(t *testing.T) func() {
+	verifyGroupAffiliationHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	listener, err := net.Listen("tcp", "127.0.0.1:8080")
+	if err != nil {
+		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
+	}
+
+	ts := httptest.Server{
+		Listener: listener,
+		Config:   &http.Server{Handler: verifyGroupAffiliationHandler},
+	}
+	ts.Start()
+
+	return func() {
+		ts.Close()
+	}
+}
 
 func GetRequestJsonFromTestData(t *testing.T) string {
 	t.Helper()
