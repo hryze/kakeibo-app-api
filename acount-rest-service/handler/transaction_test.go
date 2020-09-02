@@ -12,13 +12,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
-	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/repository"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/testutil"
 )
 
-type MockTransactionsRepository struct {
-	repository.TransactionsRepository
-}
+type MockTransactionsRepository struct{}
 
 type MockSqlResult struct {
 	sql.Result
@@ -258,7 +255,6 @@ func TestDBHandler_SearchTransactionsList(t *testing.T) {
 		"transaction_type": "expense",
 		"sort":             "amount",
 		"sort_type":        "desc",
-		"shop":             "コストコ",
 	}
 
 	for k, v := range params {
