@@ -1,0 +1,84 @@
+{
+  "standard_budgets": [
+    {
+      "big_category_id": 2,
+      "big_category_name": "食費",
+      "budget": 25000
+    },
+    {
+      "big_category_id": 3,
+      "big_category_name": "日用品",
+      "budget": 5000
+    },
+    {
+      "big_category_id": 4,
+      "big_category_name": "趣味・娯楽",
+      "budget": 4500
+    },
+    {
+      "big_category_id": 5,
+      "big_category_name": "交際費",
+      "budget": 1000
+    },
+    {
+      "big_category_id": 6,
+      "big_category_name": "交通費",
+      "budget": 1000
+    },
+    {
+      "big_category_id": 7,
+      "big_category_name": "衣服・美容",
+      "budget": 0
+    },
+    {
+      "big_category_id": 8,
+      "big_category_name": "健康・医療",
+      "budget": 4900
+    },
+    {
+      "big_category_id": 9,
+      "big_category_name": "通信費",
+      "budget": 4400
+    },
+    {
+      "big_category_id": 10,
+      "big_category_name": "教養・教育",
+      "budget": 10000
+    },
+    {
+      "big_category_id": 11,
+      "big_category_name": "住宅",
+      "budget": 15000
+    },
+    {
+      "big_category_id": 12,
+      "big_category_name": "水道・光熱費",
+      "budget": 3000
+    },
+    {
+      "big_category_id": 13,
+      "big_category_name": "自動車",
+      "budget": 0
+    },
+    {
+      "big_category_id": 14,
+      "big_category_name": "保険",
+      "budget": 9800
+    },
+    {
+      "big_category_id": 15,
+      "big_category_name": "税金・社会保険",
+      "budget": 0
+    },
+    {
+      "big_category_id": 16,
+      "big_category_name": "現金・カード",
+      "budget": 0
+    },
+    {
+      "big_category_id": 17,
+      "big_category_name": "その他",
+      "budget": 0
+    }
+  ]
+}
