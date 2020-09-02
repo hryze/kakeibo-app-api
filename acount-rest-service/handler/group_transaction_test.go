@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -60,6 +61,29 @@ func (m MockGroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID
 	}, nil
 }
 
+func (m MockGroupTransactionsRepository) GetGroupTransaction(groupTransactionID int) (*model.GroupTransactionSender, error) {
+	return &model.GroupTransactionSender{
+		ID:                 1,
+		TransactionType:    "expense",
+		UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+		TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+		Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
+		Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
+		Amount:             15000,
+		BigCategoryName:    "日用品",
+		MediumCategoryName: model.NullString{NullString: sql.NullString{String: "家具", Valid: true}},
+		CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+	}, nil
+}
+
+func (m MockGroupTransactionsRepository) PostGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupID int, userID string) (sql.Result, error) {
+	return MockSqlResult{}, nil
+}
+
+func (m MockGroupTransactionsRepository) GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error) {
+	return make([]model.GroupAccount, 0), nil
+}
+
 func TestDBHandler_GetMonthlyGroupTransactionsList(t *testing.T) {
 	tearDown := testutil.SetUpMockServer(t)
 	defer tearDown()
@@ -90,5 +114,37 @@ func TestDBHandler_GetMonthlyGroupTransactionsList(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &model.GroupStandardBudgets{}, &model.GroupStandardBudgets{})
+	testutil.AssertResponseBody(t, res, &model.GroupTransactionsList{}, &model.GroupTransactionsList{})
+}
+
+func TestDBHandler_PostGroupTransaction(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:              MockAuthRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/groups/1/transactions", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostGroupTransaction(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.GroupTransactionSender{}, &model.GroupTransactionSender{})
 }

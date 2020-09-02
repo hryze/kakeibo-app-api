@@ -17,14 +17,6 @@ import (
 
 type MockTransactionsRepository struct{}
 
-type MockSqlResult struct {
-	sql.Result
-}
-
-func (r MockSqlResult) LastInsertId() (int64, error) {
-	return 1, nil
-}
-
 func (t MockTransactionsRepository) GetMonthlyTransactionsList(userID string, firstDay time.Time, lastDay time.Time) ([]model.TransactionSender, error) {
 	return []model.TransactionSender{
 		{
