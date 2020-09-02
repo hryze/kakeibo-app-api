@@ -1,0 +1,12 @@
+{
+  "id": 1,
+  "transaction_type": "expense",
+  "updated_date": "2020-07-01T16:00:00Z",
+  "transaction_date": "2020/07/01(水)",
+  "shop": "ニトリ",
+  "memo": "ベッド購入",
+  "amount": 15000,
+  "big_category_name": "日用品",
+  "medium_category_name": "家具",
+  "custom_category_name": null
+}
