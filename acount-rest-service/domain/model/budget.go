@@ -2,8 +2,9 @@ package model
 
 import (
 	"database/sql/driver"
-	"encoding/json"
 	"errors"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -93,8 +94,20 @@ func (m Months) Value() (driver.Value, error) {
 }
 
 func (m Months) MarshalJSON() ([]byte, error) {
-	months := [...]string{"1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"}
+	year := strconv.Itoa(m.Year())
+	months := [...]string{"01月", "02月", "03月", "04月", "05月", "06月", "07月", "08月", "09月", "10月", "11月", "12月"}
 	m.String = months[m.Time.Month()-1]
 
-	return json.Marshal(m.String)
+	return []byte(`"` + year + `年` + months[m.Time.Month()-1] + `"`), nil
+}
+
+func (m *Months) UnmarshalJSON(data []byte) error {
+	trimData := strings.Trim(string(data), "\"")
+	date, err := time.Parse("2006年01月", trimData)
+	if err != nil {
+		return err
+	}
+	m.Time = date
+
+	return nil
 }

@@ -88,6 +88,20 @@ func (m MockBudgetsRepository) DeleteCustomBudgets(yearMonth time.Time, userID s
 	return nil
 }
 
+func (m MockBudgetsRepository) GetMonthlyStandardBudget(userID string) (model.MonthlyBudget, error) {
+	return model.MonthlyBudget{
+		BudgetType:         "StandardBudget",
+		MonthlyTotalBudget: 83600,
+	}, nil
+}
+
+func (m MockBudgetsRepository) GetMonthlyCustomBudgets(year time.Time, userID string) ([]model.MonthlyBudget, error) {
+	return []model.MonthlyBudget{
+		{Month: model.Months{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)}, BudgetType: "CustomBudget", MonthlyTotalBudget: 88600},
+		{Month: model.Months{Time: time.Date(2020, 10, 1, 0, 0, 0, 0, time.UTC)}, BudgetType: "CustomBudget", MonthlyTotalBudget: 100000},
+	}, nil
+}
+
 func TestDBHandler_PostInitStandardBudgets(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:    MockAuthRepository{},
@@ -271,4 +285,33 @@ func TestDBHandler_DeleteCustomBudgets(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &DeleteCustomBudgetsMsg{}, &DeleteCustomBudgetsMsg{})
+}
+
+func TestDBHandler_GetYearlyBudgets(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:    MockAuthRepository{},
+		BudgetsRepo: MockBudgetsRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/budgets/2020", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"year": "2020",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.GetYearlyBudgets(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.YearlyBudget{}, &model.YearlyBudget{})
 }
