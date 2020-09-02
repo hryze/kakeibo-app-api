@@ -12,15 +12,12 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/repository"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/testutil"
 
 	"github.com/google/go-cmp/cmp"
 )
 
-type MockGroupBudgetsRepository struct {
-	repository.GroupBudgetsRepository
-}
+type MockGroupBudgetsRepository struct{}
 
 func (m MockGroupBudgetsRepository) PostInitGroupStandardBudgets(groupID int) error {
 	return nil
@@ -86,6 +83,20 @@ func (m MockGroupBudgetsRepository) PutGroupCustomBudgets(groupCustomBudgets *mo
 
 func (m MockGroupBudgetsRepository) DeleteGroupCustomBudgets(yearMonth time.Time, groupID int) error {
 	return nil
+}
+
+func (m MockGroupBudgetsRepository) GetMonthlyGroupStandardBudget(groupID int) (model.MonthlyGroupBudget, error) {
+	return model.MonthlyGroupBudget{
+		BudgetType:         "StandardBudget",
+		MonthlyTotalBudget: 83600,
+	}, nil
+}
+
+func (m MockGroupBudgetsRepository) GetMonthlyGroupCustomBudgets(year time.Time, groupID int) ([]model.MonthlyGroupBudget, error) {
+	return []model.MonthlyGroupBudget{
+		{Month: model.Months{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)}, BudgetType: "CustomBudget", MonthlyTotalBudget: 88600},
+		{Month: model.Months{Time: time.Date(2020, 10, 1, 0, 0, 0, 0, time.UTC)}, BudgetType: "CustomBudget", MonthlyTotalBudget: 100000},
+	}, nil
 }
 
 func TestDBHandler_PostInitGroupStandardBudgets(t *testing.T) {
@@ -305,4 +316,37 @@ func TestDBHandler_DeleteGroupCustomBudgets(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &DeleteGroupCustomBudgetsMsg{}, &DeleteGroupCustomBudgetsMsg{})
+}
+
+func TestDBHandler_GetYearlyGroupBudgets(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		GroupBudgetsRepo: MockGroupBudgetsRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/1/budgets/2020", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+		"year":     "2020",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.GetYearlyGroupBudgets(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.YearlyGroupBudget{}, &model.YearlyGroupBudget{})
 }

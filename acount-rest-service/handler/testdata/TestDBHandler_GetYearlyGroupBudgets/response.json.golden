@@ -1,0 +1,66 @@
+{
+  "year": "2020-01-01T00:00:00Z",
+  "yearly_total_budget": 1024600,
+  "monthly_budgets": [
+    {
+      "month": "2020年01月",
+      "budget_type": "StandardBudget",
+      "monthly_total_budget": 83600
+    },
+    {
+      "month": "2020年02月",
+      "budget_type": "StandardBudget",
+      "monthly_total_budget": 83600
+    },
+    {
+      "month": "2020年03月",
+      "budget_type": "StandardBudget",
+      "monthly_total_budget": 83600
+    },
+    {
+      "month": "2020年04月",
+      "budget_type": "StandardBudget",
+      "monthly_total_budget": 83600
+    },
+    {
+      "month": "2020年05月",
+      "budget_type": "StandardBudget",
+      "monthly_total_budget": 83600
+    },
+    {
+      "month": "2020年06月",
+      "budget_type": "StandardBudget",
+      "monthly_total_budget": 83600
+    },
+    {
+      "month": "2020年07月",
+      "budget_type": "CustomBudget",
+      "monthly_total_budget": 88600
+    },
+    {
+      "month": "2020年08月",
+      "budget_type": "StandardBudget",
+      "monthly_total_budget": 83600
+    },
+    {
+      "month": "2020年09月",
+      "budget_type": "StandardBudget",
+      "monthly_total_budget": 83600
+    },
+    {
+      "month": "2020年10月",
+      "budget_type": "CustomBudget",
+      "monthly_total_budget": 100000
+    },
+    {
+      "month": "2020年11月",
+      "budget_type": "StandardBudget",
+      "monthly_total_budget": 83600
+    },
+    {
+      "month": "2020年12月",
+      "budget_type": "StandardBudget",
+      "monthly_total_budget": 83600
+    }
+  ]
+}
