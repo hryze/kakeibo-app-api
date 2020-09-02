@@ -46,6 +46,10 @@ func (m MockBudgetsRepository) GetStandardBudgets(userID string) (*model.Standar
 	}, nil
 }
 
+func (m MockBudgetsRepository) PutStandardBudgets(standardBudgets *model.StandardBudgets, userID string) error {
+	return nil
+}
+
 func TestDBHandler_PostInitStandardBudgets(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:    MockAuthRepository{},
@@ -82,6 +86,31 @@ func TestDBHandler_GetStandardBudgets(t *testing.T) {
 	r.AddCookie(cookie)
 
 	h.GetStandardBudgets(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.StandardBudgets{}, &model.StandardBudgets{})
+}
+
+func TestDBHandler_PutStandardBudgets(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:    MockAuthRepository{},
+		BudgetsRepo: MockBudgetsRepository{},
+	}
+
+	r := httptest.NewRequest("PUT", "/standard-budgets", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PutStandardBudgets(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()
