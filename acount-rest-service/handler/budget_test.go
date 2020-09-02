@@ -84,6 +84,10 @@ func (m MockBudgetsRepository) PutCustomBudgets(customBudgets *model.CustomBudge
 	return nil
 }
 
+func (m MockBudgetsRepository) DeleteCustomBudgets(yearMonth time.Time, userID string) error {
+	return nil
+}
+
 func TestDBHandler_PostInitStandardBudgets(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:    MockAuthRepository{},
@@ -238,4 +242,33 @@ func TestDBHandler_PutCustomBudgets(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.CustomBudgets{}, &model.CustomBudgets{})
+}
+
+func TestDBHandler_DeleteCustomBudgets(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:    MockAuthRepository{},
+		BudgetsRepo: MockBudgetsRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/custom-budgets/2020-07", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"year_month": "2020-07",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteCustomBudgets(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteCustomBudgetsMsg{}, &DeleteCustomBudgetsMsg{})
 }
