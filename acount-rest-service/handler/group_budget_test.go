@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -45,6 +46,10 @@ func (m MockGroupBudgetsRepository) GetGroupStandardBudgets(groupID int) (*model
 			{BigCategoryID: 17, BigCategoryName: "その他", Budget: 0},
 		},
 	}, nil
+}
+
+func (m MockGroupBudgetsRepository) PutGroupStandardBudgets(groupStandardBudgets *model.GroupStandardBudgets, groupID int) error {
+	return nil
 }
 
 func TestDBHandler_PostInitGroupStandardBudgets(t *testing.T) {
@@ -94,6 +99,38 @@ func TestDBHandler_GetGroupStandardBudgets(t *testing.T) {
 	r.AddCookie(cookie)
 
 	h.GetGroupStandardBudgets(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.GroupStandardBudgets{}, &model.GroupStandardBudgets{})
+}
+
+func TestDBHandler_PutGroupStandardBudgets(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		GroupBudgetsRepo: MockGroupBudgetsRepository{},
+	}
+
+	r := httptest.NewRequest("PUT", "/groups/1/standard-budgets", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PutGroupStandardBudgets(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()
