@@ -123,8 +123,27 @@ func (m MockGroupTransactionsRepository) SearchGroupTransactionsList(query strin
 	}, nil
 }
 
+func (m MockGroupTransactionsRepository) GetUserPaymentAmountList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error) {
+	return []model.UserPaymentAmount{
+		{UserID: "userID1", TotalPaymentAmount: 60000, PaymentAmountToUser: 0},
+		{UserID: "userID4", TotalPaymentAmount: 45000, PaymentAmountToUser: 0},
+		{UserID: "userID5", TotalPaymentAmount: 30000, PaymentAmountToUser: 0},
+		{UserID: "userID3", TotalPaymentAmount: 7000, PaymentAmountToUser: 0},
+		{UserID: "userID2", TotalPaymentAmount: 6000, PaymentAmountToUser: 0},
+	}, nil
+}
+
 func (m MockGroupTransactionsRepository) GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error) {
-	return make([]model.GroupAccount, 0), nil
+	if groupID == 1 {
+		return make([]model.GroupAccount, 0), nil
+	}
+
+	return []model.GroupAccount{
+		{ID: 1, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID2", Recipient: "userID1", PaymentAmount: 23600, PaymentConfirmation: false, ReceiptConfirmation: false},
+		{ID: 2, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID1", PaymentAmount: 6800, PaymentConfirmation: false, ReceiptConfirmation: false},
+		{ID: 3, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID4", PaymentAmount: 15400, PaymentConfirmation: false, ReceiptConfirmation: false},
+		{ID: 4, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID5", PaymentAmount: 400, PaymentConfirmation: false, ReceiptConfirmation: false},
+	}, nil
 }
 
 func TestDBHandler_GetMonthlyGroupTransactionsList(t *testing.T) {
@@ -304,4 +323,37 @@ func TestDBHandler_SearchGroupTransactionsList(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupTransactionsList{}, &model.GroupTransactionsList{})
+}
+
+func TestDBHandler_GetMonthlyGroupTransactionsAccount(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:              MockAuthRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/2/transactions/2020-07/account", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id":   "2",
+		"year_month": "2020-07",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.GetMonthlyGroupTransactionsAccount(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.GroupAccountsList{}, &model.GroupAccountsList{})
 }
