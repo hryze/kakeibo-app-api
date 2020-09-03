@@ -92,6 +92,37 @@ func (m MockGroupTransactionsRepository) DeleteGroupTransaction(groupTransaction
 	return nil
 }
 
+func (m MockGroupTransactionsRepository) SearchGroupTransactionsList(query string) ([]model.GroupTransactionSender, error) {
+	return []model.GroupTransactionSender{
+		{
+			ID:                 1,
+			TransactionType:    "expense",
+			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+			Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
+			Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
+			Amount:             15000,
+			UserID:             "userID1",
+			BigCategoryName:    "日用品",
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "家具", Valid: true}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+		},
+		{
+			ID:                 3,
+			TransactionType:    "expense",
+			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC)},
+			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 15, 0, 0, 0, 0, time.UTC)},
+			Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			Amount:             1300,
+			UserID:             "userID1",
+			BigCategoryName:    "食費",
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+		},
+	}, nil
+}
+
 func (m MockGroupTransactionsRepository) GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error) {
 	return make([]model.GroupAccount, 0), nil
 }
@@ -225,4 +256,52 @@ func TestDBHandler_DeleteGroupTransaction(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
+}
+
+func TestDBHandler_SearchGroupTransactionsList(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:              MockAuthRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/1/transactions/search", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	urlQuery := r.URL.Query()
+
+	params := map[string]string{
+		"start_date":       "2020-07-01T00:00:00.0000",
+		"end_date":         "2020-07-15T00:00:00.0000",
+		"transaction_type": "expense",
+		"sort":             "amount",
+		"sort_type":        "desc",
+	}
+
+	for k, v := range params {
+		urlQuery.Add(k, v)
+	}
+
+	r.URL.RawQuery = urlQuery.Encode()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.SearchGroupTransactionsList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.GroupTransactionsList{}, &model.GroupTransactionsList{})
 }
