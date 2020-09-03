@@ -1,0 +1,68 @@
+{
+  "custom_budgets": [
+    {
+      "big_category_id": 2,
+      "budget": 30000
+    },
+    {
+      "big_category_id": 3,
+      "budget": 5000
+    },
+    {
+      "big_category_id": 4,
+      "budget": 4500
+    },
+    {
+      "big_category_id": 5,
+      "budget": 1000
+    },
+    {
+      "big_category_id": 6,
+      "budget": 1000
+    },
+    {
+      "big_category_id": 7,
+      "budget": 0
+    },
+    {
+      "big_category_id": 8,
+      "budget": 4900
+    },
+    {
+      "big_category_id": 9,
+      "budget": 4400
+    },
+    {
+      "big_category_id": 10,
+      "budget": 10000
+    },
+    {
+      "big_category_id": 11,
+      "budget": 15000
+    },
+    {
+      "big_category_id": 12,
+      "budget": 3000
+    },
+    {
+      "big_category_id": 13,
+      "budget": 0
+    },
+    {
+      "big_category_id": 14,
+      "budget": 9800
+    },
+    {
+      "big_category_id": 15,
+      "budget": 0
+    },
+    {
+      "big_category_id": 16,
+      "budget": 0
+    },
+    {
+      "big_category_id": 17,
+      "budget": 0
+    }
+  ]
+}

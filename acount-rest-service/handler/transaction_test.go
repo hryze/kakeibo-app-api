@@ -12,21 +12,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
-	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/repository"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/testutil"
 )
 
-type MockTransactionsRepository struct {
-	repository.TransactionsRepository
-}
-
-type MockSqlResult struct {
-	sql.Result
-}
-
-func (r MockSqlResult) LastInsertId() (int64, error) {
-	return 1, nil
-}
+type MockTransactionsRepository struct{}
 
 func (t MockTransactionsRepository) GetMonthlyTransactionsList(userID string, firstDay time.Time, lastDay time.Time) ([]model.TransactionSender, error) {
 	return []model.TransactionSender{
@@ -258,7 +247,6 @@ func TestDBHandler_SearchTransactionsList(t *testing.T) {
 		"transaction_type": "expense",
 		"sort":             "amount",
 		"sort_type":        "desc",
-		"shop":             "コストコ",
 	}
 
 	for k, v := range params {
