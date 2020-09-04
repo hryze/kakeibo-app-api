@@ -168,6 +168,10 @@ func (m MockGroupTransactionsRepository) PostGroupAccountsList(groupAccountsList
 	return nil
 }
 
+func (m MockGroupTransactionsRepository) PutGroupAccountsList(groupAccountsList []model.GroupAccount) error {
+	return nil
+}
+
 func TestDBHandler_GetMonthlyGroupTransactionsList(t *testing.T) {
 	tearDown := testutil.SetUpMockServer(t)
 	defer tearDown()
@@ -410,5 +414,38 @@ func TestDBHandler_PostMonthlyGroupTransactionsAccount(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.GroupAccountsList{}, &model.GroupAccountsList{})
+}
+
+func TestDBHandler_PutMonthlyGroupTransactionsAccount(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:              MockAuthRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("PUT", "/groups/3/transactions/2020-07/account", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id":   "3",
+		"year_month": "2020-07",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PutMonthlyGroupTransactionsAccount(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupAccountsList{}, &model.GroupAccountsList{})
 }
