@@ -73,6 +73,10 @@ func (m MockTodoRepository) PutTodo(todo *model.Todo, todoID int) error {
 	return nil
 }
 
+func (m MockTodoRepository) DeleteTodo(todoID int) error {
+	return nil
+}
+
 func TestDBHandler_GetDailyTodoList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo: MockAuthRepository{},
@@ -183,4 +187,33 @@ func TestDBHandler_PutTodo(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.Todo{}, &model.Todo{})
+}
+
+func TestDBHandler_DeleteTodo(t *testing.T) {
+	h := DBHandler{
+		AuthRepo: MockAuthRepository{},
+		TodoRepo: MockTodoRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/todo-list/1", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteTodo(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteTodoMsg{}, &DeleteTodoMsg{})
 }
