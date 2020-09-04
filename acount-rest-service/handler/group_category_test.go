@@ -164,6 +164,10 @@ func (m MockGroupCategoriesRepository) PostGroupCustomCategory(groupCustomCatego
 	return MockSqlResult{}, nil
 }
 
+func (m MockGroupCategoriesRepository) PutGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory) error {
+	return nil
+}
+
 func TestDBHandler_GetGroupCategoriesList(t *testing.T) {
 	tearDown := testutil.SetUpMockServer(t)
 	defer tearDown()
@@ -225,5 +229,38 @@ func TestDBHandler_PostGroupCustomCategory(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.GroupCustomCategory{}, &model.GroupCustomCategory{})
+}
+
+func TestDBHandler_PutGroupCustomCategory(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:            MockAuthRepository{},
+		GroupCategoriesRepo: MockGroupCategoriesRepository{},
+	}
+
+	r := httptest.NewRequest("PUT", "/groups/1/categories/custom-categories/1", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+		"id":       "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PutGroupCustomCategory(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupCustomCategory{}, &model.GroupCustomCategory{})
 }
