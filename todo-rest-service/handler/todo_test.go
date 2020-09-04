@@ -77,6 +77,14 @@ func (m MockTodoRepository) DeleteTodo(todoID int) error {
 	return nil
 }
 
+func (m MockTodoRepository) SearchTodoList(todoSqlQuery string) ([]model.Todo, error) {
+	return []model.Todo{
+		{ID: 1, PostedDate: time.Date(2020, 9, 4, 17, 11, 0, 0, time.UTC), ImplementationDate: model.Date{Time: time.Date(2020, 7, 5, 0, 0, 0, 0, time.UTC)}, DueDate: model.Date{Time: time.Date(2020, 7, 5, 0, 0, 0, 0, time.UTC)}, TodoContent: "今月の予算を立てる", CompleteFlag: true},
+		{ID: 2, PostedDate: time.Date(2020, 9, 4, 17, 11, 0, 0, time.UTC), ImplementationDate: model.Date{Time: time.Date(2020, 7, 9, 0, 0, 0, 0, time.UTC)}, DueDate: model.Date{Time: time.Date(2020, 7, 10, 0, 0, 0, 0, time.UTC)}, TodoContent: "コストコ鶏肉セール 5パック購入", CompleteFlag: true},
+		{ID: 3, PostedDate: time.Date(2020, 9, 4, 17, 11, 0, 0, time.UTC), ImplementationDate: model.Date{Time: time.Date(2020, 7, 10, 0, 0, 0, 0, time.UTC)}, DueDate: model.Date{Time: time.Date(2020, 7, 10, 0, 0, 0, 0, time.UTC)}, TodoContent: "電車定期券更新", CompleteFlag: true},
+	}, nil
+}
+
 func TestDBHandler_GetDailyTodoList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo: MockAuthRepository{},
@@ -216,4 +224,45 @@ func TestDBHandler_DeleteTodo(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &DeleteTodoMsg{}, &DeleteTodoMsg{})
+}
+
+func TestDBHandler_SearchTodoList(t *testing.T) {
+	h := DBHandler{
+		AuthRepo: MockAuthRepository{},
+		TodoRepo: MockTodoRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/todo-list/search", nil)
+	w := httptest.NewRecorder()
+
+	urlQuery := r.URL.Query()
+
+	params := map[string]string{
+		"date_type":     "implementation_date",
+		"start_date":    "2020-07-05T00:00:00.0000",
+		"end_date":      "2020-07-30T00:00:00.0000",
+		"complete_flag": "true",
+		"sort":          "due_date",
+	}
+
+	for k, v := range params {
+		urlQuery.Add(k, v)
+	}
+
+	r.URL.RawQuery = urlQuery.Encode()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.SearchTodoList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.SearchTodoList{}, &model.SearchTodoList{})
 }
