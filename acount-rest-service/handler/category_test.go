@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"database/sql"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -154,6 +156,14 @@ func (m MockCategoriesRepository) GetCustomCategoriesList(userID string) ([]mode
 	}, nil
 }
 
+func (m MockCategoriesRepository) FindCustomCategory(customCategory *model.CustomCategory, userID string) error {
+	return sql.ErrNoRows
+}
+
+func (m MockCategoriesRepository) PostCustomCategory(customCategory *model.CustomCategory, userID string) (sql.Result, error) {
+	return MockSqlResult{}, nil
+}
+
 func TestDBHandler_GetCategoriesList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
@@ -177,4 +187,29 @@ func TestDBHandler_GetCategoriesList(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.CategoriesList{}, &model.CategoriesList{})
+}
+
+func TestDBHandler_PostCustomCategory(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:       MockAuthRepository{},
+		CategoriesRepo: MockCategoriesRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/categories/custom-categories", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostCustomCategory(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.CustomCategory{}, &model.CustomCategory{})
 }
