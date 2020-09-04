@@ -14,7 +14,7 @@ import (
 func GetRequestJsonFromTestData(t *testing.T) string {
 	t.Helper()
 
-	requestFilePath := filepath.Join("testdata", t.Name(), "response.json.golden")
+	requestFilePath := filepath.Join("testdata", t.Name(), "request.json")
 
 	byteData, err := ioutil.ReadFile(requestFilePath)
 	if err != nil {
