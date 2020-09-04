@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"database/sql"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -50,6 +52,21 @@ func (m MockTodoRepository) GetMonthlyDueTodoList(firstDay time.Time, lastDay ti
 		{ID: 3, PostedDate: time.Date(2020, 9, 4, 17, 11, 0, 0, time.UTC), ImplementationDate: model.Date{Time: time.Date(2020, 7, 10, 0, 0, 0, 0, time.UTC)}, DueDate: model.Date{Time: time.Date(2020, 7, 10, 0, 0, 0, 0, time.UTC)}, TodoContent: "電車定期券更新", CompleteFlag: true},
 		{ID: 4, PostedDate: time.Date(2020, 9, 4, 17, 11, 0, 0, time.UTC), ImplementationDate: model.Date{Time: time.Date(2020, 7, 10, 0, 0, 0, 0, time.UTC)}, DueDate: model.Date{Time: time.Date(2020, 7, 12, 0, 0, 0, 0, time.UTC)}, TodoContent: "醤油購入", CompleteFlag: false},
 	}, nil
+}
+
+func (m MockTodoRepository) GetTodo(todoId int) (*model.Todo, error) {
+	return &model.Todo{
+		ID:                 1,
+		PostedDate:         time.Date(2020, 9, 4, 17, 11, 0, 0, time.UTC),
+		ImplementationDate: model.Date{Time: time.Date(2020, 7, 25, 0, 0, 0, 0, time.UTC)},
+		DueDate:            model.Date{Time: time.Date(2020, 7, 30, 0, 0, 0, 0, time.UTC)},
+		TodoContent:        "食器用洗剤2つ購入",
+		CompleteFlag:       false,
+	}, nil
+}
+
+func (m MockTodoRepository) PostTodo(todo *model.Todo, userID string) (sql.Result, error) {
+	return MockSqlResult{}, nil
 }
 
 func TestDBHandler_GetDailyTodoList(t *testing.T) {
@@ -108,4 +125,29 @@ func TestDBHandler_GetMonthlyTodoList(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.TodoList{}, &model.TodoList{})
+}
+
+func TestDBHandler_PostTodo(t *testing.T) {
+	h := DBHandler{
+		AuthRepo: MockAuthRepository{},
+		TodoRepo: MockTodoRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/todo-list", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostTodo(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.Todo{}, &model.Todo{})
 }
