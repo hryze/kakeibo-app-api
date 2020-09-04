@@ -170,6 +170,10 @@ func (m MockCategoriesRepository) PutCustomCategory(customCategory *model.Custom
 	return nil
 }
 
+func (m MockCategoriesRepository) DeleteCustomCategory(customCategoryID int) error {
+	return nil
+}
+
 func TestDBHandler_GetCategoriesList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
@@ -247,4 +251,33 @@ func TestDBHandler_PutCustomCategory(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.CustomCategory{}, &model.CustomCategory{})
+}
+
+func TestDBHandler_DeleteCustomCategory(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:       MockAuthRepository{},
+		CategoriesRepo: MockCategoriesRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/categories/custom-categories/1", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteCustomCategory(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteCustomCategoryMsg{}, &DeleteCustomCategoryMsg{})
 }
