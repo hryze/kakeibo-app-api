@@ -43,7 +43,7 @@ func (r *CategoriesRepository) GetBigCategoriesList() ([]model.BigCategory, erro
 	return bigCategoriesList, nil
 }
 
-func (r *CategoriesRepository) GetMediumCategoriesList() ([]model.MediumCategory, error) {
+func (r *CategoriesRepository) GetMediumCategoriesList() ([]model.AssociatedCategory, error) {
 	query := `
         SELECT
             id, category_name, big_category_id 
@@ -58,9 +58,9 @@ func (r *CategoriesRepository) GetMediumCategoriesList() ([]model.MediumCategory
 	}
 	defer rows.Close()
 
-	var mediumCategoriesList []model.MediumCategory
+	var mediumCategoriesList []model.AssociatedCategory
 	for rows.Next() {
-		mediumCategory := model.NewMediumCategory()
+		mediumCategory := model.AssociatedCategory{CategoryType: "MediumCategory"}
 		if err := rows.StructScan(&mediumCategory); err != nil {
 			return nil, err
 		}
@@ -72,7 +72,7 @@ func (r *CategoriesRepository) GetMediumCategoriesList() ([]model.MediumCategory
 	return mediumCategoriesList, nil
 }
 
-func (r *CategoriesRepository) GetCustomCategoriesList(userID string) ([]model.CustomCategory, error) {
+func (r *CategoriesRepository) GetCustomCategoriesList(userID string) ([]model.AssociatedCategory, error) {
 	query := `
         SELECT
             id, category_name, big_category_id 
@@ -90,9 +90,9 @@ func (r *CategoriesRepository) GetCustomCategoriesList(userID string) ([]model.C
 	}
 	defer rows.Close()
 
-	var customCategoriesList []model.CustomCategory
+	var customCategoriesList []model.AssociatedCategory
 	for rows.Next() {
-		customCategory := model.NewCustomCategory()
+		customCategory := model.AssociatedCategory{CategoryType: "CustomCategory"}
 		if err := rows.StructScan(&customCategory); err != nil {
 			return nil, err
 		}

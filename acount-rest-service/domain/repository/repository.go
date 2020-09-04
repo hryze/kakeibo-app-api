@@ -13,8 +13,8 @@ type AuthRepository interface {
 
 type CategoriesRepository interface {
 	GetBigCategoriesList() ([]model.BigCategory, error)
-	GetMediumCategoriesList() ([]model.MediumCategory, error)
-	GetCustomCategoriesList(userID string) ([]model.CustomCategory, error)
+	GetMediumCategoriesList() ([]model.AssociatedCategory, error)
+	GetCustomCategoriesList(userID string) ([]model.AssociatedCategory, error)
 	FindCustomCategory(customCategory *model.CustomCategory, userID string) error
 	PostCustomCategory(customCategory *model.CustomCategory, userID string) (sql.Result, error)
 	PutCustomCategory(customCategory *model.CustomCategory) error
@@ -44,8 +44,8 @@ type BudgetsRepository interface {
 
 type GroupCategoriesRepository interface {
 	GetGroupBigCategoriesList() ([]model.GroupBigCategory, error)
-	GetGroupMediumCategoriesList() ([]model.GroupMediumCategory, error)
-	GetGroupCustomCategoriesList(groupID int) ([]model.GroupCustomCategory, error)
+	GetGroupMediumCategoriesList() ([]model.GroupAssociatedCategory, error)
+	GetGroupCustomCategoriesList(groupID int) ([]model.GroupAssociatedCategory, error)
 	FindGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) error
 	PostGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) (sql.Result, error)
 	PutGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory) error

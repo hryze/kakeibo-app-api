@@ -1,0 +1,49 @@
+{
+  "group_id": 3,
+  "month": "2020-07-01T00:00:00Z",
+  "group_total_payment_amount": 148000,
+  "group_average_payment_amount": 29600,
+  "group_remaining_amount": 0,
+  "group_accounts_list": [
+    {
+      "id": 1,
+      "group_id": 3,
+      "month": "2020-07-01T00:00:00Z",
+      "payer_user_id": "userID2",
+      "recipient_user_id": "userID1",
+      "payment_amount": 23600,
+      "payment_confirmation": false,
+      "receipt_confirmation": false
+    },
+    {
+      "id": 2,
+      "group_id": 3,
+      "month": "2020-07-01T00:00:00Z",
+      "payer_user_id": "userID3",
+      "recipient_user_id": "userID1",
+      "payment_amount": 6800,
+      "payment_confirmation": false,
+      "receipt_confirmation": false
+    },
+    {
+      "id": 3,
+      "group_id": 3,
+      "month": "2020-07-01T00:00:00Z",
+      "payer_user_id": "userID3",
+      "recipient_user_id": "userID4",
+      "payment_amount": 15400,
+      "payment_confirmation": false,
+      "receipt_confirmation": false
+    },
+    {
+      "id": 4,
+      "group_id": 3,
+      "month": "2020-07-01T00:00:00Z",
+      "payer_user_id": "userID3",
+      "recipient_user_id": "userID5",
+      "payment_amount": 400,
+      "payment_confirmation": false,
+      "receipt_confirmation": false
+    }
+  ]
+}
