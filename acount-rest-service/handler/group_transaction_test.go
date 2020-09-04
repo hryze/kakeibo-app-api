@@ -133,17 +133,39 @@ func (m MockGroupTransactionsRepository) GetUserPaymentAmountList(groupID int, f
 	}, nil
 }
 
+var count int
+
 func (m MockGroupTransactionsRepository) GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error) {
 	if groupID == 1 {
 		return make([]model.GroupAccount, 0), nil
 	}
 
+	if groupID == 2 {
+		return []model.GroupAccount{
+			{ID: 1, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID2", Recipient: "userID1", PaymentAmount: 23600, PaymentConfirmation: false, ReceiptConfirmation: false},
+			{ID: 2, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID1", PaymentAmount: 6800, PaymentConfirmation: false, ReceiptConfirmation: false},
+			{ID: 3, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID4", PaymentAmount: 15400, PaymentConfirmation: false, ReceiptConfirmation: false},
+			{ID: 4, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID5", PaymentAmount: 400, PaymentConfirmation: false, ReceiptConfirmation: false},
+		}, nil
+	}
+
+	if count == 0 {
+		count++
+		return make([]model.GroupAccount, 0), nil
+	}
+
+	count = 0
+
 	return []model.GroupAccount{
-		{ID: 1, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID2", Recipient: "userID1", PaymentAmount: 23600, PaymentConfirmation: false, ReceiptConfirmation: false},
-		{ID: 2, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID1", PaymentAmount: 6800, PaymentConfirmation: false, ReceiptConfirmation: false},
-		{ID: 3, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID4", PaymentAmount: 15400, PaymentConfirmation: false, ReceiptConfirmation: false},
-		{ID: 4, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID5", PaymentAmount: 400, PaymentConfirmation: false, ReceiptConfirmation: false},
+		{ID: 1, GroupID: 3, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID2", Recipient: "userID1", PaymentAmount: 23600, PaymentConfirmation: false, ReceiptConfirmation: false},
+		{ID: 2, GroupID: 3, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID1", PaymentAmount: 6800, PaymentConfirmation: false, ReceiptConfirmation: false},
+		{ID: 3, GroupID: 3, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID4", PaymentAmount: 15400, PaymentConfirmation: false, ReceiptConfirmation: false},
+		{ID: 4, GroupID: 3, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID5", PaymentAmount: 400, PaymentConfirmation: false, ReceiptConfirmation: false},
 	}, nil
+}
+
+func (m MockGroupTransactionsRepository) PostGroupAccountsList(groupAccountsList []model.GroupAccount, yearMonth time.Time, groupID int) error {
+	return nil
 }
 
 func TestDBHandler_GetMonthlyGroupTransactionsList(t *testing.T) {
@@ -355,5 +377,38 @@ func TestDBHandler_GetMonthlyGroupTransactionsAccount(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.GroupAccountsList{}, &model.GroupAccountsList{})
+}
+
+func TestDBHandler_PostMonthlyGroupTransactionsAccount(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:              MockAuthRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/groups/3/transactions/2020-07/account", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id":   "3",
+		"year_month": "2020-07",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostMonthlyGroupTransactionsAccount(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
 	testutil.AssertResponseBody(t, res, &model.GroupAccountsList{}, &model.GroupAccountsList{})
 }
