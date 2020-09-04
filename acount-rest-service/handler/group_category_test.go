@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"database/sql"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -154,6 +156,14 @@ func (m MockGroupCategoriesRepository) GetGroupCustomCategoriesList(groupID int)
 	}, nil
 }
 
+func (m MockGroupCategoriesRepository) FindGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) error {
+	return sql.ErrNoRows
+}
+
+func (m MockGroupCategoriesRepository) PostGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) (sql.Result, error) {
+	return MockSqlResult{}, nil
+}
+
 func TestDBHandler_GetGroupCategoriesList(t *testing.T) {
 	tearDown := testutil.SetUpMockServer(t)
 	defer tearDown()
@@ -184,4 +194,36 @@ func TestDBHandler_GetGroupCategoriesList(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupCategoriesList{}, &model.GroupCategoriesList{})
+}
+
+func TestDBHandler_PostGroupCustomCategory(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:            MockAuthRepository{},
+		GroupCategoriesRepo: MockGroupCategoriesRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/groups/1/categories/custom-categories", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostGroupCustomCategory(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.GroupCustomCategory{}, &model.GroupCustomCategory{})
 }
