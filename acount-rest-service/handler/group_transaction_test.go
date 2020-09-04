@@ -172,6 +172,10 @@ func (m MockGroupTransactionsRepository) PutGroupAccountsList(groupAccountsList 
 	return nil
 }
 
+func (m MockGroupTransactionsRepository) DeleteGroupAccountsList(yearMonth time.Time, groupID int) error {
+	return nil
+}
+
 func TestDBHandler_GetMonthlyGroupTransactionsList(t *testing.T) {
 	tearDown := testutil.SetUpMockServer(t)
 	defer tearDown()
@@ -448,4 +452,37 @@ func TestDBHandler_PutMonthlyGroupTransactionsAccount(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupAccountsList{}, &model.GroupAccountsList{})
+}
+
+func TestDBHandler_DeleteMonthlyGroupTransactionsAccount(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:              MockAuthRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/groups/2/transactions/2020-07/account", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id":   "2",
+		"year_month": "2020-07",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteMonthlyGroupTransactionsAccount(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }
