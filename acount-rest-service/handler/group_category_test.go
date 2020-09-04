@@ -1,23 +1,23 @@
 package handler
 
 import (
-	"database/sql"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
-	"github.com/gorilla/mux"
-
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
+	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/repository"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/testutil"
 )
 
-type MockCategoriesRepository struct{}
+type MockGroupCategoriesRepository struct {
+	repository.GroupCategoriesRepository
+}
 
-func (m MockCategoriesRepository) GetBigCategoriesList() ([]model.BigCategory, error) {
-	return []model.BigCategory{
+func (m MockGroupCategoriesRepository) GetGroupBigCategoriesList() ([]model.GroupBigCategory, error) {
+	return []model.GroupBigCategory{
 		{ID: 1, Name: "収入", TransactionType: "income"},
 		{ID: 2, Name: "食費", TransactionType: "expense"},
 		{ID: 3, Name: "日用品", TransactionType: "expense"},
@@ -38,8 +38,8 @@ func (m MockCategoriesRepository) GetBigCategoriesList() ([]model.BigCategory, e
 	}, nil
 }
 
-func (m MockCategoriesRepository) GetMediumCategoriesList() ([]model.AssociatedCategory, error) {
-	return []model.AssociatedCategory{
+func (m MockGroupCategoriesRepository) GetGroupMediumCategoriesList() ([]model.GroupAssociatedCategory, error) {
+	return []model.GroupAssociatedCategory{
 		{CategoryType: "MediumCategory", ID: 1, Name: "給与", BigCategoryID: 1},
 		{CategoryType: "MediumCategory", ID: 2, Name: "賞与", BigCategoryID: 1},
 		{CategoryType: "MediumCategory", ID: 3, Name: "一時所得", BigCategoryID: 1},
@@ -142,8 +142,8 @@ func (m MockCategoriesRepository) GetMediumCategoriesList() ([]model.AssociatedC
 	}, nil
 }
 
-func (m MockCategoriesRepository) GetCustomCategoriesList(userID string) ([]model.AssociatedCategory, error) {
-	return []model.AssociatedCategory{
+func (m MockGroupCategoriesRepository) GetGroupCustomCategoriesList(groupID int) ([]model.GroupAssociatedCategory, error) {
+	return []model.GroupAssociatedCategory{
 		{CategoryType: "CustomCategory", ID: 14, Name: "株配当金", BigCategoryID: 1},
 		{CategoryType: "CustomCategory", ID: 3, Name: "米", BigCategoryID: 2},
 		{CategoryType: "CustomCategory", ID: 2, Name: "パン", BigCategoryID: 2},
@@ -154,83 +154,20 @@ func (m MockCategoriesRepository) GetCustomCategoriesList(userID string) ([]mode
 	}, nil
 }
 
-func (m MockCategoriesRepository) FindCustomCategory(customCategory *model.CustomCategory, userID string) error {
-	return sql.ErrNoRows
-}
+func TestDBHandler_GetGroupCategoriesList(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
 
-func (m MockCategoriesRepository) PostCustomCategory(customCategory *model.CustomCategory, userID string) (sql.Result, error) {
-	return MockSqlResult{}, nil
-}
-
-func (m MockCategoriesRepository) PutCustomCategory(customCategory *model.CustomCategory) error {
-	return nil
-}
-
-func (m MockCategoriesRepository) DeleteCustomCategory(customCategoryID int) error {
-	return nil
-}
-
-func TestDBHandler_GetCategoriesList(t *testing.T) {
 	h := DBHandler{
-		AuthRepo:       MockAuthRepository{},
-		CategoriesRepo: MockCategoriesRepository{},
+		AuthRepo:            MockAuthRepository{},
+		GroupCategoriesRepo: MockGroupCategoriesRepository{},
 	}
 
-	r := httptest.NewRequest("GET", "/categories", nil)
-	w := httptest.NewRecorder()
-
-	cookie := &http.Cookie{
-		Name:  "session_id",
-		Value: uuid.New().String(),
-	}
-
-	r.AddCookie(cookie)
-
-	h.GetCategoriesList(w, r)
-
-	res := w.Result()
-	defer res.Body.Close()
-
-	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &model.CategoriesList{}, &model.CategoriesList{})
-}
-
-func TestDBHandler_PostCustomCategory(t *testing.T) {
-	h := DBHandler{
-		AuthRepo:       MockAuthRepository{},
-		CategoriesRepo: MockCategoriesRepository{},
-	}
-
-	r := httptest.NewRequest("POST", "/categories/custom-categories", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
-	w := httptest.NewRecorder()
-
-	cookie := &http.Cookie{
-		Name:  "session_id",
-		Value: uuid.New().String(),
-	}
-
-	r.AddCookie(cookie)
-
-	h.PostCustomCategory(w, r)
-
-	res := w.Result()
-	defer res.Body.Close()
-
-	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, &model.CustomCategory{}, &model.CustomCategory{})
-}
-
-func TestDBHandler_PutCustomCategory(t *testing.T) {
-	h := DBHandler{
-		AuthRepo:       MockAuthRepository{},
-		CategoriesRepo: MockCategoriesRepository{},
-	}
-
-	r := httptest.NewRequest("PUT", "/categories/custom-categories/1", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest("GET", "/groups/1/categories", nil)
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
-		"id": "1",
+		"group_id": "1",
 	})
 
 	cookie := &http.Cookie{
@@ -240,40 +177,11 @@ func TestDBHandler_PutCustomCategory(t *testing.T) {
 
 	r.AddCookie(cookie)
 
-	h.PutCustomCategory(w, r)
+	h.GetGroupCategoriesList(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &model.CustomCategory{}, &model.CustomCategory{})
-}
-
-func TestDBHandler_DeleteCustomCategory(t *testing.T) {
-	h := DBHandler{
-		AuthRepo:       MockAuthRepository{},
-		CategoriesRepo: MockCategoriesRepository{},
-	}
-
-	r := httptest.NewRequest("DELETE", "/categories/custom-categories/1", nil)
-	w := httptest.NewRecorder()
-
-	r = mux.SetURLVars(r, map[string]string{
-		"id": "1",
-	})
-
-	cookie := &http.Cookie{
-		Name:  "session_id",
-		Value: uuid.New().String(),
-	}
-
-	r.AddCookie(cookie)
-
-	h.DeleteCustomCategory(w, r)
-
-	res := w.Result()
-	defer res.Body.Close()
-
-	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &DeleteCustomCategoryMsg{}, &DeleteCustomCategoryMsg{})
+	testutil.AssertResponseBody(t, res, &model.GroupCategoriesList{}, &model.GroupCategoriesList{})
 }

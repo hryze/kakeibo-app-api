@@ -44,7 +44,7 @@ func (r *GroupCategoriesRepository) GetGroupBigCategoriesList() ([]model.GroupBi
 	return groupBigCategoriesList, nil
 }
 
-func (r *GroupCategoriesRepository) GetGroupMediumCategoriesList() ([]model.GroupMediumCategory, error) {
+func (r *GroupCategoriesRepository) GetGroupMediumCategoriesList() ([]model.GroupAssociatedCategory, error) {
 	query := `
         SELECT
             id, category_name, big_category_id 
@@ -59,9 +59,9 @@ func (r *GroupCategoriesRepository) GetGroupMediumCategoriesList() ([]model.Grou
 	}
 	defer rows.Close()
 
-	var groupMediumCategoriesList []model.GroupMediumCategory
+	var groupMediumCategoriesList []model.GroupAssociatedCategory
 	for rows.Next() {
-		groupMediumCategory := model.NewGroupMediumCategory()
+		groupMediumCategory := model.GroupAssociatedCategory{CategoryType: "MediumCategory"}
 		if err := rows.StructScan(&groupMediumCategory); err != nil {
 			return nil, err
 		}
@@ -74,7 +74,7 @@ func (r *GroupCategoriesRepository) GetGroupMediumCategoriesList() ([]model.Grou
 	return groupMediumCategoriesList, nil
 }
 
-func (r *GroupCategoriesRepository) GetGroupCustomCategoriesList(groupID int) ([]model.GroupCustomCategory, error) {
+func (r *GroupCategoriesRepository) GetGroupCustomCategoriesList(groupID int) ([]model.GroupAssociatedCategory, error) {
 	query := `
         SELECT
             id, category_name, big_category_id
@@ -92,9 +92,9 @@ func (r *GroupCategoriesRepository) GetGroupCustomCategoriesList(groupID int) ([
 	}
 	defer rows.Close()
 
-	var groupCustomCategoriesList []model.GroupCustomCategory
+	var groupCustomCategoriesList []model.GroupAssociatedCategory
 	for rows.Next() {
-		groupCustomCategory := model.NewGroupCustomCategory()
+		groupCustomCategory := model.GroupAssociatedCategory{CategoryType: "CustomCategory"}
 		if err := rows.StructScan(&groupCustomCategory); err != nil {
 			return nil, err
 		}

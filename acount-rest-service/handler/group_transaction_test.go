@@ -12,13 +12,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/testutil"
-
-	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/repository"
 )
 
-type MockGroupTransactionsRepository struct {
-	repository.GroupTransactionsRepository
-}
+type MockGroupTransactionsRepository struct{}
 
 func (m MockGroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionSender, error) {
 	return []model.GroupTransactionSender{
