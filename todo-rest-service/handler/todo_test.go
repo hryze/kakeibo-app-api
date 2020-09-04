@@ -69,6 +69,10 @@ func (m MockTodoRepository) PostTodo(todo *model.Todo, userID string) (sql.Resul
 	return MockSqlResult{}, nil
 }
 
+func (m MockTodoRepository) PutTodo(todo *model.Todo, todoID int) error {
+	return nil
+}
+
 func TestDBHandler_GetDailyTodoList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo: MockAuthRepository{},
@@ -149,5 +153,34 @@ func TestDBHandler_PostTodo(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.Todo{}, &model.Todo{})
+}
+
+func TestDBHandler_PutTodo(t *testing.T) {
+	h := DBHandler{
+		AuthRepo: MockAuthRepository{},
+		TodoRepo: MockTodoRepository{},
+	}
+
+	r := httptest.NewRequest("PUT", "/todo-list/1", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PutTodo(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.Todo{}, &model.Todo{})
 }
