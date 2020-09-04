@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gorilla/mux"
+
 	"github.com/google/uuid"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/testutil"
@@ -164,6 +166,10 @@ func (m MockCategoriesRepository) PostCustomCategory(customCategory *model.Custo
 	return MockSqlResult{}, nil
 }
 
+func (m MockCategoriesRepository) PutCustomCategory(customCategory *model.CustomCategory) error {
+	return nil
+}
+
 func TestDBHandler_GetCategoriesList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
@@ -211,5 +217,34 @@ func TestDBHandler_PostCustomCategory(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.CustomCategory{}, &model.CustomCategory{})
+}
+
+func TestDBHandler_PutCustomCategory(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:       MockAuthRepository{},
+		CategoriesRepo: MockCategoriesRepository{},
+	}
+
+	r := httptest.NewRequest("PUT", "/categories/custom-categories/1", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PutCustomCategory(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.CustomCategory{}, &model.CustomCategory{})
 }
