@@ -1,0 +1,778 @@
+{
+  "income_categories_list": [
+    {
+      "category_type": "IncomeBigCategory",
+      "transaction_type": "income",
+      "id": 1,
+      "name": "収入",
+      "associated_categories_list": [
+        {
+          "category_type": "CustomCategory",
+          "id": 14,
+          "name": "株配当金",
+          "big_category_id": 1
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 1,
+          "name": "給与",
+          "big_category_id": 1
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 2,
+          "name": "賞与",
+          "big_category_id": 1
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 3,
+          "name": "一時所得",
+          "big_category_id": 1
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 4,
+          "name": "事業所得",
+          "big_category_id": 1
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 5,
+          "name": "その他収入",
+          "big_category_id": 1
+        }
+      ]
+    }
+  ],
+  "expense_categories_list": [
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 2,
+      "name": "食費",
+      "associated_categories_list": [
+        {
+          "category_type": "CustomCategory",
+          "id": 3,
+          "name": "米",
+          "big_category_id": 2
+        },
+        {
+          "category_type": "CustomCategory",
+          "id": 2,
+          "name": "パン",
+          "big_category_id": 2
+        },
+        {
+          "category_type": "CustomCategory",
+          "id": 1,
+          "name": "調味料",
+          "big_category_id": 2
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 6,
+          "name": "食料品",
+          "big_category_id": 2
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 7,
+          "name": "朝食",
+          "big_category_id": 2
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 8,
+          "name": "昼食",
+          "big_category_id": 2
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 9,
+          "name": "夕食",
+          "big_category_id": 2
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 10,
+          "name": "外食",
+          "big_category_id": 2
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 11,
+          "name": "カフェ",
+          "big_category_id": 2
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 12,
+          "name": "その他食費",
+          "big_category_id": 2
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 3,
+      "name": "日用品",
+      "associated_categories_list": [
+        {
+          "category_type": "CustomCategory",
+          "id": 6,
+          "name": "歯磨き粉",
+          "big_category_id": 3
+        },
+        {
+          "category_type": "CustomCategory",
+          "id": 5,
+          "name": "トイレットペーパー",
+          "big_category_id": 3
+        },
+        {
+          "category_type": "CustomCategory",
+          "id": 4,
+          "name": "洗剤",
+          "big_category_id": 3
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 13,
+          "name": "消耗品",
+          "big_category_id": 3
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 14,
+          "name": "子育て用品",
+          "big_category_id": 3
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 15,
+          "name": "ペット用品",
+          "big_category_id": 3
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 16,
+          "name": "家具",
+          "big_category_id": 3
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 17,
+          "name": "家電",
+          "big_category_id": 3
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 18,
+          "name": "その他日用品",
+          "big_category_id": 3
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 4,
+      "name": "趣味・娯楽",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 19,
+          "name": "アウトドア",
+          "big_category_id": 4
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 20,
+          "name": "旅行",
+          "big_category_id": 4
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 21,
+          "name": "イベント",
+          "big_category_id": 4
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 22,
+          "name": "スポーツ",
+          "big_category_id": 4
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 23,
+          "name": "映画・動画",
+          "big_category_id": 4
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 24,
+          "name": "音楽",
+          "big_category_id": 4
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 25,
+          "name": "漫画",
+          "big_category_id": 4
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 26,
+          "name": "書籍",
+          "big_category_id": 4
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 27,
+          "name": "ゲーム",
+          "big_category_id": 4
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 28,
+          "name": "その他趣味・娯楽",
+          "big_category_id": 4
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 5,
+      "name": "交際費",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 29,
+          "name": "飲み会",
+          "big_category_id": 5
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 30,
+          "name": "プレゼント",
+          "big_category_id": 5
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 31,
+          "name": "冠婚葬祭",
+          "big_category_id": 5
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 32,
+          "name": "その他交際費",
+          "big_category_id": 5
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 6,
+      "name": "交通費",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 33,
+          "name": "電車",
+          "big_category_id": 6
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 34,
+          "name": "バス",
+          "big_category_id": 6
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 35,
+          "name": "タクシー",
+          "big_category_id": 6
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 36,
+          "name": "新幹線",
+          "big_category_id": 6
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 37,
+          "name": "飛行機",
+          "big_category_id": 6
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 38,
+          "name": "その他交通費",
+          "big_category_id": 6
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 7,
+      "name": "衣服・美容",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 39,
+          "name": "衣服",
+          "big_category_id": 7
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 40,
+          "name": "アクセサリー",
+          "big_category_id": 7
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 41,
+          "name": "クリーニング",
+          "big_category_id": 7
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 42,
+          "name": "美容院・理髪",
+          "big_category_id": 7
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 43,
+          "name": "化粧品",
+          "big_category_id": 7
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 44,
+          "name": "エステ・ネイル",
+          "big_category_id": 7
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 45,
+          "name": "その他衣服・美容",
+          "big_category_id": 7
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 8,
+      "name": "健康・医療",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 46,
+          "name": "病院",
+          "big_category_id": 8
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 47,
+          "name": "薬",
+          "big_category_id": 8
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 48,
+          "name": "ボディケア",
+          "big_category_id": 8
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 49,
+          "name": "フィットネス",
+          "big_category_id": 8
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 50,
+          "name": "その他健康・医療",
+          "big_category_id": 8
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 9,
+      "name": "通信費",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 51,
+          "name": "携帯電話",
+          "big_category_id": 9
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 52,
+          "name": "固定電話",
+          "big_category_id": 9
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 53,
+          "name": "インターネット",
+          "big_category_id": 9
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 54,
+          "name": "放送サービス",
+          "big_category_id": 9
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 55,
+          "name": "情報サービス",
+          "big_category_id": 9
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 56,
+          "name": "宅配・運送",
+          "big_category_id": 9
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 57,
+          "name": "切手・はがき",
+          "big_category_id": 9
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 58,
+          "name": "その他通信費",
+          "big_category_id": 9
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 10,
+      "name": "教養・教育",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 59,
+          "name": "新聞",
+          "big_category_id": 10
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 60,
+          "name": "参考書",
+          "big_category_id": 10
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 61,
+          "name": "受験料",
+          "big_category_id": 10
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 62,
+          "name": "学費",
+          "big_category_id": 10
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 63,
+          "name": "習い事",
+          "big_category_id": 10
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 64,
+          "name": "塾",
+          "big_category_id": 10
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 65,
+          "name": "その他教養・教育",
+          "big_category_id": 10
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 11,
+      "name": "住宅",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 66,
+          "name": "家賃",
+          "big_category_id": 11
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 67,
+          "name": "住宅ローン",
+          "big_category_id": 11
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 68,
+          "name": "リフォーム",
+          "big_category_id": 11
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 69,
+          "name": "その他住宅",
+          "big_category_id": 11
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 12,
+      "name": "水道・光熱費",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 70,
+          "name": "水道",
+          "big_category_id": 12
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 71,
+          "name": "電気",
+          "big_category_id": 12
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 72,
+          "name": "ガス",
+          "big_category_id": 12
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 73,
+          "name": "その他水道・光熱費",
+          "big_category_id": 12
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 13,
+      "name": "自動車",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 74,
+          "name": "自動車ローン",
+          "big_category_id": 13
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 75,
+          "name": "ガソリン",
+          "big_category_id": 13
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 76,
+          "name": "駐車場",
+          "big_category_id": 13
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 77,
+          "name": "高速料金",
+          "big_category_id": 13
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 78,
+          "name": "車検・整備",
+          "big_category_id": 13
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 79,
+          "name": "その他自動車",
+          "big_category_id": 13
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 14,
+      "name": "保険",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 80,
+          "name": "生命保険",
+          "big_category_id": 14
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 81,
+          "name": "医療保険",
+          "big_category_id": 14
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 82,
+          "name": "自動車保険",
+          "big_category_id": 14
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 83,
+          "name": "住宅保険",
+          "big_category_id": 14
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 84,
+          "name": "学資保険",
+          "big_category_id": 14
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 85,
+          "name": "その他保険",
+          "big_category_id": 14
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 15,
+      "name": "税金・社会保険",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 86,
+          "name": "所得税",
+          "big_category_id": 15
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 87,
+          "name": "住民税",
+          "big_category_id": 15
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 88,
+          "name": "年金保険料",
+          "big_category_id": 15
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 89,
+          "name": "自動車税",
+          "big_category_id": 15
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 90,
+          "name": "その他税金・社会保険",
+          "big_category_id": 15
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 16,
+      "name": "現金・カード",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 91,
+          "name": "現金引き出し",
+          "big_category_id": 16
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 92,
+          "name": "カード引き落とし",
+          "big_category_id": 16
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 93,
+          "name": "電子マネー",
+          "big_category_id": 16
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 94,
+          "name": "立替金",
+          "big_category_id": 16
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 95,
+          "name": "その他現金・カード",
+          "big_category_id": 16
+        }
+      ]
+    },
+    {
+      "category_type": "ExpenseBigCategory",
+      "transaction_type": "expense",
+      "id": 17,
+      "name": "その他",
+      "associated_categories_list": [
+        {
+          "category_type": "MediumCategory",
+          "id": 96,
+          "name": "仕送り",
+          "big_category_id": 17
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 97,
+          "name": "お小遣い",
+          "big_category_id": 17
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 98,
+          "name": "使途不明金",
+          "big_category_id": 17
+        },
+        {
+          "category_type": "MediumCategory",
+          "id": 99,
+          "name": "雑費",
+          "big_category_id": 17
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,5 @@
 package model
 
-import "encoding/json"
-
 type CategoriesList struct {
 	IncomeBigCategoriesList  []IncomeBigCategory  `json:"income_categories_list"`
 	ExpenseBigCategoriesList []ExpenseBigCategory `json:"expense_categories_list"`
@@ -31,7 +29,7 @@ type BigCategory struct {
 	ExpenseAssociatedCategoriesList []AssociatedCategory
 }
 
-type MediumCategory struct {
+type AssociatedCategory struct {
 	CategoryType  string `json:"category_type"`
 	ID            int    `json:"id"              db:"id"`
 	Name          string `json:"name"            db:"category_name"`
@@ -43,10 +41,6 @@ type CustomCategory struct {
 	ID            int    `json:"id"              db:"id"`
 	Name          string `json:"name"            db:"category_name"`
 	BigCategoryID int    `json:"big_category_id" db:"big_category_id"`
-}
-
-type AssociatedCategory interface {
-	showCategory() (string, error)
 }
 
 func NewIncomeBigCategory(bigCategory *BigCategory) IncomeBigCategory {
@@ -69,30 +63,8 @@ func NewExpenseBigCategory(bigCategory *BigCategory) ExpenseBigCategory {
 	}
 }
 
-func NewMediumCategory() MediumCategory {
-	return MediumCategory{
-		CategoryType: "MediumCategory",
-	}
-}
-
 func NewCustomCategory() CustomCategory {
 	return CustomCategory{
 		CategoryType: "CustomCategory",
 	}
-}
-
-func (c MediumCategory) showCategory() (string, error) {
-	b, err := json.Marshal(c)
-	if err != nil {
-		return string(b), err
-	}
-	return string(b), nil
-}
-
-func (c CustomCategory) showCategory() (string, error) {
-	b, err := json.Marshal(c)
-	if err != nil {
-		return string(b), err
-	}
-	return string(b), nil
 }

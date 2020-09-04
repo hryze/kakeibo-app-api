@@ -13,8 +13,8 @@ type AuthRepository interface {
 
 type CategoriesRepository interface {
 	GetBigCategoriesList() ([]model.BigCategory, error)
-	GetMediumCategoriesList() ([]model.MediumCategory, error)
-	GetCustomCategoriesList(userID string) ([]model.CustomCategory, error)
+	GetMediumCategoriesList() ([]model.AssociatedCategory, error)
+	GetCustomCategoriesList(userID string) ([]model.AssociatedCategory, error)
 	FindCustomCategory(customCategory *model.CustomCategory, userID string) error
 	PostCustomCategory(customCategory *model.CustomCategory, userID string) (sql.Result, error)
 	PutCustomCategory(customCategory *model.CustomCategory) error
