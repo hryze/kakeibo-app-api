@@ -59,7 +59,7 @@ func (d Date) Value() (driver.Value, error) {
 }
 
 func (d *Date) MarshalJSON() ([]byte, error) {
-	date := d.Time.Format("01/02")
+	date := d.Time.Format("2006/01/02")
 	dayOfWeeks := [...]string{"日", "月", "火", "水", "木", "金", "土"}
 	dayOfWeek := dayOfWeeks[d.Time.Weekday()]
 	return []byte(`"` + date + `(` + dayOfWeek + `)` + `"`), nil
@@ -67,10 +67,22 @@ func (d *Date) MarshalJSON() ([]byte, error) {
 
 func (d *Date) UnmarshalJSON(data []byte) error {
 	trimData := strings.Trim(string(data), "\"")[:10]
-	date, err := time.Parse("2006-01-02", trimData)
-	if err != nil {
-		return err
+	format := trimData[4:5]
+	var date time.Time
+	var err error
+
+	if format == "-" {
+		date, err = time.Parse("2006-01-02", trimData)
+		if err != nil {
+			return err
+		}
+	} else if format == "/" {
+		date, err = time.Parse("2006/01/02", trimData)
+		if err != nil {
+			return err
+		}
 	}
+
 	d.Time = date
 	return nil
 }

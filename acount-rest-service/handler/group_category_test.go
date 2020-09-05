@@ -1,20 +1,19 @@
 package handler
 
 import (
+	"database/sql"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/model"
-	"github.com/paypay3/kakeibo-app-api/acount-rest-service/domain/repository"
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/testutil"
 )
 
-type MockGroupCategoriesRepository struct {
-	repository.GroupCategoriesRepository
-}
+type MockGroupCategoriesRepository struct{}
 
 func (m MockGroupCategoriesRepository) GetGroupBigCategoriesList() ([]model.GroupBigCategory, error) {
 	return []model.GroupBigCategory{
@@ -154,6 +153,26 @@ func (m MockGroupCategoriesRepository) GetGroupCustomCategoriesList(groupID int)
 	}, nil
 }
 
+func (m MockGroupCategoriesRepository) FindGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) error {
+	return sql.ErrNoRows
+}
+
+func (m MockGroupCategoriesRepository) PostGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) (sql.Result, error) {
+	return MockSqlResult{}, nil
+}
+
+func (m MockGroupCategoriesRepository) PutGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory) error {
+	return nil
+}
+
+func (m MockGroupCategoriesRepository) FindGroupCustomCategoryID(groupCustomCategoryID int) error {
+	return nil
+}
+
+func (m MockGroupCategoriesRepository) DeleteGroupCustomCategory(groupCustomCategoryID int) error {
+	return nil
+}
+
 func TestDBHandler_GetGroupCategoriesList(t *testing.T) {
 	tearDown := testutil.SetUpMockServer(t)
 	defer tearDown()
@@ -184,4 +203,102 @@ func TestDBHandler_GetGroupCategoriesList(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupCategoriesList{}, &model.GroupCategoriesList{})
+}
+
+func TestDBHandler_PostGroupCustomCategory(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:            MockAuthRepository{},
+		GroupCategoriesRepo: MockGroupCategoriesRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/groups/1/categories/custom-categories", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostGroupCustomCategory(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.GroupCustomCategory{}, &model.GroupCustomCategory{})
+}
+
+func TestDBHandler_PutGroupCustomCategory(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:            MockAuthRepository{},
+		GroupCategoriesRepo: MockGroupCategoriesRepository{},
+	}
+
+	r := httptest.NewRequest("PUT", "/groups/1/categories/custom-categories/1", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+		"id":       "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PutGroupCustomCategory(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.GroupCustomCategory{}, &model.GroupCustomCategory{})
+}
+
+func TestDBHandler_DeleteGroupCustomCategory(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:            MockAuthRepository{},
+		GroupCategoriesRepo: MockGroupCategoriesRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/groups/1/categories/custom-categories/1", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+		"id":       "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteGroupCustomCategory(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteGroupCustomCategoryMsg{}, &DeleteGroupCustomCategoryMsg{})
 }
