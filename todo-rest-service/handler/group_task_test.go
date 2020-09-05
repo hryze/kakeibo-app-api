@@ -133,19 +133,50 @@ func (m MockGroupTasksRepository) GetGroupTasksList(groupID int) ([]model.GroupT
 }
 
 func (m MockGroupTasksRepository) GetGroupTask(groupTasksID int) (*model.GroupTask, error) {
+	if groupTasksID == 1 {
+		return &model.GroupTask{
+			ID:               1,
+			BaseDate:         model.NullTime{NullTime: sql.NullTime{Time: time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC), Valid: false}},
+			CycleType:        model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			Cycle:            model.NullInt{Int: 0, Valid: false},
+			TaskName:         "料理",
+			GroupID:          1,
+			GroupTasksUserID: model.NullInt{Int: 0, Valid: false},
+		}, nil
+	}
+
+	if count == 0 {
+		count++
+		return &model.GroupTask{
+			ID:               2,
+			BaseDate:         model.NullTime{NullTime: sql.NullTime{Time: time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC), Valid: false}},
+			CycleType:        model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			Cycle:            model.NullInt{Int: 0, Valid: false},
+			TaskName:         "洗濯",
+			GroupID:          1,
+			GroupTasksUserID: model.NullInt{Int: 0, Valid: false},
+		}, nil
+	}
+
+	count = 0
+
 	return &model.GroupTask{
-		ID:               1,
-		BaseDate:         model.NullTime{NullTime: sql.NullTime{Time: time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC), Valid: false}},
-		CycleType:        model.NullString{NullString: sql.NullString{String: "", Valid: false}},
-		Cycle:            model.NullInt{Int: 0, Valid: false},
-		TaskName:         "料理",
+		ID:               2,
+		BaseDate:         model.NullTime{NullTime: sql.NullTime{Time: time.Date(2020, 9, 3, 0, 0, 0, 0, time.UTC), Valid: true}},
+		CycleType:        model.NullString{NullString: sql.NullString{String: "every", Valid: true}},
+		Cycle:            model.NullInt{Int: 3, Valid: true},
+		TaskName:         "洗濯",
 		GroupID:          1,
-		GroupTasksUserID: model.NullInt{Int: 0, Valid: false},
+		GroupTasksUserID: model.NullInt{Int: 1, Valid: true},
 	}, nil
 }
 
 func (m MockGroupTasksRepository) PostGroupTask(groupTask model.GroupTask, groupID int) (sql.Result, error) {
 	return MockSqlResult{}, nil
+}
+
+func (m MockGroupTasksRepository) PutGroupTask(groupTask *model.GroupTask, groupTasksID int) error {
+	return nil
 }
 
 func TestDBHandler_GetGroupTasksListForEachUser(t *testing.T) {
@@ -273,5 +304,38 @@ func TestDBHandler_PostGroupTask(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.GroupTask{}, &model.GroupTask{})
+}
+
+func TestDBHandler_PutGroupTask(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:       MockAuthRepository{},
+		GroupTasksRepo: MockGroupTasksRepository{},
+	}
+
+	r := httptest.NewRequest("PUT", "/groups/1/tasks/2", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+		"id":       "2",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PutGroupTask(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupTask{}, &model.GroupTask{})
 }

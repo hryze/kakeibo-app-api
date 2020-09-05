@@ -1,0 +1,9 @@
+{
+  "id": 2,
+  "base_date": "2020-09-03T00:00:00Z",
+  "cycle_type": "every",
+  "cycle": 3,
+  "task_name": "洗濯",
+  "group_id": 1,
+  "group_tasks_users_id": 1
+}
