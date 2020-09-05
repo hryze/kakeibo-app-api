@@ -12,13 +12,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 
-	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/repository"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
 )
 
-type MockGroupTasksRepository struct {
-	repository.GroupTasksRepository
-}
+type MockGroupTasksRepository struct{}
 
 func (m MockGroupTasksRepository) GetGroupTasksUsersList(groupID int) ([]model.GroupTasksUser, error) {
 	return []model.GroupTasksUser{
@@ -176,6 +173,10 @@ func (m MockGroupTasksRepository) PostGroupTask(groupTask model.GroupTask, group
 }
 
 func (m MockGroupTasksRepository) PutGroupTask(groupTask *model.GroupTask, groupTasksID int) error {
+	return nil
+}
+
+func (m MockGroupTasksRepository) DeleteGroupTask(groupTasksID int) error {
 	return nil
 }
 
@@ -338,4 +339,37 @@ func TestDBHandler_PutGroupTask(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupTask{}, &model.GroupTask{})
+}
+
+func TestDBHandler_DeleteGroupTask(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:       MockAuthRepository{},
+		GroupTasksRepo: MockGroupTasksRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/groups/1/tasks/2", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+		"id":       "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteGroupTask(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteGroupTaskMsg{}, &DeleteGroupTaskMsg{})
 }
