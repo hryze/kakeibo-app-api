@@ -72,6 +72,13 @@ func (m MockGroupTodoRepository) DeleteGroupTodo(groupTodoID int) error {
 	return nil
 }
 
+func (m MockGroupTodoRepository) SearchGroupTodoList(groupTodoSqlQuery string) ([]model.GroupTodo, error) {
+	return []model.GroupTodo{
+		{ID: 1, PostedDate: time.Date(2020, 9, 5, 1, 29, 8, 0, time.UTC), ImplementationDate: model.Date{Time: time.Date(2020, 7, 5, 0, 0, 0, 0, time.UTC)}, DueDate: model.Date{Time: time.Date(2020, 7, 5, 0, 0, 0, 0, time.UTC)}, TodoContent: "今月の予算を立てる", CompleteFlag: true, UserID: "userID1"},
+		{ID: 2, PostedDate: time.Date(2020, 9, 5, 1, 29, 8, 0, time.UTC), ImplementationDate: model.Date{Time: time.Date(2020, 7, 9, 0, 0, 0, 0, time.UTC)}, DueDate: model.Date{Time: time.Date(2020, 7, 10, 0, 0, 0, 0, time.UTC)}, TodoContent: "コストコ鶏肉セール 5パック購入", CompleteFlag: true, UserID: "userID2"},
+	}, nil
+}
+
 func TestDBHandler_GetDailyGroupTodoList(t *testing.T) {
 	tearDown := testutil.SetUpMockServer(t)
 	defer tearDown()
@@ -234,4 +241,52 @@ func TestDBHandler_DeleteGroupTodo(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &DeleteGroupTodoMsg{}, &DeleteGroupTodoMsg{})
+}
+
+func TestDBHandler_SearchGroupTodoList(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:      MockAuthRepository{},
+		GroupTodoRepo: MockGroupTodoRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/1/todo-list/search", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	urlQuery := r.URL.Query()
+
+	params := map[string]string{
+		"date_type":     "due_date",
+		"start_date":    "2020-07-05T00:00:00.0000",
+		"end_date":      "2020-07-10T00:00:00.0000",
+		"complete_flag": "true",
+		"sort":          "due_date",
+	}
+
+	for k, v := range params {
+		urlQuery.Add(k, v)
+	}
+
+	r.URL.RawQuery = urlQuery.Encode()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.SearchGroupTodoList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.SearchGroupTodoList{}, &model.SearchGroupTodoList{})
 }
