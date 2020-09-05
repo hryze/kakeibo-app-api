@@ -15,6 +15,8 @@ import (
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
 )
 
+var count int
+
 type MockGroupTasksRepository struct{}
 
 func (m MockGroupTasksRepository) GetGroupTasksUsersList(groupID int) ([]model.GroupTasksUser, error) {
@@ -56,8 +58,6 @@ func (m MockGroupTasksRepository) GetGroupTasksListAssignedToUser(groupID int) (
 		},
 	}, nil
 }
-
-var count int
 
 func (m MockGroupTasksRepository) GetGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (*model.GroupTasksUser, error) {
 	if count == 0 {
@@ -183,6 +183,10 @@ func (m MockGroupTasksRepository) DeleteGroupTask(groupTasksID int) error {
 func TestDBHandler_GetGroupTasksListForEachUser(t *testing.T) {
 	tearDown := testutil.SetUpMockServer(t)
 	defer tearDown()
+
+	Now = func() time.Time {
+		return time.Date(2020, 9, 5, 0, 0, 0, 0, time.UTC)
+	}
 
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},

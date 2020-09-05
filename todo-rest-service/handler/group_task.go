@@ -15,6 +15,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var Now = time.Now
+
 type DeleteGroupTaskMsg struct {
 	Message string `json:"message"`
 }
@@ -144,7 +146,7 @@ func (h *DBHandler) GetGroupTasksListForEachUser(w http.ResponseWriter, r *http.
 		return
 	}
 
-	today := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 23, 59, 59, 0, time.UTC)
+	today := time.Date(Now().Year(), Now().Month(), Now().Day(), 23, 59, 59, 0, time.UTC)
 
 	for i := 0; i < len(groupTasksListAssignedToUser); i++ {
 		baseDate := groupTasksListAssignedToUser[i].BaseDate.Time
