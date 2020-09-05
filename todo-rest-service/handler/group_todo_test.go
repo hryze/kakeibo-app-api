@@ -55,13 +55,17 @@ func (m MockGroupTodoRepository) GetGroupTodo(groupTodoId int) (*model.GroupTodo
 		ImplementationDate: model.Date{Time: time.Date(2020, 7, 5, 0, 0, 0, 0, time.UTC)},
 		DueDate:            model.Date{Time: time.Date(2020, 7, 5, 0, 0, 0, 0, time.UTC)},
 		TodoContent:        "今月の予算を立てる",
-		CompleteFlag:       true,
+		CompleteFlag:       false,
 		UserID:             "userID1",
 	}, nil
 }
 
 func (m MockGroupTodoRepository) PostGroupTodo(groupTodo *model.GroupTodo, userID string, groupID int) (sql.Result, error) {
 	return MockSqlResult{}, nil
+}
+
+func (m MockGroupTodoRepository) PutGroupTodo(groupTodo *model.GroupTodo, groupTodoID int) error {
+	return nil
 }
 
 func TestDBHandler_GetDailyGroupTodoList(t *testing.T) {
@@ -159,5 +163,38 @@ func TestDBHandler_PostGroupTodo(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.GroupTodo{}, &model.GroupTodo{})
+}
+
+func TestDBHandler_PutGroupTodo(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:      MockAuthRepository{},
+		GroupTodoRepo: MockGroupTodoRepository{},
+	}
+
+	r := httptest.NewRequest("PUT", "/groups/1/todo-list/1", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+		"id":       "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PutGroupTodo(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupTodo{}, &model.GroupTodo{})
 }
