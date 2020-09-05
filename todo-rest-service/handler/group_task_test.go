@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -59,6 +60,28 @@ func (m MockGroupTasksRepository) GetGroupTasksListAssignedToUser(groupID int) (
 	}, nil
 }
 
+var count int
+
+func (m MockGroupTasksRepository) GetGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (*model.GroupTasksUser, error) {
+	if count == 0 {
+		count++
+		return nil, sql.ErrNoRows
+	}
+
+	count = 0
+
+	return &model.GroupTasksUser{
+		ID:        4,
+		UserID:    "userID4",
+		GroupID:   1,
+		TasksList: make([]model.GroupTask, 0),
+	}, nil
+}
+
+func (m MockGroupTasksRepository) PostGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (sql.Result, error) {
+	return MockSqlResult{}, nil
+}
+
 func TestDBHandler_GetGroupTasksListForEachUser(t *testing.T) {
 	tearDown := testutil.SetUpMockServer(t)
 	defer tearDown()
@@ -89,4 +112,36 @@ func TestDBHandler_GetGroupTasksListForEachUser(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupTasksListForEachUser{}, &model.GroupTasksListForEachUser{})
+}
+
+func TestDBHandler_PostGroupTasksUser(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:       MockAuthRepository{},
+		GroupTasksRepo: MockGroupTasksRepository{},
+	}
+
+	r := httptest.NewRequest("POST", "/groups/1/tasks/users", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PostGroupTasksUser(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.GroupTasksUser{}, &model.GroupTasksUser{})
 }

@@ -226,7 +226,7 @@ func (h *DBHandler) PostGroupTasksUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var groupTasksUser model.GroupTasksUser
+	groupTasksUser := model.GroupTasksUser{TasksList: make([]model.GroupTask, 0)}
 	if err := json.NewDecoder(r.Body).Decode(&groupTasksUser); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
