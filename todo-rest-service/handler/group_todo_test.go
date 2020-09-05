@@ -68,6 +68,10 @@ func (m MockGroupTodoRepository) PutGroupTodo(groupTodo *model.GroupTodo, groupT
 	return nil
 }
 
+func (m MockGroupTodoRepository) DeleteGroupTodo(groupTodoID int) error {
+	return nil
+}
+
 func TestDBHandler_GetDailyGroupTodoList(t *testing.T) {
 	tearDown := testutil.SetUpMockServer(t)
 	defer tearDown()
@@ -197,4 +201,37 @@ func TestDBHandler_PutGroupTodo(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupTodo{}, &model.GroupTodo{})
+}
+
+func TestDBHandler_DeleteGroupTodo(t *testing.T) {
+	tearDown := testutil.SetUpMockServer(t)
+	defer tearDown()
+
+	h := DBHandler{
+		AuthRepo:      MockAuthRepository{},
+		GroupTodoRepo: MockGroupTodoRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/groups/1/todo-list/1", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+		"id":       "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteGroupTodo(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteGroupTodoMsg{}, &DeleteGroupTodoMsg{})
 }
