@@ -14,13 +14,9 @@ import (
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
 
 	"github.com/google/uuid"
-
-	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/repository"
 )
 
-type MockTodoRepository struct {
-	repository.TodoRepository
-}
+type MockTodoRepository struct{}
 
 func (m MockTodoRepository) GetDailyImplementationTodoList(date time.Time, userID string) ([]model.Todo, error) {
 	return []model.Todo{
