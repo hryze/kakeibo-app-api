@@ -180,17 +180,20 @@ func (m MockGroupTasksRepository) DeleteGroupTask(groupTasksID int) error {
 	return nil
 }
 
+type MockTime struct{}
+
+func (m MockTime) Now() time.Time {
+	return time.Date(2020, 9, 6, 0, 0, 0, 0, time.UTC)
+}
+
 func TestDBHandler_GetGroupTasksListForEachUser(t *testing.T) {
 	tearDown := testutil.SetUpMockServer(t)
 	defer tearDown()
 
-	Now = func() time.Time {
-		return time.Date(2020, 9, 6, 0, 0, 0, 0, time.UTC)
-	}
-
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
 		GroupTasksRepo: MockGroupTasksRepository{},
+		TimeManage:     MockTime{},
 	}
 
 	r := httptest.NewRequest("GET", "/groups/1/tasks/users", nil)

@@ -18,6 +18,7 @@ type DBHandler struct {
 	TodoRepo       repository.TodoRepository
 	GroupTodoRepo  repository.GroupTodoRepository
 	GroupTasksRepo repository.GroupTasksRepository
+	TimeManage     TimeManager
 }
 
 type HTTPError struct {
