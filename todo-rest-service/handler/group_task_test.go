@@ -185,7 +185,7 @@ func TestDBHandler_GetGroupTasksListForEachUser(t *testing.T) {
 	defer tearDown()
 
 	Now = func() time.Time {
-		return time.Date(2020, 9, 5, 0, 0, 0, 0, time.UTC)
+		return time.Date(2020, 9, 6, 0, 0, 0, 0, time.UTC)
 	}
 
 	h := DBHandler{
