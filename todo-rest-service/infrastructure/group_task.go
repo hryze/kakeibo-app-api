@@ -33,9 +33,9 @@ func (r *GroupTasksRepository) GetGroupTasksUsersList(groupID int) ([]model.Grou
 	}
 	defer rows.Close()
 
-	var groupTasksUsersList []model.GroupTasksUser
+	groupTasksUsersList := make([]model.GroupTasksUser, 0)
 	for rows.Next() {
-		var groupTasksUser model.GroupTasksUser
+		groupTasksUser := model.GroupTasksUser{TasksList: make([]model.GroupTask, 0)}
 		if err := rows.StructScan(&groupTasksUser); err != nil {
 			return nil, err
 		}

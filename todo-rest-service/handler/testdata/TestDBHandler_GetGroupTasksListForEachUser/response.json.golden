@@ -1,0 +1,51 @@
+{
+  "group_tasks_list_for_each_user": [
+    {
+      "id": 1,
+      "user_id": "userID1",
+      "group_id": 1,
+      "tasks_list": []
+    },
+    {
+      "id": 2,
+      "user_id": "userID2",
+      "group_id": 1,
+      "tasks_list": [
+        {
+          "id": 2,
+          "base_date": "2020-09-06T00:00:00Z",
+          "cycle_type": "every",
+          "cycle": 3,
+          "task_name": "洗濯",
+          "group_id": 1,
+          "group_tasks_users_id": 2
+        },
+        {
+          "id": 5,
+          "base_date": "2020-08-31T00:00:00Z",
+          "cycle_type": "consecutive",
+          "cycle": 7,
+          "task_name": "風呂掃除",
+          "group_id": 1,
+          "group_tasks_users_id": 2
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "user_id": "userID3",
+      "group_id": 1,
+      "tasks_list": [
+        {
+          "id": 1,
+          "base_date": "2020-09-06T00:00:00Z",
+          "cycle_type": "every",
+          "cycle": 1,
+          "task_name": "料理",
+          "group_id": 1,
+          "group_tasks_users_id": 3
+        }
+      ]
+    }
+  ]
+}

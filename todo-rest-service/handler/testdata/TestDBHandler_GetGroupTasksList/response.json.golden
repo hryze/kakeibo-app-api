@@ -1,0 +1,49 @@
+{
+  "group_tasks_list": [
+    {
+      "id": 1,
+      "base_date": "2020-09-05T00:00:00Z",
+      "cycle_type": "every",
+      "cycle": 1,
+      "task_name": "料理",
+      "group_id": 1,
+      "group_tasks_users_id": 2
+    },
+    {
+      "id": 2,
+      "base_date": "2020-09-03T00:00:00Z",
+      "cycle_type": "every",
+      "cycle": 3,
+      "task_name": "洗濯",
+      "group_id": 1,
+      "group_tasks_users_id": 1
+    },
+    {
+      "id": 3,
+      "base_date": "2020-09-02T00:00:00Z",
+      "cycle_type": "every",
+      "cycle": 7,
+      "task_name": "トイレ掃除",
+      "group_id": 1,
+      "group_tasks_users_id": 4
+    },
+    {
+      "id": 4,
+      "base_date": null,
+      "cycle_type": null,
+      "cycle": null,
+      "task_name": "台所掃除",
+      "group_id": 1,
+      "group_tasks_users_id": null
+    },
+    {
+      "id": 5,
+      "base_date": "2020-08-31T00:00:00Z",
+      "cycle_type": "consecutive",
+      "cycle": 7,
+      "task_name": "風呂掃除",
+      "group_id": 1,
+      "group_tasks_users_id": 3
+    }
+  ]
+}

@@ -15,6 +15,20 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type TimeManager interface {
+	Now() time.Time
+}
+
+type RealTime struct{}
+
+func (r *RealTime) Now() time.Time {
+	return time.Now()
+}
+
+func NewRealTime() *RealTime {
+	return &RealTime{}
+}
+
 type DeleteGroupTaskMsg struct {
 	Message string `json:"message"`
 }
@@ -144,7 +158,8 @@ func (h *DBHandler) GetGroupTasksListForEachUser(w http.ResponseWriter, r *http.
 		return
 	}
 
-	today := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 23, 59, 59, 0, time.UTC)
+	now := h.TimeManage.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, time.UTC)
 
 	for i := 0; i < len(groupTasksListAssignedToUser); i++ {
 		baseDate := groupTasksListAssignedToUser[i].BaseDate.Time
@@ -226,7 +241,7 @@ func (h *DBHandler) PostGroupTasksUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var groupTasksUser model.GroupTasksUser
+	groupTasksUser := model.GroupTasksUser{TasksList: make([]model.GroupTask, 0)}
 	if err := json.NewDecoder(r.Body).Decode(&groupTasksUser); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
