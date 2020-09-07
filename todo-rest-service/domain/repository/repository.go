@@ -43,6 +43,6 @@ type GroupTasksRepository interface {
 	GetGroupTasksList(groupID int) ([]model.GroupTask, error)
 	GetGroupTask(groupTasksID int) (*model.GroupTask, error)
 	PostGroupTask(groupTask model.GroupTask, groupID int) (sql.Result, error)
-	PutGroupTask(groupTask *model.GroupTask, groupTasksID int) error
+	PutGroupTask(groupTask *model.GroupTask, groupTasksID int) (sql.Result, error)
 	DeleteGroupTask(groupTasksID int) error
 }

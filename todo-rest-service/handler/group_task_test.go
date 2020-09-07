@@ -142,21 +142,6 @@ func (m MockGroupTasksRepository) GetGroupTask(groupTasksID int) (*model.GroupTa
 		}, nil
 	}
 
-	if count == 0 {
-		count++
-		return &model.GroupTask{
-			ID:               2,
-			BaseDate:         model.NullTime{NullTime: sql.NullTime{Time: time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC), Valid: false}},
-			CycleType:        model.NullString{NullString: sql.NullString{String: "", Valid: false}},
-			Cycle:            model.NullInt{Int: 0, Valid: false},
-			TaskName:         "洗濯",
-			GroupID:          1,
-			GroupTasksUserID: model.NullInt{Int: 0, Valid: false},
-		}, nil
-	}
-
-	count = 0
-
 	return &model.GroupTask{
 		ID:               2,
 		BaseDate:         model.NullTime{NullTime: sql.NullTime{Time: time.Date(2020, 9, 3, 0, 0, 0, 0, time.UTC), Valid: true}},
@@ -172,8 +157,8 @@ func (m MockGroupTasksRepository) PostGroupTask(groupTask model.GroupTask, group
 	return MockSqlResult{}, nil
 }
 
-func (m MockGroupTasksRepository) PutGroupTask(groupTask *model.GroupTask, groupTasksID int) error {
-	return nil
+func (m MockGroupTasksRepository) PutGroupTask(groupTask *model.GroupTask, groupTasksID int) (sql.Result, error) {
+	return MockSqlResult{}, nil
 }
 
 func (m MockGroupTasksRepository) DeleteGroupTask(groupTasksID int) error {
