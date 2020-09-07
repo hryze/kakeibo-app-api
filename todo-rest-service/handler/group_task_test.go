@@ -15,8 +15,6 @@ import (
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
 )
 
-var count int
-
 type MockGroupTasksRepository struct{}
 
 func (m MockGroupTasksRepository) GetGroupTasksUsersList(groupID int) ([]model.GroupTasksUser, error) {
@@ -60,19 +58,7 @@ func (m MockGroupTasksRepository) GetGroupTasksListAssignedToUser(groupID int) (
 }
 
 func (m MockGroupTasksRepository) GetGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (*model.GroupTasksUser, error) {
-	if count == 0 {
-		count++
-		return nil, sql.ErrNoRows
-	}
-
-	count = 0
-
-	return &model.GroupTasksUser{
-		ID:        4,
-		UserID:    "userID4",
-		GroupID:   1,
-		TasksList: make([]model.GroupTask, 0),
-	}, nil
+	return nil, sql.ErrNoRows
 }
 
 func (m MockGroupTasksRepository) PostGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (sql.Result, error) {

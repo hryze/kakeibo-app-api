@@ -272,20 +272,24 @@ func (h *DBHandler) PostGroupTasksUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := h.GroupTasksRepo.PostGroupTasksUser(groupTasksUser, groupID); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	dbGroupTasksUser, err := h.GroupTasksRepo.GetGroupTasksUser(groupTasksUser, groupID)
+	result, err := h.GroupTasksRepo.PostGroupTasksUser(groupTasksUser, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
+	lastInsertId, err := result.LastInsertId()
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupTasksUser.ID = int(lastInsertId)
+	groupTasksUser.GroupID = groupID
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(dbGroupTasksUser); err != nil {
+	if err := json.NewEncoder(w).Encode(&groupTasksUser); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
