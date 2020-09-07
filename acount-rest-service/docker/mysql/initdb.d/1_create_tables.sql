@@ -159,5 +159,6 @@ CREATE TABLE group_accounts
   payment_confirmation bit(1) NOT NULL DEFAULT b'0',
   receipt_confirmation bit(1) NOT NULL DEFAULT b'0',
   group_id INT NOT NULL,
-  PRIMARY KEY(id)
+  PRIMARY KEY(id),
+  UNIQUE uq_group_accounts(years_months, payer_user_id, recipient_user_id, group_id)
 );
