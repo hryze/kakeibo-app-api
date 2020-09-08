@@ -176,7 +176,7 @@ func (h *DBHandler) GetGroupTasksListForEachUser(w http.ResponseWriter, r *http.
 			groupTasksListAssignedToUser[i].Cycle.Valid = false
 			groupTasksListAssignedToUser[i].GroupTasksUserID.Valid = false
 
-			if err := h.GroupTasksRepo.PutGroupTask(&groupTasksListAssignedToUser[i], groupTasksListAssignedToUser[i].ID); err != nil {
+			if _, err := h.GroupTasksRepo.PutGroupTask(&groupTasksListAssignedToUser[i], groupTasksListAssignedToUser[i].ID); err != nil {
 				errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 				return
 			}
@@ -190,7 +190,7 @@ func (h *DBHandler) GetGroupTasksListForEachUser(w http.ResponseWriter, r *http.
 		groupTasksListAssignedToUser[i].BaseDate.Time = nextBaseDate
 		groupTasksListAssignedToUser[i].GroupTasksUserID.Int = nextGroupTasksUserID
 
-		if err := h.GroupTasksRepo.PutGroupTask(&groupTasksListAssignedToUser[i], groupTasksListAssignedToUser[i].ID); err != nil {
+		if _, err := h.GroupTasksRepo.PutGroupTask(&groupTasksListAssignedToUser[i], groupTasksListAssignedToUser[i].ID); err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
@@ -272,20 +272,24 @@ func (h *DBHandler) PostGroupTasksUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := h.GroupTasksRepo.PostGroupTasksUser(groupTasksUser, groupID); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	dbGroupTasksUser, err := h.GroupTasksRepo.GetGroupTasksUser(groupTasksUser, groupID)
+	result, err := h.GroupTasksRepo.PostGroupTasksUser(groupTasksUser, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
+	lastInsertId, err := result.LastInsertId()
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupTasksUser.ID = int(lastInsertId)
+	groupTasksUser.GroupID = groupID
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(dbGroupTasksUser); err != nil {
+	if err := json.NewEncoder(w).Encode(&groupTasksUser); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -431,16 +435,6 @@ func (h *DBHandler) PutGroupTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := h.GroupTasksRepo.GetGroupTask(groupTasksID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"指定されたタスクは存在しません。"}))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
 	var groupTask model.GroupTask
 	if err := json.NewDecoder(r.Body).Decode(&groupTask); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -452,8 +446,18 @@ func (h *DBHandler) PutGroupTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.GroupTasksRepo.PutGroupTask(&groupTask, groupTasksID); err != nil {
+	result, err := h.GroupTasksRepo.PutGroupTask(&groupTask, groupTasksID)
+	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	} else if rowsAffected == 0 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"指定されたタスクは存在しません。"}))
 		return
 	}
 

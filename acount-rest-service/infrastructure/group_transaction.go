@@ -234,7 +234,9 @@ func (r *GroupTransactionsRepository) GetGroupAccountsList(yearMonth time.Time, 
         WHERE
             group_id = ?
         AND
-            years_months = ?`
+            years_months = ?
+        ORDER BY
+            id`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, yearMonth)
 	if err != nil {

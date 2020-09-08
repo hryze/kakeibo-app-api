@@ -42,10 +42,6 @@ type GroupTransactionProcessLockErrorMsg struct {
 	Message string `json:"message"`
 }
 
-type GroupAccountConflictErrorMsg struct {
-	Message string `json:"message"`
-}
-
 func NewGroupTransactionsSearchQuery(urlQuery url.Values, groupID string) GroupTransactionsSearchQuery {
 	startDate := trimDate(urlQuery.Get("start_date"))
 	endDate := trimDate(urlQuery.Get("end_date"))
@@ -71,9 +67,6 @@ func (e *GroupTransactionProcessLockErrorMsg) Error() string {
 	return e.Message
 }
 
-func (e *GroupAccountConflictErrorMsg) Error() string {
-	return e.Message
-}
 func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery) (string, error) {
 	query := `
         SELECT
@@ -669,15 +662,6 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 		return
 	}
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
-
-	conflictCheckGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(firstDay, groupID)
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	} else if len(conflictCheckGroupAccountsList) != 0 {
-		errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &GroupAccountConflictErrorMsg{"当月のグループでの取引は会計済みです。"}))
-		return
-	}
 
 	userPaymentAmountList, err := h.GroupTransactionsRepo.GetUserPaymentAmountList(groupID, firstDay, lastDay)
 	if err != nil {

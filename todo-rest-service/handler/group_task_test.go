@@ -15,8 +15,6 @@ import (
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
 )
 
-var count int
-
 type MockGroupTasksRepository struct{}
 
 func (m MockGroupTasksRepository) GetGroupTasksUsersList(groupID int) ([]model.GroupTasksUser, error) {
@@ -60,19 +58,7 @@ func (m MockGroupTasksRepository) GetGroupTasksListAssignedToUser(groupID int) (
 }
 
 func (m MockGroupTasksRepository) GetGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (*model.GroupTasksUser, error) {
-	if count == 0 {
-		count++
-		return nil, sql.ErrNoRows
-	}
-
-	count = 0
-
-	return &model.GroupTasksUser{
-		ID:        4,
-		UserID:    "userID4",
-		GroupID:   1,
-		TasksList: make([]model.GroupTask, 0),
-	}, nil
+	return nil, sql.ErrNoRows
 }
 
 func (m MockGroupTasksRepository) PostGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (sql.Result, error) {
@@ -142,21 +128,6 @@ func (m MockGroupTasksRepository) GetGroupTask(groupTasksID int) (*model.GroupTa
 		}, nil
 	}
 
-	if count == 0 {
-		count++
-		return &model.GroupTask{
-			ID:               2,
-			BaseDate:         model.NullTime{NullTime: sql.NullTime{Time: time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC), Valid: false}},
-			CycleType:        model.NullString{NullString: sql.NullString{String: "", Valid: false}},
-			Cycle:            model.NullInt{Int: 0, Valid: false},
-			TaskName:         "洗濯",
-			GroupID:          1,
-			GroupTasksUserID: model.NullInt{Int: 0, Valid: false},
-		}, nil
-	}
-
-	count = 0
-
 	return &model.GroupTask{
 		ID:               2,
 		BaseDate:         model.NullTime{NullTime: sql.NullTime{Time: time.Date(2020, 9, 3, 0, 0, 0, 0, time.UTC), Valid: true}},
@@ -172,8 +143,8 @@ func (m MockGroupTasksRepository) PostGroupTask(groupTask model.GroupTask, group
 	return MockSqlResult{}, nil
 }
 
-func (m MockGroupTasksRepository) PutGroupTask(groupTask *model.GroupTask, groupTasksID int) error {
-	return nil
+func (m MockGroupTasksRepository) PutGroupTask(groupTask *model.GroupTask, groupTasksID int) (sql.Result, error) {
+	return MockSqlResult{}, nil
 }
 
 func (m MockGroupTasksRepository) DeleteGroupTask(groupTasksID int) error {
