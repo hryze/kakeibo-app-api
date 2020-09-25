@@ -12,8 +12,8 @@ defaults:
     shell: bash
     working-directory: terraform
 jobs:
-  terraform-ci:
-    name: Terraform ci
+  terraform-test:
+    name: Terraform test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -59,12 +59,21 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `## \`Terraform CI\`
+            const output = `## \`Terraform test\`
             #### Terraform Format and Style \`${{ steps.fmt.outcome }}\`
             #### Terraform Initialization \`${{ steps.init.outcome }}\`
             #### Terraform Validation \`${{ steps.validate.outputs.stdout }}\`
             #### Terraform Plan \`${{ steps.plan.outcome }}\`
+
             <details><summary>Show Plan</summary>
             \`\`\`terraform\n${{ steps.plan.outputs.stdout }}\`\`\`
             </details>
+
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
