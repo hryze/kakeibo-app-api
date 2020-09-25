@@ -15,6 +15,9 @@ jobs:
   terraform-ci:
     name: Terraform CI
     runs-on: ubuntu-latest
+    env:
+      TF_VAR_rds_user: ${{ secrets.RDS_USER }}
+      TF_VAR_rds_password: ${{ secrets.RDS_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -45,12 +48,12 @@ jobs:
 
       - name: Terraform Validate
         id: validate
-        run: terraform validate
+        run: terraform validate -no-color
         continue-on-error: true
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan
+        run: terraform plan -no-color
         continue-on-error: true
 
       - name:
@@ -60,10 +63,10 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const output = `## \`Terraform test\`
-            #### Terraform Format and Style \`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization \`${{ steps.init.outcome }}\`
-            #### Terraform Validation ${{ steps.validate.outputs.stdout }}
-            #### Terraform Plan \`${{ steps.plan.outcome }}\`
+            #### Terraform Format and Style : \`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization   : \`${{ steps.init.outcome }}\`
+            #### Terraform Validation       : \`${{ steps.validate.outputs.stdout }}\`
+            #### Terraform Plan             : \`${{ steps.plan.outcome }}\`
 
             <details><summary>Show Plan</summary>
             \`\`\`terraform\n${{ steps.plan.outputs.stdout }}\`\`\`
