@@ -12,8 +12,8 @@ defaults:
     shell: bash
     working-directory: terraform
 jobs:
-  terraform-test:
-    name: Terraform test
+  terraform-ci:
+    name: Terraform CI
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -62,7 +62,7 @@ jobs:
             const output = `## \`Terraform test\`
             #### Terraform Format and Style \`${{ steps.fmt.outcome }}\`
             #### Terraform Initialization \`${{ steps.init.outcome }}\`
-            #### Terraform Validation \`${{ steps.validate.outputs.stdout }}\`
+            #### Terraform Validation ${{ steps.validate.outputs.stdout }}
             #### Terraform Plan \`${{ steps.plan.outcome }}\`
 
             <details><summary>Show Plan</summary>

@@ -1,56 +1,91 @@
 variable "project" {
   type        = string
+  default     = "kakeibo"
   description = "Project Name"
 }
 
 variable "environment" {
   type        = string
+  default     = "prod"
   description = "Environment in which to deploy application"
 }
 
 variable "default_region" {
   type        = string
+  default     = "ap-northeast-1"
   description = "Default region"
 }
 
 variable "acm_region" {
   type        = string
+  default     = "us-east-1"
   description = "ACM region"
 }
 
 variable "availability_zones" {
-  type        = list(string)
+  type = list(string)
+  default = [
+    "ap-northeast-1a",
+    "ap-northeast-1c",
+    "ap-northeast-1d",
+  ]
   description = "Availability zones"
 }
 
 variable "vpc_cider_block" {
   type        = string
+  default     = "10.0.0.0/16"
   description = "Cider block for vpc"
 }
 
 variable "public_subnet_cider_blocks" {
-  type        = list(string)
+  type = list(string)
+  default = [
+    "10.0.1.0/24",
+    "10.0.2.0/24",
+    "10.0.3.0/24",
+  ]
   description = "Cider blocks for public subnet"
 }
 
 variable "private_subnet_cider_blocks" {
-  type        = list(string)
+  type = list(string)
+  default = [
+    "10.0.4.0/24",
+    "10.0.5.0/24",
+    "10.0.6.0/24",
+  ]
   description = "Cider blocks for private subnet"
 }
 
 variable "root_domain" {
   type        = string
+  default     = "unipawn.jp"
   description = "Domain name"
 }
 
 variable "website_domain" {
   type        = string
+  default     = "www.unipawn.jp"
   description = "Subdomain for website"
 }
 
 variable "s3_bucketname" {
   type        = string
+  default     = "kakeibo-front-web"
   description = "S3 bucket name"
+}
+
+variable "elasticache_port" {
+  type        = number
+  default     = 6379
+  description = "Password for ElastiCache"
+}
+
+variable "rds_port" {
+  type        = number
+  default     = 3306
+  description = "Password for RDS"
 }
 
 variable "rds_user" {
@@ -61,16 +96,6 @@ variable "rds_user" {
 variable "rds_password" {
   type        = string
   description = "User for RDS"
-}
-
-variable "rds_port" {
-  type        = number
-  description = "Password for RDS"
-}
-
-variable "elasticache_port" {
-  type        = number
-  description = "Password for ElastiCache"
 }
 
 locals {
