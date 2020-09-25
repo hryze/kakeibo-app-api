@@ -1,0 +1,70 @@
+name: terraform
+on:
+  pull_request:
+    paths:
+      - terraform/**
+      - .github/workflows/terraform.yaml
+  push:
+    branches:
+      - master
+defaults:
+  run:
+    shell: bash
+    working-directory: terraform
+jobs:
+  terraform-ci:
+    name: Terraform ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.13.3
+
+      - name: Create terraform.tfvars file
+        run: echo "${{ secrets.TFVARS }}" > terraform.tfvars
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -recursive -check
+        continue-on-error: true
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+        continue-on-error: true
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan
+        continue-on-error: true
+
+      - name:
+        uses: actions/github-script@0.9.0
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `## \`Terraform CI\`
+            #### Terraform Format and Style \`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization \`${{ steps.init.outcome }}\`
+            #### Terraform Validation \`${{ steps.validate.outputs.stdout }}\`
+            #### Terraform Plan \`${{ steps.plan.outcome }}\`
+            <details><summary>Show Plan</summary>
+            \`\`\`terraform\n${{ steps.plan.outputs.stdout }}\`\`\`
+            </details>
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
