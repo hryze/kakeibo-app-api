@@ -16,10 +16,13 @@ terraform:
       {{ .Result }}
       ```
       {{end}}
-      <details><summary>Show Plan (Click me)</summary>
+      <details>
+      <summary>Show Plan (Click me)</summary>
+
       ```
       {{ .Body }}
       ```
+      </details>
     when_add_or_update_only:
       label: "add-or-update"
     when_no_changes:
