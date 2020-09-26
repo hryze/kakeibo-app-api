@@ -60,13 +60,13 @@ variable "private_subnet_cider_blocks" {
 
 variable "root_domain" {
   type        = string
-  default     = "unipawn.jp"
+  default     = "shakepiper.com"
   description = "Domain name"
 }
 
 variable "website_domain" {
   type        = string
-  default     = "www.unipawn.jp"
+  default     = "www.shakepiper.com"
   description = "Subdomain for website"
 }
 
