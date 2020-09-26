@@ -6,14 +6,17 @@ notifier:
       owner: "paypay3"
       name: "kakeibo-app-api"
 terraform:
+  use_raw_output: true
   plan:
     template: |
       {{ .Title }}
       {{ .Message }}
       {{if .Result}}
-      <pre><code> {{ .Result }} </pre></code>
+      ```
+      {{ .Result }}
+      ```
       {{end}}
-      <details><summary>Details (Click me)</summary>
+      <details><summary>Show Plan (Click me)</summary>
       ```
       {{ .Body }}
       ```
