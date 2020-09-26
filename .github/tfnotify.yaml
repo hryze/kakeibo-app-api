@@ -9,7 +9,7 @@ terraform:
   use_raw_output: true
   plan:
     template: |
-      Terraform plan result <sup>[CI link]( {{ .Link }} )</sup>
+      ## Terraform plan result <sup>[CI link]( {{ .Link }} )</sup>
       {{ .Message }}
       {{if .Result}}
       ```
