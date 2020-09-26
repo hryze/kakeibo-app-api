@@ -10,8 +10,8 @@ defaults:
     shell: bash
     working-directory: terraform
 jobs:
-  terraform-ci:
-    name: Terraform CI
+  terraform:
+    name: Terraform
     runs-on: ubuntu-latest
     env:
       TF_VAR_rds_user: ${{ secrets.RDS_USER }}
@@ -51,6 +51,10 @@ jobs:
       - name: Terraform Plan
         run: |
           terraform plan -no-color | \
-          tfnotify --config ../.github/tfnotify.yaml plan --message "$(TZ=UTC-9:00 date +"%Y/%m/%d %H:%M:%S")"
+          tfnotify --config ../.github/tfnotify.yaml plan --message "### Planned Date\n$(TZ=UTC-9:00 date +"%Y/%m/%d %H:%M:%S")"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/master'
+        run: terraform apply -auto-approve
