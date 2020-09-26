@@ -34,53 +34,25 @@ jobs:
         with:
           terraform_version: 0.13.3
 
-      - name: Terraform Init
-        id: init
-        run: terraform init
+      - name: Install Dependent Packages
+        run: |
+          mkdir -p /usr/local/bin
+          wget https://github.com/mercari/tfnotify/releases/download/v0.7.0/tfnotify_linux_amd64.tar.gz -P /tmp
+          tar zxvf /tmp/tfnotify_linux_amd64.tar.gz -C /tmp
+          sudo mv /tmp/tfnotify /usr/local/bin/tfnotify
 
       - name: Terraform Format
-        id: fmt
         run: terraform fmt -recursive -check
-        continue-on-error: true
+
+      - name: Terraform Init
+        run: terraform init
 
       - name: Terraform Validate
-        id: validate
         run: terraform validate -no-color
-        continue-on-error: true
 
       - name: Terraform Plan
-        id: plan
-        if: github.event_name == 'pull_request'
-        run: terraform plan -no-color
-        continue-on-error: true
-
-      - name: Terraform Plan Status
-        if: steps.plan.outcome == 'failure'
-        run: exit 1
-
-      - name:
-        uses: actions/github-script@0.9.0
-        if: github.event_name == 'pull_request'
+        run: |
+          terraform plan -no-color | \
+          tfnotify --config ../.github/tfnotify.yaml plan
         env:
-          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const output = `## \`Terraform CI\`
-            #### Terraform Format and Style : \`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization   : \`${{ steps.init.outcome }}\`
-            #### Terraform Validation       :   ${{ steps.validate.outputs.stdout }}
-            #### Terraform Plan             : \`${{ steps.plan.outcome }}\`
-
-            <details><summary>Show Plan</summary>
-            \`\`\`${process.env.PLAN}\`\`\`
-            </details>
-
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
-
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
