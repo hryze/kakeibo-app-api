@@ -53,6 +53,6 @@ jobs:
       - name: Terraform Plan
         run: |
           terraform plan -no-color | \
-          tfnotify --config ../.github/tfnotify.yaml plan
+          /usr/local/bin/tfnotify --config ../.github/tfnotify.yaml plan
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
