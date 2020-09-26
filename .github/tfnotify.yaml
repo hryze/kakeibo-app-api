@@ -10,9 +10,13 @@ terraform:
     template: |
       {{ .Title }}
       {{ .Message }}
-      {{if .Result}}<pre><code> {{ .Result }} </pre></code>{{end}}
+      {{if .Result}}
+      <pre><code> {{ .Result }} </pre></code>
+      {{end}}
       <details><summary>Details (Click me)</summary>
-      <pre><code> {{ .Body }} </pre></code></details>
+      ```
+      {{ .Body }}
+      ```
     when_add_or_update_only:
       label: "add-or-update"
     when_no_changes:
