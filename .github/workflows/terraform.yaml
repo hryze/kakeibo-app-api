@@ -4,6 +4,7 @@ on:
     paths:
       - terraform/**
       - .github/workflows/terraform.yaml
+      - .github/tfnotify.yaml
 defaults:
   run:
     shell: bash
