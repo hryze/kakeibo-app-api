@@ -51,7 +51,7 @@ jobs:
       - name: Terraform Plan
         run: |
           terraform plan -no-color | \
-          tfnotify --config ../.github/tfnotify.yaml plan --message "### Planned Date\n$(TZ=UTC-9:00 date +"%Y/%m/%d %H:%M:%S")"
+          tfnotify --config ../.github/tfnotify.yaml plan --message "### Planned Date<br>$(TZ=UTC-9:00 date +"%Y/%m/%d %H:%M:%S")"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
