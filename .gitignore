@@ -15,3 +15,9 @@
 .DS_Store
 *.env
 /.idea/
+
+# terraform
+*/.terraform
+*.tfstate*
+*.tfvars
+*/*.tfvars

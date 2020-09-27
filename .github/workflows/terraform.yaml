@@ -1,0 +1,60 @@
+name: terraform
+on:
+  push:
+    paths:
+      - terraform/**
+      - .github/workflows/terraform.yaml
+      - .github/tfnotify.yaml
+defaults:
+  run:
+    shell: bash
+    working-directory: terraform
+jobs:
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_rds_user: ${{ secrets.RDS_USER }}
+      TF_VAR_rds_password: ${{ secrets.RDS_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.13.3
+
+      - name: Install Dependent Packages
+        run: |
+          mkdir -p /usr/local/bin
+          wget https://github.com/mercari/tfnotify/releases/download/v0.7.0/tfnotify_linux_amd64.tar.gz -P /tmp
+          tar zxvf /tmp/tfnotify_linux_amd64.tar.gz -C /tmp
+          sudo mv /tmp/tfnotify /usr/local/bin/tfnotify
+
+      - name: Terraform Format
+        run: terraform fmt -recursive -check
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        run: |
+          terraform plan -no-color | \
+          tfnotify --config ../.github/tfnotify.yaml plan --message "Planned Date: $(TZ=UTC-9:00 date +"%Y/%m/%d %H:%M:%S")"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/master'
+        run: terraform apply -auto-approve
