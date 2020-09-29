@@ -50,24 +50,3 @@ resource "aws_s3_bucket_public_access_block" "kakeibo_s3" {
 
   depends_on = [aws_s3_bucket_policy.kakeibo_s3_bucket_policy]
 }
-
-resource "aws_s3_bucket_policy" "kakeibo_s3_bucket_policy" {
-  bucket = aws_s3_bucket.kakeibo_s3.id
-  policy = data.aws_iam_policy_document.kakeibo_s3_policy_document.json
-}
-
-data "aws_iam_policy_document" "kakeibo_s3_policy_document" {
-  statement {
-    sid = "s3 external access policy"
-    principals {
-      type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.website.iam_arn]
-    }
-    actions = [
-      "s3:GetObject",
-    ]
-    resources = [
-      "${aws_s3_bucket.kakeibo_s3.arn}/*"
-    ]
-  }
-}
