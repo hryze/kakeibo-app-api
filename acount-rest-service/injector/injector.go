@@ -9,8 +9,8 @@ import (
 	"github.com/paypay3/kakeibo-app-api/acount-rest-service/infrastructure"
 )
 
-func InjectMySQL() *infrastructure.MySQLHandler {
-	mySQLHandler, err := infrastructure.NewMySQLHandler()
+func InjectMySQL(isLocal bool) *infrastructure.MySQLHandler {
+	mySQLHandler, err := infrastructure.NewMySQLHandler(isLocal)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -18,8 +18,8 @@ func InjectMySQL() *infrastructure.MySQLHandler {
 	return mySQLHandler
 }
 
-func InjectRedis() *infrastructure.RedisHandler {
-	redisHandler, err := infrastructure.NewRedisHandler()
+func InjectRedis(isLocal bool) *infrastructure.RedisHandler {
+	redisHandler, err := infrastructure.NewRedisHandler(isLocal)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -27,14 +27,14 @@ func InjectRedis() *infrastructure.RedisHandler {
 	return redisHandler
 }
 
-func InjectDBHandler() *handler.DBHandler {
+func InjectDBHandler(isLocal bool) *handler.DBHandler {
 	return &handler.DBHandler{
-		AuthRepo:              infrastructure.NewAuthRepository(InjectRedis()),
-		TransactionsRepo:      infrastructure.NewTransactionsRepository(InjectMySQL()),
-		CategoriesRepo:        infrastructure.NewCategoriesRepository(InjectMySQL()),
-		BudgetsRepo:           infrastructure.NewBudgetsRepository(InjectMySQL()),
-		GroupTransactionsRepo: infrastructure.NewGroupTransactionsRepository(InjectMySQL()),
-		GroupCategoriesRepo:   infrastructure.NewGroupCategoriesRepository(InjectMySQL()),
-		GroupBudgetsRepo:      infrastructure.NewGroupBudgetsRepository(InjectMySQL()),
+		AuthRepo:              infrastructure.NewAuthRepository(InjectRedis(isLocal)),
+		TransactionsRepo:      infrastructure.NewTransactionsRepository(InjectMySQL(isLocal)),
+		CategoriesRepo:        infrastructure.NewCategoriesRepository(InjectMySQL(isLocal)),
+		BudgetsRepo:           infrastructure.NewBudgetsRepository(InjectMySQL(isLocal)),
+		GroupTransactionsRepo: infrastructure.NewGroupTransactionsRepository(InjectMySQL(isLocal)),
+		GroupCategoriesRepo:   infrastructure.NewGroupCategoriesRepository(InjectMySQL(isLocal)),
+		GroupBudgetsRepo:      infrastructure.NewGroupBudgetsRepository(InjectMySQL(isLocal)),
 	}
 }

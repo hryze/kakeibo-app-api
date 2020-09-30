@@ -17,10 +17,13 @@ type RedisHandler struct {
 	pool *redis.Pool
 }
 
-func NewMySQLHandler() (*MySQLHandler, error) {
-	if err := godotenv.Load("../../.env"); err != nil {
-		return nil, err
+func NewMySQLHandler(isLocal bool) (*MySQLHandler, error) {
+	if isLocal {
+		if err := godotenv.Load("../../.env"); err != nil {
+			return nil, err
+		}
 	}
+
 	dsn := os.Getenv("MYSQL_DSN")
 	conn, err := sqlx.Open("mysql", dsn)
 	if err != nil {
@@ -32,10 +35,13 @@ func NewMySQLHandler() (*MySQLHandler, error) {
 	return mySQLHandler, nil
 }
 
-func NewRedisHandler() (*RedisHandler, error) {
-	if err := godotenv.Load("../../.env"); err != nil {
-		return nil, err
+func NewRedisHandler(isLocal bool) (*RedisHandler, error) {
+	if isLocal {
+		if err := godotenv.Load("../../.env"); err != nil {
+			return nil, err
+		}
 	}
+
 	dsn := os.Getenv("REDIS_DSN")
 	password := os.Getenv("REDIS_AUTH")
 
