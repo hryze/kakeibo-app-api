@@ -39,7 +39,7 @@ func (r *TodoRepository) GetDailyImplementationTodoList(date time.Time, userID s
 	}
 	defer rows.Close()
 
-	var implementationTodoList []model.Todo
+	implementationTodoList := make([]model.Todo, 0)
 	for rows.Next() {
 		var implementationTodo model.Todo
 		if err := rows.StructScan(&implementationTodo); err != nil {
@@ -78,7 +78,7 @@ func (r *TodoRepository) GetDailyDueTodoList(date time.Time, userID string) ([]m
 	}
 	defer rows.Close()
 
-	var dueTodoList []model.Todo
+	dueTodoList := make([]model.Todo, 0)
 	for rows.Next() {
 		var dueTodo model.Todo
 		if err := rows.StructScan(&dueTodo); err != nil {
@@ -119,7 +119,7 @@ func (r *TodoRepository) GetMonthlyImplementationTodoList(firstDay time.Time, la
 	}
 	defer rows.Close()
 
-	var implementationTodoList []model.Todo
+	implementationTodoList := make([]model.Todo, 0)
 	for rows.Next() {
 		var implementationTodo model.Todo
 		if err := rows.StructScan(&implementationTodo); err != nil {
@@ -160,7 +160,7 @@ func (r *TodoRepository) GetMonthlyDueTodoList(firstDay time.Time, lastDay time.
 	}
 	defer rows.Close()
 
-	var dueTodoList []model.Todo
+	dueTodoList := make([]model.Todo, 0)
 	for rows.Next() {
 		var dueTodo model.Todo
 		if err := rows.StructScan(&dueTodo); err != nil {

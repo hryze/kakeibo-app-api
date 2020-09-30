@@ -40,7 +40,7 @@ func (r *GroupTodoRepository) GetDailyImplementationGroupTodoList(date time.Time
 	}
 	defer rows.Close()
 
-	var implementationGroupTodoList []model.GroupTodo
+	implementationGroupTodoList := make([]model.GroupTodo, 0)
 	for rows.Next() {
 		var implementationGroupTodo model.GroupTodo
 		if err := rows.StructScan(&implementationGroupTodo); err != nil {
@@ -81,7 +81,7 @@ func (r *GroupTodoRepository) GetDailyDueGroupTodoList(date time.Time, groupID i
 	}
 	defer rows.Close()
 
-	var dueGroupTodoList []model.GroupTodo
+	dueGroupTodoList := make([]model.GroupTodo, 0)
 	for rows.Next() {
 		var groupDueTodo model.GroupTodo
 		if err := rows.StructScan(&groupDueTodo); err != nil {
@@ -124,7 +124,7 @@ func (r *GroupTodoRepository) GetMonthlyImplementationGroupTodoList(firstDay tim
 	}
 	defer rows.Close()
 
-	var implementationGroupTodoList []model.GroupTodo
+	implementationGroupTodoList := make([]model.GroupTodo, 0)
 	for rows.Next() {
 		var implementationGroupTodo model.GroupTodo
 		if err := rows.StructScan(&implementationGroupTodo); err != nil {
@@ -167,7 +167,7 @@ func (r *GroupTodoRepository) GetMonthlyDueGroupTodoList(firstDay time.Time, las
 	}
 	defer rows.Close()
 
-	var dueGroupTodoList []model.GroupTodo
+	dueGroupTodoList := make([]model.GroupTodo, 0)
 	for rows.Next() {
 		var groupDueTodo model.GroupTodo
 		if err := rows.StructScan(&groupDueTodo); err != nil {
