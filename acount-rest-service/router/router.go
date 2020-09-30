@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -15,7 +16,10 @@ import (
 )
 
 func Run() error {
-	h := injector.InjectDBHandler()
+	env := flag.String("env", "production", "Please specify -env flag")
+	flag.Parse()
+
+	h := injector.InjectDBHandler(*env)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/categories", h.GetCategoriesList).Methods("GET")

@@ -9,8 +9,8 @@ import (
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/infrastructure"
 )
 
-func InjectMySQL() *infrastructure.MySQLHandler {
-	mySQLHandler, err := infrastructure.NewMySQLHandler()
+func InjectMySQL(env string) *infrastructure.MySQLHandler {
+	mySQLHandler, err := infrastructure.NewMySQLHandler(env)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -18,8 +18,8 @@ func InjectMySQL() *infrastructure.MySQLHandler {
 	return mySQLHandler
 }
 
-func InjectRedis() *infrastructure.RedisHandler {
-	redisHandler, err := infrastructure.NewRedisHandler()
+func InjectRedis(env string) *infrastructure.RedisHandler {
+	redisHandler, err := infrastructure.NewRedisHandler(env)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -27,12 +27,12 @@ func InjectRedis() *infrastructure.RedisHandler {
 	return redisHandler
 }
 
-func InjectDBHandler() *handler.DBHandler {
+func InjectDBHandler(env string) *handler.DBHandler {
 	return &handler.DBHandler{
-		AuthRepo:       infrastructure.NewAuthRepository(InjectRedis()),
-		TodoRepo:       infrastructure.NewTodoRepository(InjectMySQL()),
-		GroupTodoRepo:  infrastructure.NewGroupTodoRepository(InjectMySQL()),
-		GroupTasksRepo: infrastructure.NewGroupTasksRepository(InjectMySQL()),
+		AuthRepo:       infrastructure.NewAuthRepository(InjectRedis(env)),
+		TodoRepo:       infrastructure.NewTodoRepository(InjectMySQL(env)),
+		GroupTodoRepo:  infrastructure.NewGroupTodoRepository(InjectMySQL(env)),
+		GroupTasksRepo: infrastructure.NewGroupTasksRepository(InjectMySQL(env)),
 		TimeManage:     handler.NewRealTime(),
 	}
 }
