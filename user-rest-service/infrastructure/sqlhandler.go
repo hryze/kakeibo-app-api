@@ -17,8 +17,8 @@ type RedisHandler struct {
 	pool *redis.Pool
 }
 
-func NewMySQLHandler(env string) (*MySQLHandler, error) {
-	if env != "production" {
+func NewMySQLHandler(isLocal bool) (*MySQLHandler, error) {
+	if isLocal {
 		if err := godotenv.Load("../../.env"); err != nil {
 			return nil, err
 		}
@@ -35,8 +35,8 @@ func NewMySQLHandler(env string) (*MySQLHandler, error) {
 	return mySQLHandler, nil
 }
 
-func NewRedisHandler(env string) (*RedisHandler, error) {
-	if env != "production" {
+func NewRedisHandler(isLocal bool) (*RedisHandler, error) {
+	if isLocal {
 		if err := godotenv.Load("../../.env"); err != nil {
 			return nil, err
 		}

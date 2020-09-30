@@ -16,10 +16,10 @@ import (
 )
 
 func Run() error {
-	env := flag.String("env", "production", "Please specify -env flag")
+	isLocal := flag.Bool("local", false, "Please specify -env flag")
 	flag.Parse()
 
-	h := injector.InjectDBHandler(*env)
+	h := injector.InjectDBHandler(*isLocal)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/categories", h.GetCategoriesList).Methods("GET")
