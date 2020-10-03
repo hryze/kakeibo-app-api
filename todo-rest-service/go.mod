@@ -1,6 +1,6 @@
 module github.com/paypay3/kakeibo-app-api/todo-rest-service
 
-go 1.14
+go 1.15
 
 require (
 	github.com/garyburd/redigo v1.6.0
