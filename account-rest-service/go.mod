@@ -1,4 +1,4 @@
-module github.com/paypay3/kakeibo-app-api/todo-rest-service
+module github.com/paypay3/kakeibo-app-api/account-rest-service
 
 go 1.15
 
@@ -8,7 +8,7 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/google/go-cmp v0.5.2
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.7.4
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/joho/godotenv v1.3.0

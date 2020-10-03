@@ -1,0 +1,5 @@
+/testutil
+*/testdata
+/docker
+docker-compose.yml
+**/*test.go
