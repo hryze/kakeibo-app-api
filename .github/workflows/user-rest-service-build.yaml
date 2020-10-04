@@ -1,6 +1,8 @@
 name: user-rest-service build and push to Amazon ECR
 on:
   push:
+    branches:
+      - master
     paths:
       - user-rest-service/**
       - .github/workflows/user-rest-service-build.yaml
