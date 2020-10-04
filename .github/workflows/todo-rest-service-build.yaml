@@ -1,8 +1,6 @@
 name: todo-rest-service build and push to Amazon ECR
 on:
   push:
-    branches:
-      - master
     paths:
       - todo-rest-service/**
       - .github/workflows/todo-rest-service-build.yaml
@@ -16,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DOCKER_BUILDKIT: 1
-      ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       ECR_REPOSITORY: todo-rest-service
       IMAGE_TAG: ${{ github.sha }}
     steps:
@@ -33,6 +30,9 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Define ECR registry name
+        run: echo ::set-env name=ECR_REGISTRY::${{ steps.login-ecr.outputs.registry }}
 
       - name: Build builder image
         run: |
