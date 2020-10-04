@@ -1,27 +1,40 @@
-resource "aws_ecr_repository" "kakeibo_ecr_repository" {
-  name                 = "kakeibo-ecr-repository"
+resource "aws_ecr_repository" "user_rest_service_ecr_repository" {
+  name                 = "user-rest-service"
   image_tag_mutability = "MUTABLE"
-  tags                 = merge(local.default_tags, map("Name", "kakeibo-ecr-repository"))
+  tags                 = merge(local.default_tags, map("Name", "user-rest-service-ecr-repository"))
 
   image_scanning_configuration {
     scan_on_push = true
   }
 }
 
-resource "aws_ecr_lifecycle_policy" "kakeibo_lifecycle_policy" {
-  repository = aws_ecr_repository.kakeibo_ecr_repository.name
+resource "aws_ecr_lifecycle_policy" "user_rest_service_lifecycle_policy" {
+  repository = aws_ecr_repository.user_rest_service_ecr_repository.name
 
   policy = <<EOF
 {
     "rules": [
         {
-            "rulePriority": 1,
-            "description": "Keep last 30 images",
+            "rulePriority": 10,
+            "description": "Keep last 30 release tagged images",
             "selection": {
                 "tagStatus": "tagged",
-                "tagPrefixList": ["v"],
+                "tagPrefixList": ["release"],
                 "countType": "imageCountMoreThan",
                 "countNumber": 30
+            },
+            "action": {
+                "type": "expire"
+            }
+        },
+        {
+            "rulePriority": 20,
+            "description": "Expire images older than 14 days",
+            "selection": {
+                "tagStatus": "untagged",
+                "countType": "sinceImagePushed",
+                "countUnit": "days",
+                "countNumber": 14
             },
             "action": {
                 "type": "expire"
@@ -32,33 +45,96 @@ resource "aws_ecr_lifecycle_policy" "kakeibo_lifecycle_policy" {
 EOF
 }
 
-resource "aws_ecr_repository_policy" "kakeibo_repository_policy" {
-  repository = aws_ecr_repository.kakeibo_ecr_repository.name
-  policy     = data.aws_iam_policy_document.kakeibo_ecr_policy_document.json
+resource "aws_ecr_repository" "account_rest_service_ecr_repository" {
+  name                 = "account-rest-service"
+  image_tag_mutability = "MUTABLE"
+  tags                 = merge(local.default_tags, map("Name", "account-rest-service-ecr-repository"))
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
 }
 
-data "aws_iam_policy_document" "kakeibo_ecr_policy_document" {
-  statement {
-    sid = "ecr policy"
-    principals {
-      type        = "*"
-      identifiers = ["*"]
-    }
-    effect = "Allow"
-    actions = [
-      "ecr:GetAuthorizationToken",
-      "ecr:BatchGetImage",
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:InitiateLayerUpload",
-      "ecr:CompleteLayerUpload",
-      "ecr:UploadLayerPart",
-      "ecr:DescribeImages",
-      "ecr:PutImage",
-      "ecr:DescribeRepositories",
-      "ecr:GetRepositoryPolicy",
-      "ecr:ListImages",
-      "ecr:BatchDeleteImage",
+resource "aws_ecr_lifecycle_policy" "account_rest_service_lifecycle_policy" {
+  repository = aws_ecr_repository.account_rest_service_ecr_repository.name
+
+  policy = <<EOF
+{
+    "rules": [
+        {
+            "rulePriority": 10,
+            "description": "Keep last 30 release tagged images",
+            "selection": {
+                "tagStatus": "tagged",
+                "tagPrefixList": ["release"],
+                "countType": "imageCountMoreThan",
+                "countNumber": 30
+            },
+            "action": {
+                "type": "expire"
+            }
+        },
+        {
+            "rulePriority": 20,
+            "description": "Expire images older than 14 days",
+            "selection": {
+                "tagStatus": "untagged",
+                "countType": "sinceImagePushed",
+                "countUnit": "days",
+                "countNumber": 14
+            },
+            "action": {
+                "type": "expire"
+            }
+        }
     ]
+}
+EOF
+}
+
+resource "aws_ecr_repository" "todo_rest_service_ecr_repository" {
+  name                 = "todo-rest-service"
+  image_tag_mutability = "MUTABLE"
+  tags                 = merge(local.default_tags, map("Name", "todo-rest-service-ecr-repository"))
+
+  image_scanning_configuration {
+    scan_on_push = true
   }
+}
+
+resource "aws_ecr_lifecycle_policy" "todo_rest_service_lifecycle_policy" {
+  repository = aws_ecr_repository.todo_rest_service_ecr_repository.name
+
+  policy = <<EOF
+{
+    "rules": [
+        {
+            "rulePriority": 10,
+            "description": "Keep last 30 release tagged images",
+            "selection": {
+                "tagStatus": "tagged",
+                "tagPrefixList": ["release"],
+                "countType": "imageCountMoreThan",
+                "countNumber": 30
+            },
+            "action": {
+                "type": "expire"
+            }
+        },
+        {
+            "rulePriority": 20,
+            "description": "Expire images older than 14 days",
+            "selection": {
+                "tagStatus": "untagged",
+                "countType": "sinceImagePushed",
+                "countUnit": "days",
+                "countNumber": 14
+            },
+            "action": {
+                "type": "expire"
+            }
+        }
+    ]
+}
+EOF
 }
