@@ -130,3 +130,44 @@ data "aws_iam_policy_document" "kakeibo_s3_policy_document" {
     ]
   }
 }
+
+resource "aws_ecr_repository_policy" "user_rest_service_policy" {
+  repository = aws_ecr_repository.user_rest_service_ecr_repository.name
+  policy     = data.aws_iam_policy_document.kakeibo_ecr_policy_document.json
+}
+
+resource "aws_ecr_repository_policy" "account_rest_service_policy" {
+  repository = aws_ecr_repository.account_rest_service_ecr_repository.name
+  policy     = data.aws_iam_policy_document.kakeibo_ecr_policy_document.json
+}
+
+resource "aws_ecr_repository_policy" "todo_rest_service_policy" {
+  repository = aws_ecr_repository.todo_rest_service_ecr_repository.name
+  policy     = data.aws_iam_policy_document.kakeibo_ecr_policy_document.json
+}
+
+data "aws_iam_policy_document" "kakeibo_ecr_policy_document" {
+  statement {
+    sid = "kakeibo ecr policy"
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+    effect = "Allow"
+    actions = [
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchGetImage",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:InitiateLayerUpload",
+      "ecr:CompleteLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:DescribeImages",
+      "ecr:PutImage",
+      "ecr:DescribeRepositories",
+      "ecr:GetRepositoryPolicy",
+      "ecr:ListImages",
+      "ecr:BatchDeleteImage",
+    ]
+  }
+}
