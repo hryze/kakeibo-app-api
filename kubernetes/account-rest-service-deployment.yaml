@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: account-rest-service-deployment
+  namespace: default
+  labels:
+    app: account-rest-service
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  replicas: 3
+  selector:
+    matchLabels:
+      app: account-rest-service
+  template:
+    metadata:
+      labels:
+        app: account-rest-service
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: account-rest-service
+          image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/account-rest-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
