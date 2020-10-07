@@ -1,6 +1,8 @@
 name: Services deploy
 on:
   push:
+    branches:
+      - master
     paths:
       - terraform/**
       - kubernetes/**
