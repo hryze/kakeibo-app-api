@@ -54,7 +54,3 @@ jobs:
           tfnotify --config ../.github/tfnotify.yaml plan --message "Planned Date: $(TZ=UTC-9:00 date +"%Y/%m/%d %H:%M:%S")"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Terraform apply
-        if: github.ref == 'refs/heads/master'
-        run: terraform apply -auto-approve
