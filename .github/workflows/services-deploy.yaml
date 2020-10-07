@@ -204,8 +204,6 @@ jobs:
     needs: [ user-rest-service-build, account-rest-service-build, todo-rest-service-build ]
     runs-on: ubuntu-latest
     env:
-      DOCKER_BUILDKIT: 1
-      ECR_REPOSITORY: todo-rest-service
       IMAGE_TAG: ${{ github.sha }}
       WORKING-DIRECTORY: kubernetes
     steps:
