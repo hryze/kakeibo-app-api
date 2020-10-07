@@ -1,8 +1,6 @@
 name: Services deploy
 on:
   push:
-    branches:
-      - master
     paths:
       - user-rest-service/**
       - account-rest-service/**
