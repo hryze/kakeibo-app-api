@@ -2,6 +2,8 @@ name: Services deploy
 on:
   push:
     paths:
+      - terraform/**
+      - kubernetes/**
       - user-rest-service/**
       - account-rest-service/**
       - todo-rest-service/**
