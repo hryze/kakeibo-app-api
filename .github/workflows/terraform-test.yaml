@@ -1,17 +1,17 @@
-name: Terraform
+name: Terraform test
 on:
   push:
     paths:
       - terraform/**
-      - .github/workflows/terraform.yaml
+      - .github/workflows/terraform-test.yaml
       - .github/tfnotify.yaml
 defaults:
   run:
     shell: bash
     working-directory: terraform
 jobs:
-  terraform:
-    name: Terraform
+  test:
+    name: Test
     runs-on: ubuntu-latest
     env:
       TF_VAR_rds_user: ${{ secrets.RDS_USER }}
