@@ -33,6 +33,10 @@ jobs:
         with:
           terraform_version: 0.13.3
 
+      - name: Terraform init
+        run: terraform init
+        working-directory: ${{env.WORKING-DIRECTORY}}
+
       - name: Terraform apply
         run: terraform apply -auto-approve
         working-directory: ${{env.WORKING-DIRECTORY}}
