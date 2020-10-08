@@ -1,0 +1,84 @@
+name: account-rest-service deploy
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - account-rest-service/**
+      - kubernetes/account-rest-service/**
+      - .github/workflows/account-rest-service-deploy.yaml
+defaults:
+  run:
+    shell: bash
+jobs:
+  deploy:
+    name: account-rest-service deploy
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+      ECR_REPOSITORY: account-rest-service
+      IMAGE_TAG: release.${{ github.sha }}
+      BUILD-DIRECTORY: account-rest-service
+      KUBERNETES-DIRECTORY: kubernetes/account-rest-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Define ECR registry name
+        run: echo ::set-env name=ECR_REGISTRY::${{ steps.login-ecr.outputs.registry }}
+
+      - name: Build builder image
+        run: |
+          docker build \
+          --target builder \
+          --cache-from=$ECR_REGISTRY/$ECR_REPOSITORY:builder \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:builder .
+        working-directory: ${{env.BUILD-DIRECTORY}}
+
+      - name: Build image
+        run: |
+          docker build \
+          --cache-from=$ECR_REGISTRY/$ECR_REPOSITORY:builder \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+        working-directory: ${{env.BUILD-DIRECTORY}}
+
+      - name: Push image to Amazon ECR
+        run: |
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:builder &
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG &
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest &
+          wait
+
+      - name: Setup kubectl
+          uses: azure/setup-kubectl@v1
+
+      - name: Define KUBECONFIG
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        run: |
+          echo $KUBE_CONFIG_DATA | base64 --decode > /tmp/kube_config
+          echo ::set-env name=KUBECONFIG::/tmp/kube_config
+
+      - name: Install dependent package
+        run: |
+          sudo apt update -y
+          sudo apt install -y gettext
+
+      - name: Kubectl apply
+        run: |
+          envsubst < account-rest-service-deployment.yaml | kubectl apply -f -
+        working-directory: ${{env.KUBERNETES-DIRECTORY}}

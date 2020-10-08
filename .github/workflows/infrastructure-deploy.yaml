@@ -1,0 +1,65 @@
+name: Infrastructure deploy
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - terraform/**
+      - kubernetes/system-config/**
+      - .github/workflows/infrastructure-deploy.yaml
+defaults:
+  run:
+    shell: bash
+jobs:
+  terraform-apply:
+    name: Terraform apply
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_rds_user: ${{ secrets.RDS_USER }}
+      TF_VAR_rds_password: ${{ secrets.RDS_PASSWORD }}
+      TERRAFORM-DIRECTORY: terraform
+      KUBERNETES-DIRECTORY: kubernetes/system-config
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.13.3
+
+      - name: Terraform init
+        run: terraform init
+        working-directory: ${{env.TERRAFORM-DIRECTORY}}
+
+      - name: Terraform apply
+        run: terraform apply -auto-approve
+        working-directory: ${{env.TERRAFORM-DIRECTORY}}
+
+      - name: Setup kubectl
+          uses: azure/setup-kubectl@v1
+
+      - name: Define KUBECONFIG
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        run: |
+          echo $KUBE_CONFIG_DATA | base64 --decode > /tmp/kube_config
+          echo ::set-env name=KUBECONFIG::/tmp/kube_config
+
+      - name: Install dependent package
+        run: |
+          sudo apt update -y
+          sudo apt install -y gettext
+
+      - name:
+        run: |
+          kubectl apply -f .
+        working-directory: ${{env.KUBERNETES-DIRECTORY}}
+

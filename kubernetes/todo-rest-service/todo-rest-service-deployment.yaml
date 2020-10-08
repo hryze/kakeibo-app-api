@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-rest-service-deployment
+  name: todo-rest-service-deployment
   namespace: default
   labels:
-    app: user-rest-service
+    app: todo-rest-service
 spec:
   strategy:
     type: RollingUpdate
@@ -14,14 +14,14 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      app: user-rest-service
+      app: todo-rest-service
   template:
     metadata:
       labels:
-        app: user-rest-service
+        app: todo-rest-service
     spec:
       containers:
-        - name: user-rest-service
-          image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/user-rest-service:release.${IMAGE_TAG}
+        - name: todo-rest-service
+          image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/todo-rest-service:${IMAGE_TAG}
           ports:
-            - containerPort: 8080
+            - containerPort: 8082
