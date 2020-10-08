@@ -44,7 +44,7 @@ jobs:
         working-directory: ${{env.TERRAFORM-DIRECTORY}}
 
       - name: Setup kubectl
-          uses: azure/setup-kubectl@v1
+        uses: azure/setup-kubectl@v1
 
       - name: Define KUBECONFIG
         env:
