@@ -8,7 +8,7 @@ resource "aws_db_instance" "kakeibo_rds_instance" {
   identifier                 = "kakeibo-rds-instance"
   engine                     = "mysql"
   engine_version             = "8.0.20"
-  instance_class             = "db.r5.large"
+  instance_class             = "db.t3.small"
   storage_type               = "gp2"
   allocated_storage          = 20
   max_allocated_storage      = 100
