@@ -1,0 +1,39 @@
+name: Kubernetes apply
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - kubernetes/system-config/**
+      - .github/workflows/kubernetes-system-config-apply.yaml
+defaults:
+  run:
+    shell: bash
+    working-directory: kubernetes/system-config
+jobs:
+  apply:
+    name: Kubernetes apply
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v1
+
+      - name: Define KUBECONFIG
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        run: |
+          echo $KUBE_CONFIG_DATA | base64 --decode > /tmp/kube_config
+          echo ::set-env name=KUBECONFIG::/tmp/kube_config
+
+      - name: Kubectl apply
+        run: kubectl apply -f .
