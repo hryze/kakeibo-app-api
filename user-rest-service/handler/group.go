@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -44,11 +45,15 @@ func (e *UserIDValidationErrorMsg) Error() string {
 }
 
 func postInitGroupStandardBudgets(groupID int) error {
-	url := fmt.Sprintf("http://localhost:8081/groups/%d/standard-budgets", groupID)
+	requestURL := fmt.Sprintf("http://account-svc.default.svc.cluster.local:8081/groups/%d/standard-budgets", groupID)
+
+	if os.Getenv("ENVIRONMENT") == "development" {
+		requestURL = fmt.Sprintf("http://localhost:8081/groups/%d/standard-budgets", groupID)
+	}
 
 	request, err := http.NewRequest(
 		"POST",
-		url,
+		requestURL,
 		nil,
 	)
 	if err != nil {

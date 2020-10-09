@@ -10,6 +10,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -112,9 +113,15 @@ func checkForUniqueUser(h *DBHandler, signUpUser *model.SignUpUser) error {
 }
 
 func postInitStandardBudgets(userID string) error {
+	requestURL := "http://account-svc.default.svc.cluster.local:8081/standard-budgets"
+
+	if os.Getenv("ENVIRONMENT") == "development" {
+		requestURL = "http://localhost:8081/standard-budgets"
+	}
+
 	request, err := http.NewRequest(
 		"POST",
-		"http://localhost:8081/standard-budgets",
+		requestURL,
 		bytes.NewBuffer([]byte(`{"user_id":"`+userID+`"}`)),
 	)
 	if err != nil {
