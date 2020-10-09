@@ -18,6 +18,7 @@ jobs:
     env:
       TF_VAR_rds_user: ${{ secrets.RDS_USER }}
       TF_VAR_rds_password: ${{ secrets.RDS_PASSWORD }}
+      TF_VAR_elasticache_auth_token: ${{ secrets.ELASTICACHE_AUTH_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
