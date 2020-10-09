@@ -14,6 +14,8 @@ resource "aws_elasticache_replication_group" "kakeibo_elasticache_replication_gr
   port                          = var.elasticache_port
   maintenance_window            = "mon:10:40-mon:11:40"
   apply_immediately             = false
+  transit_encryption_enabled    = true
+  auth_token                    = var.elasticache_auth_token
   security_group_ids            = [aws_eks_cluster.kakeibo_eks_cluster.vpc_config[0].cluster_security_group_id]
   parameter_group_name          = aws_elasticache_parameter_group.kakeibo_elasticache_parameter_group.name
   subnet_group_name             = aws_elasticache_subnet_group.kakeibo_elasticache_subnet_group.name
