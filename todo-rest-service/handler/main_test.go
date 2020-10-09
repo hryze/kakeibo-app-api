@@ -1,16 +1,13 @@
 package handler
 
 import (
-	"os"
 	"testing"
 
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
 )
 
-func TestMain(m *testing.M) {
+func TestMain(m *testing.M) { //nolint:staticcheck
 	tearDown := testutil.SetUpMockServer()
-	status := m.Run()
+	m.Run()
 	tearDown()
-
-	os.Exit(status)
 }
