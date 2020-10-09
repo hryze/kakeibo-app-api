@@ -155,9 +155,6 @@ func (m MockGroupTransactionsRepository) DeleteGroupAccountsList(yearMonth time.
 }
 
 func TestDBHandler_GetMonthlyGroupTransactionsList(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:              MockAuthRepository{},
 		GroupTransactionsRepo: MockGroupTransactionsRepository{},
@@ -188,9 +185,6 @@ func TestDBHandler_GetMonthlyGroupTransactionsList(t *testing.T) {
 }
 
 func TestDBHandler_PostGroupTransaction(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:              MockAuthRepository{},
 		GroupTransactionsRepo: MockGroupTransactionsRepository{},
@@ -220,9 +214,6 @@ func TestDBHandler_PostGroupTransaction(t *testing.T) {
 }
 
 func TestDBHandler_PutGroupTransaction(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:              MockAuthRepository{},
 		GroupTransactionsRepo: MockGroupTransactionsRepository{},
@@ -253,9 +244,6 @@ func TestDBHandler_PutGroupTransaction(t *testing.T) {
 }
 
 func TestDBHandler_DeleteGroupTransaction(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:              MockAuthRepository{},
 		GroupTransactionsRepo: MockGroupTransactionsRepository{},
@@ -286,9 +274,6 @@ func TestDBHandler_DeleteGroupTransaction(t *testing.T) {
 }
 
 func TestDBHandler_SearchGroupTransactionsList(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:              MockAuthRepository{},
 		GroupTransactionsRepo: MockGroupTransactionsRepository{},
@@ -334,9 +319,6 @@ func TestDBHandler_SearchGroupTransactionsList(t *testing.T) {
 }
 
 func TestDBHandler_GetMonthlyGroupTransactionsAccount(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:              MockAuthRepository{},
 		GroupTransactionsRepo: MockGroupTransactionsRepository{},
@@ -367,9 +349,6 @@ func TestDBHandler_GetMonthlyGroupTransactionsAccount(t *testing.T) {
 }
 
 func TestDBHandler_PostMonthlyGroupTransactionsAccount(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:              MockAuthRepository{},
 		GroupTransactionsRepo: MockGroupTransactionsRepository{},
@@ -400,9 +379,6 @@ func TestDBHandler_PostMonthlyGroupTransactionsAccount(t *testing.T) {
 }
 
 func TestDBHandler_PutMonthlyGroupTransactionsAccount(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:              MockAuthRepository{},
 		GroupTransactionsRepo: MockGroupTransactionsRepository{},
@@ -433,9 +409,6 @@ func TestDBHandler_PutMonthlyGroupTransactionsAccount(t *testing.T) {
 }
 
 func TestDBHandler_DeleteMonthlyGroupTransactionsAccount(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:              MockAuthRepository{},
 		GroupTransactionsRepo: MockGroupTransactionsRepository{},

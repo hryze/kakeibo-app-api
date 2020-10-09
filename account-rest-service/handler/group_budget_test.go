@@ -123,9 +123,6 @@ func TestDBHandler_PostInitGroupStandardBudgets(t *testing.T) {
 }
 
 func TestDBHandler_GetGroupStandardBudgets(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},
 		GroupBudgetsRepo: MockGroupBudgetsRepository{},
@@ -155,9 +152,6 @@ func TestDBHandler_GetGroupStandardBudgets(t *testing.T) {
 }
 
 func TestDBHandler_PutGroupStandardBudgets(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},
 		GroupBudgetsRepo: MockGroupBudgetsRepository{},
@@ -187,9 +181,6 @@ func TestDBHandler_PutGroupStandardBudgets(t *testing.T) {
 }
 
 func TestDBHandler_GetGroupCustomBudgets(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},
 		GroupBudgetsRepo: MockGroupBudgetsRepository{},
@@ -220,9 +211,6 @@ func TestDBHandler_GetGroupCustomBudgets(t *testing.T) {
 }
 
 func TestDBHandler_PostGroupCustomBudgets(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},
 		GroupBudgetsRepo: MockGroupBudgetsRepository{},
@@ -253,9 +241,6 @@ func TestDBHandler_PostGroupCustomBudgets(t *testing.T) {
 }
 
 func TestDBHandler_PutGroupCustomBudgets(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},
 		GroupBudgetsRepo: MockGroupBudgetsRepository{},
@@ -286,9 +271,6 @@ func TestDBHandler_PutGroupCustomBudgets(t *testing.T) {
 }
 
 func TestDBHandler_DeleteGroupCustomBudgets(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},
 		GroupBudgetsRepo: MockGroupBudgetsRepository{},
@@ -319,9 +301,6 @@ func TestDBHandler_DeleteGroupCustomBudgets(t *testing.T) {
 }
 
 func TestDBHandler_GetYearlyGroupBudgets(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},
 		GroupBudgetsRepo: MockGroupBudgetsRepository{},

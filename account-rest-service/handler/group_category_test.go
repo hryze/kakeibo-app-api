@@ -174,9 +174,6 @@ func (m MockGroupCategoriesRepository) DeleteGroupCustomCategory(groupCustomCate
 }
 
 func TestDBHandler_GetGroupCategoriesList(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:            MockAuthRepository{},
 		GroupCategoriesRepo: MockGroupCategoriesRepository{},
@@ -206,9 +203,6 @@ func TestDBHandler_GetGroupCategoriesList(t *testing.T) {
 }
 
 func TestDBHandler_PostGroupCustomCategory(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:            MockAuthRepository{},
 		GroupCategoriesRepo: MockGroupCategoriesRepository{},
@@ -238,9 +232,6 @@ func TestDBHandler_PostGroupCustomCategory(t *testing.T) {
 }
 
 func TestDBHandler_PutGroupCustomCategory(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:            MockAuthRepository{},
 		GroupCategoriesRepo: MockGroupCategoriesRepository{},
@@ -271,9 +262,6 @@ func TestDBHandler_PutGroupCustomCategory(t *testing.T) {
 }
 
 func TestDBHandler_DeleteGroupCustomCategory(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:            MockAuthRepository{},
 		GroupCategoriesRepo: MockGroupCategoriesRepository{},
