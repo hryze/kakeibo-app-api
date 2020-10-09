@@ -33,6 +33,7 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.31
+          working-directory: account-rest-service
 
       - name: Run tests
         run: go test -race -v ./...
