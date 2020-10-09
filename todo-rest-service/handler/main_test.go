@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"os"
 	"testing"
 
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
@@ -8,7 +9,8 @@ import (
 
 func TestMain(m *testing.M) {
 	tearDown := testutil.SetUpMockServer()
-	defer tearDown()
+	status := m.Run()
+	tearDown()
 
-	m.Run()
+	os.Exit(status)
 }
