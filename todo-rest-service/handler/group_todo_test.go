@@ -80,9 +80,6 @@ func (m MockGroupTodoRepository) SearchGroupTodoList(groupTodoSqlQuery string) (
 }
 
 func TestDBHandler_GetDailyGroupTodoList(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:      MockAuthRepository{},
 		GroupTodoRepo: MockGroupTodoRepository{},
@@ -113,9 +110,6 @@ func TestDBHandler_GetDailyGroupTodoList(t *testing.T) {
 }
 
 func TestDBHandler_GetMonthlyGroupTodoList(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:      MockAuthRepository{},
 		GroupTodoRepo: MockGroupTodoRepository{},
@@ -146,9 +140,6 @@ func TestDBHandler_GetMonthlyGroupTodoList(t *testing.T) {
 }
 
 func TestDBHandler_PostGroupTodo(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:      MockAuthRepository{},
 		GroupTodoRepo: MockGroupTodoRepository{},
@@ -178,9 +169,6 @@ func TestDBHandler_PostGroupTodo(t *testing.T) {
 }
 
 func TestDBHandler_PutGroupTodo(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:      MockAuthRepository{},
 		GroupTodoRepo: MockGroupTodoRepository{},
@@ -211,9 +199,6 @@ func TestDBHandler_PutGroupTodo(t *testing.T) {
 }
 
 func TestDBHandler_DeleteGroupTodo(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:      MockAuthRepository{},
 		GroupTodoRepo: MockGroupTodoRepository{},
@@ -244,9 +229,6 @@ func TestDBHandler_DeleteGroupTodo(t *testing.T) {
 }
 
 func TestDBHandler_SearchGroupTodoList(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:      MockAuthRepository{},
 		GroupTodoRepo: MockGroupTodoRepository{},

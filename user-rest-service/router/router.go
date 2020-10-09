@@ -16,10 +16,20 @@ import (
 )
 
 func Run() error {
-	isLocal := flag.Bool("local", false, "Please specify -env flag")
+	isLocal := flag.Bool("local", false, "Please specify -local flag")
 	flag.Parse()
 
-	h := injector.InjectDBHandler(*isLocal)
+	if *isLocal {
+		if err := os.Setenv("ENVIRONMENT", "development"); err != nil {
+			return err
+		}
+	} else if !*isLocal {
+		if err := os.Setenv("ENVIRONMENT", "production"); err != nil {
+			return err
+		}
+	}
+
+	h := injector.InjectDBHandler()
 
 	router := mux.NewRouter()
 	router.Handle("/signup", http.HandlerFunc(h.SignUp)).Methods("POST")
@@ -34,8 +44,14 @@ func Run() error {
 	router.Handle("/groups/{group_id:[0-9]+}/users/unapproved", http.HandlerFunc(h.DeleteGroupUnapprovedUser)).Methods("DELETE")
 	router.Handle("/groups/{group_id:[0-9]+}/users/{user_id:[\\S]{1,10}}", http.HandlerFunc(h.VerifyGroupAffiliation)).Methods("GET")
 
+	allowedOrigin := "https://www.shakepiper.com"
+
+	if os.Getenv("ENVIRONMENT") == "development" {
+		allowedOrigin = "http://localhost:3000"
+	}
+
 	corsWrapper := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedOrigins:   []string{allowedOrigin},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Accept-Language"},
 		AllowCredentials: true,

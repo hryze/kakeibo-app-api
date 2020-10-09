@@ -1,17 +1,19 @@
-name: Terraform
+name: Terraform test
 on:
   push:
+    branches-ignore:
+      - master
     paths:
       - terraform/**
-      - .github/workflows/terraform.yaml
+      - .github/workflows/terraform-test.yaml
       - .github/tfnotify.yaml
 defaults:
   run:
     shell: bash
     working-directory: terraform
 jobs:
-  terraform:
-    name: Terraform
+  test:
+    name: Test
     runs-on: ubuntu-latest
     env:
       TF_VAR_rds_user: ${{ secrets.RDS_USER }}
@@ -54,7 +56,3 @@ jobs:
           tfnotify --config ../.github/tfnotify.yaml plan --message "Planned Date: $(TZ=UTC-9:00 date +"%Y/%m/%d %H:%M:%S")"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Terraform apply
-        if: github.ref == 'refs/heads/master'
-        run: terraform apply -auto-approve

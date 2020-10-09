@@ -88,7 +88,7 @@ data "aws_iam_policy_document" "cluster-autoscaler-assume-role-policy" {
   }
 }
 
-resource "aws_iam_role_policy" "hks-cluster-autoscaler-role-policy" {
+resource "aws_iam_role_policy" "eks-cluster-autoscaler-role-policy" {
   name   = "cluster-autoscaler-role-policy"
   role   = aws_iam_role.cluster-autoscaler.id
   policy = data.aws_iam_policy_document.cluster-autoscaler.json

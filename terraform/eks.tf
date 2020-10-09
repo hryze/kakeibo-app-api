@@ -19,7 +19,7 @@ resource "aws_eks_node_group" "kakeibo_eks_node_group" {
   cluster_name    = aws_eks_cluster.kakeibo_eks_cluster.name
   node_group_name = "kakeibo-dev-node-group"
   node_role_arn   = aws_iam_role.eks_node.arn
-  instance_types  = ["r5.xlarge"]
+  instance_types  = ["r5.large"]
   subnet_ids      = local.private_subnet_ids
   version         = local.cluster_version
   tags            = merge(local.default_tags, map("Name", "kakeibo-eks-node-group"))

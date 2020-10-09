@@ -9,7 +9,7 @@ resource "aws_elasticache_replication_group" "kakeibo_elasticache_replication_gr
   engine                        = "redis"
   engine_version                = "5.0.6"
   number_cache_clusters         = 1
-  node_type                     = "cache.m5.large"
+  node_type                     = "cache.t3.small"
   automatic_failover_enabled    = false
   port                          = var.elasticache_port
   maintenance_window            = "mon:10:40-mon:11:40"

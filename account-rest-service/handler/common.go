@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/repository"
@@ -102,16 +103,22 @@ func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (stri
 }
 
 func verifyGroupAffiliation(groupID int, userID string) error {
-	url := fmt.Sprintf("http://localhost:8080/groups/%d/users/%s", groupID, userID)
+	requestURL := fmt.Sprintf("http://user-svc.default.svc.cluster.local:8080/groups/%d/users/%s", groupID, userID)
+
+	if os.Getenv("ENVIRONMENT") == "development" {
+		requestURL = fmt.Sprintf("http://localhost:8080/groups/%d/users/%s", groupID, userID)
+	}
 
 	request, err := http.NewRequest(
 		"GET",
-		url,
+		requestURL,
 		nil,
 	)
 	if err != nil {
 		return err
 	}
+
+	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
 	client := &http.Client{
 		Transport: &http.Transport{

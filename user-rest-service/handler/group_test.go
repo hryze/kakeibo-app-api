@@ -2,9 +2,11 @@ package handler
 
 import (
 	"database/sql"
+	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -171,6 +173,11 @@ func TestDBHandler_GetGroupList(t *testing.T) {
 }
 
 func TestDBHandler_PostGroup(t *testing.T) {
+	if err := os.Setenv("ENVIRONMENT", "development"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
 	postInitGroupStandardBudgetsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 	})

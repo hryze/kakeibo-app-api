@@ -2,18 +2,23 @@ package testutil
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 )
 
-func SetUpMockServer(t *testing.T) func() {
-	t.Helper()
+func SetUpMockServer() func() {
+	if err := os.Setenv("ENVIRONMENT", "development"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 
 	verifyGroupAffiliationHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -21,7 +26,8 @@ func SetUpMockServer(t *testing.T) func() {
 
 	listener, err := net.Listen("tcp", "127.0.0.1:8080")
 	if err != nil {
-		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	ts := httptest.Server{

@@ -8,8 +8,8 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure"
 )
 
-func InjectMySQL(isLocal bool) *infrastructure.MySQLHandler {
-	mySQLHandler, err := infrastructure.NewMySQLHandler(isLocal)
+func InjectMySQL() *infrastructure.MySQLHandler {
+	mySQLHandler, err := infrastructure.NewMySQLHandler()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -17,8 +17,8 @@ func InjectMySQL(isLocal bool) *infrastructure.MySQLHandler {
 	return mySQLHandler
 }
 
-func InjectRedis(isLocal bool) *infrastructure.RedisHandler {
-	redisHandler, err := infrastructure.NewRedisHandler(isLocal)
+func InjectRedis() *infrastructure.RedisHandler {
+	redisHandler, err := infrastructure.NewRedisHandler()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -26,10 +26,10 @@ func InjectRedis(isLocal bool) *infrastructure.RedisHandler {
 	return redisHandler
 }
 
-func InjectDBHandler(isLocal bool) *handler.DBHandler {
+func InjectDBHandler() *handler.DBHandler {
 	return &handler.DBHandler{
-		AuthRepo:  infrastructure.NewAuthRepository(InjectRedis(isLocal)),
-		UserRepo:  infrastructure.NewUserRepository(InjectRedis(isLocal), InjectMySQL(isLocal)),
-		GroupRepo: infrastructure.NewGroupRepository(InjectMySQL(isLocal)),
+		AuthRepo:  infrastructure.NewAuthRepository(InjectRedis()),
+		UserRepo:  infrastructure.NewUserRepository(InjectRedis(), InjectMySQL()),
+		GroupRepo: infrastructure.NewGroupRepository(InjectMySQL()),
 	}
 }

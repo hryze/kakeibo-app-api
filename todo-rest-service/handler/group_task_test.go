@@ -158,9 +158,6 @@ func (m MockTime) Now() time.Time {
 }
 
 func TestDBHandler_GetGroupTasksListForEachUser(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
 		GroupTasksRepo: MockGroupTasksRepository{},
@@ -191,9 +188,6 @@ func TestDBHandler_GetGroupTasksListForEachUser(t *testing.T) {
 }
 
 func TestDBHandler_PostGroupTasksUser(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
 		GroupTasksRepo: MockGroupTasksRepository{},
@@ -223,9 +217,6 @@ func TestDBHandler_PostGroupTasksUser(t *testing.T) {
 }
 
 func TestDBHandler_GetGroupTasksList(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
 		GroupTasksRepo: MockGroupTasksRepository{},
@@ -255,9 +246,6 @@ func TestDBHandler_GetGroupTasksList(t *testing.T) {
 }
 
 func TestDBHandler_PostGroupTask(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
 		GroupTasksRepo: MockGroupTasksRepository{},
@@ -287,9 +275,6 @@ func TestDBHandler_PostGroupTask(t *testing.T) {
 }
 
 func TestDBHandler_PutGroupTask(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
 		GroupTasksRepo: MockGroupTasksRepository{},
@@ -320,9 +305,6 @@ func TestDBHandler_PutGroupTask(t *testing.T) {
 }
 
 func TestDBHandler_DeleteGroupTask(t *testing.T) {
-	tearDown := testutil.SetUpMockServer(t)
-	defer tearDown()
-
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
 		GroupTasksRepo: MockGroupTasksRepository{},
