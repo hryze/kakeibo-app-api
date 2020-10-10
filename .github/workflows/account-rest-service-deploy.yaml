@@ -79,5 +79,5 @@ jobs:
           sudo apt install -y gettext
 
       - name: Kubectl apply
-        run: envsubst < account-rest-service-deployment.yaml | kubectl apply -f -
+        run: envsubst < deployment.yaml | kubectl apply -f -
         working-directory: ${{env.KUBERNETES-DIRECTORY}}
