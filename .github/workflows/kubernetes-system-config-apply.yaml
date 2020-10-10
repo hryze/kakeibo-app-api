@@ -29,11 +29,7 @@ jobs:
         uses: azure/setup-kubectl@v1
 
       - name: Define KUBECONFIG
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-        run: |
-          echo $KUBE_CONFIG_DATA | base64 --decode > /tmp/kube_config
-          echo ::set-env name=KUBECONFIG::/tmp/kube_config
+        run: aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name kakeibo-prod-cluster
 
       - name: Kubectl apply
         run: kubectl apply -f .
