@@ -101,11 +101,8 @@ func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (stri
 }
 
 func verifyGroupAffiliation(groupID int, userID string) error {
-	requestURL := fmt.Sprintf("http://user-svc.default.svc.cluster.local:8080/groups/%d/users/%s", groupID, userID)
-
-	if os.Getenv("ENVIRONMENT") == "development" {
-		requestURL = fmt.Sprintf("http://localhost:8080/groups/%d/users/%s", groupID, userID)
-	}
+	userHost := os.Getenv("USER_HOST")
+	requestURL := fmt.Sprintf("http://%s:8080/groups/%d/users/%s", userHost, groupID, userID)
 
 	request, err := http.NewRequest(
 		"GET",

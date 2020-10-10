@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
+
 	"github.com/gorilla/mux"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/injector"
 	"github.com/rs/cors"
@@ -20,11 +22,7 @@ func Run() error {
 	flag.Parse()
 
 	if *isLocal {
-		if err := os.Setenv("ENVIRONMENT", "development"); err != nil {
-			return err
-		}
-	} else if !*isLocal {
-		if err := os.Setenv("ENVIRONMENT", "production"); err != nil {
+		if err := godotenv.Load("../../.env"); err != nil {
 			return err
 		}
 	}
@@ -44,11 +42,7 @@ func Run() error {
 	router.Handle("/groups/{group_id:[0-9]+}/users/unapproved", http.HandlerFunc(h.DeleteGroupUnapprovedUser)).Methods("DELETE")
 	router.Handle("/groups/{group_id:[0-9]+}/users/{user_id:[\\S]{1,10}}", http.HandlerFunc(h.VerifyGroupAffiliation)).Methods("GET")
 
-	allowedOrigin := "https://www.shakepiper.com"
-
-	if os.Getenv("ENVIRONMENT") == "development" {
-		allowedOrigin = "http://localhost:3000"
-	}
+	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{allowedOrigin},
