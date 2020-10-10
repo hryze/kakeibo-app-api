@@ -35,3 +35,18 @@ spec:
                 configMapKeyRef:
                   name: todo-configmap
                   key: userHost
+            - name: MYSQL_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: todo-secret
+                  key: mysqlDsn
+            - name: REDIS_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: todo-secret
+                  key: redisDsn
+            - name: REDIS_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: todo-secret
+                  key: redisAuth

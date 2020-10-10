@@ -35,3 +35,18 @@ spec:
                 configMapKeyRef:
                   name: user-configmap
                   key: accountHost
+            - name: MYSQL_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: user-secret
+                  key: mysqlDsn
+            - name: REDIS_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: user-secret
+                  key: redisDsn
+            - name: REDIS_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: user-secret
+                  key: redisAuth
