@@ -1,8 +1,6 @@
 name: todo-rest-service deploy
 on:
   push:
-    branches:
-      - master
     paths:
       - todo-rest-service/**
       - kubernetes/todo-rest-service/**
@@ -75,5 +73,7 @@ jobs:
           sudo apt install -y gettext
 
       - name: Kubectl apply
-        run: envsubst < deployment.yaml | kubectl apply -f -
+        run: |
+          envsubst < deployment.yaml | kubectl apply -f -
+          kubectl apply -f .
         working-directory: ${{env.KUBERNETES_DIRECTORY}}
