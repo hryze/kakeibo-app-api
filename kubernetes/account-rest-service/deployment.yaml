@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: account-rest-service-deployment
+  name: account-deployment
   labels:
-    app: account-rest-service
+    app: account
 spec:
   strategy:
     type: RollingUpdate
@@ -13,14 +13,14 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      app: account-rest-service
+      app: account
   template:
     metadata:
       labels:
-        app: account-rest-service
+        app: account
     spec:
       containers:
-        - name: account-rest-service
+        - name: account
           image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/account-rest-service:${IMAGE_TAG}
           ports:
             - containerPort: 8081
@@ -28,10 +28,10 @@ spec:
             - name: ALLOWED_ORIGIN
               valueFrom:
                 configMapKeyRef:
-                  name: account-rest-service-configmap
+                  name: account-configmap
                   key: allowedOrigin
             - name: USER_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: account-rest-service-configmap
+                  name: account-configmap
                   key: userHost

@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: user-svc
   labels:
-    app: user-rest-service
+    app: user
 spec:
   type: NodePort
   selector:
-    app: user-rest-service
+    app: user
   ports:
     - port: 8080

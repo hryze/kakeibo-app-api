@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: user-rest-service-configmap
+  name: user-configmap
   labels:
-    app: user-rest-service
+    app: user
 data:
   allowedOrigin: https://www.shakepiper.com
   accountHost: account-svc.default.svc.cluster.local
