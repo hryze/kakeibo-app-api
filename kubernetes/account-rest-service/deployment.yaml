@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: account-rest-service-deployment
-  namespace: default
   labels:
     app: account-rest-service
 spec:
@@ -25,3 +24,14 @@ spec:
           image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/account-rest-service:${IMAGE_TAG}
           ports:
             - containerPort: 8081
+          env:
+            - name: ALLOWED_ORIGIN
+              valueFrom:
+                configMapKeyRef:
+                  name: account-rest-service-configmap
+                  key: allowedOrigin
+            - name: USER_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: account-rest-service-configmap
+                  key: userHost

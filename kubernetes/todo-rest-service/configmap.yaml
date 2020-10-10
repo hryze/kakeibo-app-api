@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-rest-service-configmap
+  labels:
+    app: todo-rest-service
+data:
+  allowedOrigin: https://www.shakepiper.com
+  userHost: user-svc.default.svc.cluster.local

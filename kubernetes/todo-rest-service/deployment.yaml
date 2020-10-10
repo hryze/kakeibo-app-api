@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: todo-rest-service-deployment
-  namespace: default
   labels:
     app: todo-rest-service
 spec:
@@ -25,3 +24,14 @@ spec:
           image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/todo-rest-service:${IMAGE_TAG}
           ports:
             - containerPort: 8082
+          env:
+            - name: ALLOWED_ORIGIN
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-rest-service-configmap
+                  key: allowedOrigin
+            - name: USER_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-rest-service-configmap
+                  key: userHost
