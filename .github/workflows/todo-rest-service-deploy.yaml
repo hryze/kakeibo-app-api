@@ -74,6 +74,8 @@ jobs:
 
       - name: Kubectl apply
         run: |
+          kubectl apply -f service.yaml &
+          kubectl apply -f configmap.yaml &
+          wait
           envsubst < deployment.yaml | kubectl apply -f -
-          kubectl apply -f .
         working-directory: ${{env.KUBERNETES_DIRECTORY}}
