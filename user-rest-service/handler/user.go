@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -113,11 +114,8 @@ func checkForUniqueUser(h *DBHandler, signUpUser *model.SignUpUser) error {
 }
 
 func postInitStandardBudgets(userID string) error {
-	requestURL := "http://account-svc.default.svc.cluster.local:8081/standard-budgets"
-
-	if os.Getenv("ENVIRONMENT") == "development" {
-		requestURL = "http://localhost:8081/standard-budgets"
-	}
+	accountHost := os.Getenv("ACCOUNT_HOST")
+	requestURL := fmt.Sprintf("http://%s:8081/standard-budgets", accountHost)
 
 	request, err := http.NewRequest(
 		"POST",

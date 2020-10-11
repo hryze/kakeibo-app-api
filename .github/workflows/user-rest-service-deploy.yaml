@@ -18,8 +18,8 @@ jobs:
       DOCKER_BUILDKIT: 1
       ECR_REPOSITORY: user-rest-service
       IMAGE_TAG: release.${{ github.sha }}
-      BUILD-DIRECTORY: user-rest-service
-      KUBERNETES-DIRECTORY: kubernetes/user-rest-service
+      BUILD_DIRECTORY: user-rest-service
+      KUBERNETES_DIRECTORY: kubernetes/user-rest-service
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -45,7 +45,7 @@ jobs:
           --cache-from=$ECR_REGISTRY/$ECR_REPOSITORY:builder \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           -t $ECR_REGISTRY/$ECR_REPOSITORY:builder .
-        working-directory: ${{env.BUILD-DIRECTORY}}
+        working-directory: ${{env.BUILD_DIRECTORY}}
 
       - name: Build image
         run: |
@@ -54,7 +54,7 @@ jobs:
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-        working-directory: ${{env.BUILD-DIRECTORY}}
+        working-directory: ${{env.BUILD_DIRECTORY}}
 
       - name: Push image to Amazon ECR
         run: |
@@ -67,11 +67,7 @@ jobs:
         uses: azure/setup-kubectl@v1
 
       - name: Define KUBECONFIG
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-        run: |
-          echo $KUBE_CONFIG_DATA | base64 --decode > /tmp/kube_config
-          echo ::set-env name=KUBECONFIG::/tmp/kube_config
+        run: aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name kakeibo-prod-cluster
 
       - name: Install dependent package
         run: |
@@ -79,5 +75,9 @@ jobs:
           sudo apt install -y gettext
 
       - name: Kubectl apply
-        run: envsubst < user-rest-service-deployment.yaml | kubectl apply -f -
-        working-directory: ${{env.KUBERNETES-DIRECTORY}}
+        run: |
+          kubectl apply -f service.yaml &
+          kubectl apply -f configmap.yaml &
+          wait
+          envsubst < deployment.yaml | kubectl apply -f -
+        working-directory: ${{env.KUBERNETES_DIRECTORY}}

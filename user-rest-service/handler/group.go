@@ -45,11 +45,8 @@ func (e *UserIDValidationErrorMsg) Error() string {
 }
 
 func postInitGroupStandardBudgets(groupID int) error {
-	requestURL := fmt.Sprintf("http://account-svc.default.svc.cluster.local:8081/groups/%d/standard-budgets", groupID)
-
-	if os.Getenv("ENVIRONMENT") == "development" {
-		requestURL = fmt.Sprintf("http://localhost:8081/groups/%d/standard-budgets", groupID)
-	}
+	accountHost := os.Getenv("ACCOUNT_HOST")
+	requestURL := fmt.Sprintf("http://%s:8081/groups/%d/standard-budgets", accountHost, groupID)
 
 	request, err := http.NewRequest(
 		"POST",

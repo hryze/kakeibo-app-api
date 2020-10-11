@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"log"
 	"net/http"
@@ -9,6 +10,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/joho/godotenv"
 
 	"github.com/gorilla/mux"
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/injector"
@@ -20,13 +23,13 @@ func Run() error {
 	flag.Parse()
 
 	if *isLocal {
-		if err := os.Setenv("ENVIRONMENT", "development"); err != nil {
+		if err := godotenv.Load("../../.env"); err != nil {
 			return err
 		}
-	} else if !*isLocal {
-		if err := os.Setenv("ENVIRONMENT", "production"); err != nil {
-			return err
-		}
+	}
+
+	if len(os.Getenv("ALLOWED_ORIGIN")) == 0 || len(os.Getenv("USER_HOST")) == 0 || len(os.Getenv("MYSQL_DSN")) == 0 || len(os.Getenv("REDIS_DSN")) == 0 || len(os.Getenv("REDIS_AUTH")) == 0 {
+		return errors.New("environment variable not defined")
 	}
 
 	h := injector.InjectDBHandler()
@@ -71,11 +74,7 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/custom-budgets/{year_month:[0-9]{4}-[0-9]{2}}", h.DeleteGroupCustomBudgets).Methods("DELETE")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/budgets/{year:[0-9]{4}}", h.GetYearlyGroupBudgets).Methods("GET")
 
-	allowedOrigin := "https://www.shakepiper.com"
-
-	if os.Getenv("ENVIRONMENT") == "development" {
-		allowedOrigin = "http://localhost:3000"
-	}
+	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{allowedOrigin},

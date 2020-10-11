@@ -6,7 +6,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 )
 
 type MySQLHandler struct {
@@ -18,17 +17,13 @@ type RedisHandler struct {
 }
 
 func NewMySQLHandler() (*MySQLHandler, error) {
-	if os.Getenv("ENVIRONMENT") == "development" {
-		if err := godotenv.Load("../../.env"); err != nil {
-			return nil, err
-		}
-	}
-
 	dsn := os.Getenv("MYSQL_DSN")
+
 	conn, err := sqlx.Open("mysql", dsn)
 	if err != nil {
 		return nil, err
 	}
+
 	mySQLHandler := new(MySQLHandler)
 	mySQLHandler.conn = conn
 
@@ -36,12 +31,6 @@ func NewMySQLHandler() (*MySQLHandler, error) {
 }
 
 func NewRedisHandler() (*RedisHandler, error) {
-	if os.Getenv("ENVIRONMENT") == "development" {
-		if err := godotenv.Load("../../.env"); err != nil {
-			return nil, err
-		}
-	}
-
 	dsn := os.Getenv("REDIS_DSN")
 	password := os.Getenv("REDIS_AUTH")
 

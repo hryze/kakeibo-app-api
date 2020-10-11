@@ -15,7 +15,7 @@ import (
 )
 
 func SetUpMockServer() func() {
-	if err := os.Setenv("ENVIRONMENT", "development"); err != nil {
+	if err := os.Setenv("USER_HOST", "localhost"); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

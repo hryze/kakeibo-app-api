@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-configmap
+  labels:
+    app: todo
+data:
+  ALLOWED_ORIGIN: https://www.shakepiper.com
+  USER_HOST: user-svc.default.svc.cluster.local

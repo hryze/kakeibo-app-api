@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"log"
 	"net/http"
@@ -10,23 +11,25 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
+
 	"github.com/gorilla/mux"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/injector"
 	"github.com/rs/cors"
 )
 
 func Run() error {
-	isLocal := flag.Bool("local", false, "Please specify -env flag")
+	isLocal := flag.Bool("local", false, "Please specify -local flag")
 	flag.Parse()
 
 	if *isLocal {
-		if err := os.Setenv("ENVIRONMENT", "development"); err != nil {
+		if err := godotenv.Load("../../.env"); err != nil {
 			return err
 		}
-	} else if !*isLocal {
-		if err := os.Setenv("ENVIRONMENT", "production"); err != nil {
-			return err
-		}
+	}
+
+	if len(os.Getenv("ALLOWED_ORIGIN")) == 0 || len(os.Getenv("USER_HOST")) == 0 || len(os.Getenv("MYSQL_DSN")) == 0 || len(os.Getenv("REDIS_DSN")) == 0 || len(os.Getenv("REDIS_AUTH")) == 0 {
+		return errors.New("environment variable not defined")
 	}
 
 	h := injector.InjectDBHandler()
@@ -51,11 +54,7 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks/{id:[0-9]+}", h.PutGroupTask).Methods("PUT")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks/{id:[0-9]+}", h.DeleteGroupTask).Methods("DELETE")
 
-	allowedOrigin := "https://www.shakepiper.com"
-
-	if os.Getenv("ENVIRONMENT") == "development" {
-		allowedOrigin = "http://localhost:3000"
-	}
+	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{allowedOrigin},

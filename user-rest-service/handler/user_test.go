@@ -2,7 +2,6 @@ package handler
 
 import (
 	"database/sql"
-	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -53,9 +52,8 @@ func (t MockUserRepository) DeleteSessionID(sessionID string) error {
 }
 
 func TestDBHandler_SignUp(t *testing.T) {
-	if err := os.Setenv("ENVIRONMENT", "development"); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
+		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
 	}
 
 	postInitStandardBudgetsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
