@@ -24,29 +24,8 @@ spec:
           image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/todo-rest-service:${IMAGE_TAG}
           ports:
             - containerPort: 8082
-          env:
-            - name: ALLOWED_ORIGIN
-              valueFrom:
-                configMapKeyRef:
-                  name: todo-configmap
-                  key: allowedOrigin
-            - name: USER_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: todo-configmap
-                  key: userHost
-            - name: MYSQL_DSN
-              valueFrom:
-                secretKeyRef:
-                  name: todo-secret
-                  key: mysqlDsn
-            - name: REDIS_DSN
-              valueFrom:
-                secretKeyRef:
-                  name: todo-secret
-                  key: redisDsn
-            - name: REDIS_AUTH
-              valueFrom:
-                secretKeyRef:
-                  name: todo-secret
-                  key: redisAuth
+          envFrom:
+            - configMapRef:
+                name: todo-configmap
+            - secretRef:
+                name: todo-secret

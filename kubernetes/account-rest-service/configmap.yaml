@@ -5,5 +5,5 @@ metadata:
   labels:
     app: account
 data:
-  allowedOrigin: https://www.shakepiper.com
-  userHost: user-svc.default.svc.cluster.local
+  ALLOWED_ORIGIN: https://www.shakepiper.com
+  USER_HOST: user-svc.default.svc.cluster.local

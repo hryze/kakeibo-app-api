@@ -1,6 +1,8 @@
 name: account-rest-service deploy
 on:
   push:
+    branches:
+      - master
     paths:
       - account-rest-service/**
       - kubernetes/account-rest-service/**
