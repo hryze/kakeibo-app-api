@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"log"
 	"net/http"
@@ -25,6 +26,10 @@ func Run() error {
 		if err := godotenv.Load("../../.env"); err != nil {
 			return err
 		}
+	}
+
+	if len(os.Getenv("ALLOWED_ORIGIN")) == 0 || len(os.Getenv("ACCOUNT_HOST")) == 0 || len(os.Getenv("MYSQL_DSN")) == 0 || len(os.Getenv("REDIS_DSN")) == 0 || len(os.Getenv("REDIS_AUTH")) == 0 {
+		return errors.New("environment variable not defined")
 	}
 
 	h := injector.InjectDBHandler()
