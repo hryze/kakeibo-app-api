@@ -28,8 +28,9 @@ func InjectRedis() *infrastructure.RedisHandler {
 
 func InjectDBHandler() *handler.DBHandler {
 	return &handler.DBHandler{
-		AuthRepo:  infrastructure.NewAuthRepository(InjectRedis()),
-		UserRepo:  infrastructure.NewUserRepository(InjectRedis(), InjectMySQL()),
-		GroupRepo: infrastructure.NewGroupRepository(InjectMySQL()),
+		HealthRepo: infrastructure.NewHealthRepository(InjectRedis(), InjectMySQL()),
+		AuthRepo:   infrastructure.NewAuthRepository(InjectRedis()),
+		UserRepo:   infrastructure.NewUserRepository(InjectRedis(), InjectMySQL()),
+		GroupRepo:  infrastructure.NewGroupRepository(InjectMySQL()),
 	}
 }

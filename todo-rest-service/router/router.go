@@ -35,6 +35,7 @@ func Run() error {
 	h := injector.InjectDBHandler()
 
 	router := mux.NewRouter()
+	router.HandleFunc("/readyz", h.Readyz).Methods("GET")
 	router.HandleFunc("/todo-list/{date:[0-9]{4}-[0-9]{2}-[0-9]{2}}", h.GetDailyTodoList).Methods("GET")
 	router.HandleFunc("/todo-list/{year_month:[0-9]{4}-[0-9]{2}}", h.GetMonthlyTodoList).Methods("GET")
 	router.HandleFunc("/todo-list", h.PostTodo).Methods("POST")

@@ -15,6 +15,7 @@ import (
 )
 
 type DBHandler struct {
+	HealthRepo     repository.HealthRepository
 	AuthRepo       repository.AuthRepository
 	TodoRepo       repository.TodoRepository
 	GroupTodoRepo  repository.GroupTodoRepository

@@ -6,6 +6,11 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 )
 
+type HealthRepository interface {
+	PingMySQL() error
+	PingRedis() error
+}
+
 type AuthRepository interface {
 	GetUserID(sessionID string) (string, error)
 }

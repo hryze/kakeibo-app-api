@@ -24,6 +24,10 @@ spec:
           image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/user-rest-service:${IMAGE_TAG}
           ports:
             - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
           envFrom:
             - configMapRef:
                 name: user-configmap

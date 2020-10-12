@@ -35,6 +35,7 @@ func Run() error {
 	h := injector.InjectDBHandler()
 
 	router := mux.NewRouter()
+	router.HandleFunc("/readyz", h.Readyz).Methods("GET")
 	router.HandleFunc("/categories", h.GetCategoriesList).Methods("GET")
 	router.HandleFunc("/categories/custom-categories", h.PostCustomCategory).Methods("POST")
 	router.HandleFunc("/categories/custom-categories/{id:[0-9]+}", h.PutCustomCategory).Methods("PUT")
