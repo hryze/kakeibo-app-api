@@ -98,11 +98,6 @@ variable "rds_password" {
   description = "User for RDS"
 }
 
-variable "elasticache_auth_token" {
-  type        = string
-  description = "Auth token for ElastiCache"
-}
-
 locals {
   default_tags     = merge(local.project_tag, local.environment_tag)
   eks_tag          = map(format("kubernetes.io/cluster/%s", local.cluster_name), "shared")
