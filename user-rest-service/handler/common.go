@@ -9,9 +9,10 @@ import (
 )
 
 type DBHandler struct {
-	AuthRepo  repository.AuthRepository
-	UserRepo  repository.UserRepository
-	GroupRepo repository.GroupRepository
+	HealthRepo repository.HealthRepository
+	AuthRepo   repository.AuthRepository
+	UserRepo   repository.UserRepository
+	GroupRepo  repository.GroupRepository
 }
 
 type HTTPError struct {

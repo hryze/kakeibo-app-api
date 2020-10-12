@@ -11,3 +11,6 @@
 
 # kubernetes
 **/secret.yaml
+
+# RDS
+/init-rds
