@@ -32,7 +32,6 @@ func NewMySQLHandler() (*MySQLHandler, error) {
 
 func NewRedisHandler() (*RedisHandler, error) {
 	dsn := os.Getenv("REDIS_DSN")
-	password := os.Getenv("REDIS_AUTH")
 
 	redisHandler := new(RedisHandler)
 	redisHandler.pool = &redis.Pool{
@@ -41,9 +40,7 @@ func NewRedisHandler() (*RedisHandler, error) {
 			if err != nil {
 				return nil, err
 			}
-			if _, err := conn.Do("AUTH", password); err != nil {
-				return nil, err
-			}
+
 			return conn, nil
 		},
 	}

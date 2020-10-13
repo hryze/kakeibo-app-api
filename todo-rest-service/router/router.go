@@ -28,7 +28,7 @@ func Run() error {
 		}
 	}
 
-	if len(os.Getenv("ALLOWED_ORIGIN")) == 0 || len(os.Getenv("USER_HOST")) == 0 || len(os.Getenv("MYSQL_DSN")) == 0 || len(os.Getenv("REDIS_DSN")) == 0 || len(os.Getenv("REDIS_AUTH")) == 0 {
+	if len(os.Getenv("ALLOWED_ORIGIN")) == 0 || len(os.Getenv("USER_HOST")) == 0 || len(os.Getenv("MYSQL_DSN")) == 0 || len(os.Getenv("REDIS_DSN")) == 0 {
 		return errors.New("environment variable not defined")
 	}
 
