@@ -61,7 +61,7 @@ resource "aws_iam_role_policy_attachment" "ecr_ro_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-resource "aws_iam_openid_connect_provider" "kakeibo_eks_cluster" {
+resource "aws_iam_openid_connect_provider" "openid" {
   client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
   url             = aws_eks_cluster.kakeibo_eks_cluster.identity[0].oidc[0].issuer
@@ -78,11 +78,11 @@ data "aws_iam_policy_document" "cluster-autoscaler-assume-role-policy" {
     effect  = "Allow"
     condition {
       test     = "StringEquals"
-      variable = "${replace(aws_iam_openid_connect_provider.kakeibo_eks_cluster.url, "https://", "")}:sub"
+      variable = "${replace(aws_iam_openid_connect_provider.openid.url, "https://", "")}:sub"
       values   = ["system:serviceaccount:kube-system:cluster-autoscaler"]
     }
     principals {
-      identifiers = [aws_iam_openid_connect_provider.kakeibo_eks_cluster.arn]
+      identifiers = [aws_iam_openid_connect_provider.openid.arn]
       type        = "Federated"
     }
   }
@@ -109,6 +109,118 @@ data "aws_iam_policy_document" "cluster-autoscaler" {
     resources = ["*"]
   }
 }
+
+resource "aws_iam_role" "alb-ingress" {
+  assume_role_policy = data.aws_iam_policy_document.alb-ingress-assume-role-policy.json
+  name               = "alb-ingress"
+}
+
+data "aws_iam_policy_document" "alb-ingress-assume-role-policy" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.openid.url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:alb-ingress-controller"]
+    }
+    principals {
+      identifiers = [aws_iam_openid_connect_provider.openid.arn]
+      type        = "Federated"
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "alb-ingress-role-policy" {
+  name   = "alb-ingress-role-policy"
+  role   = aws_iam_role.alb-ingress.id
+  policy = data.aws_iam_policy_document.alb-ingress.json
+}
+
+data "aws_iam_policy_document" "alb-ingress" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "acm:DescribeCertificate",
+      "acm:ListCertificates",
+      "acm:GetCertificate",
+      "ec2:AuthorizeSecurityGroupIngress",
+      "ec2:CreateSecurityGroup",
+      "ec2:CreateTags",
+      "ec2:DeleteTags",
+      "ec2:DeleteSecurityGroup",
+      "ec2:DescribeAccountAttributes",
+      "ec2:DescribeAddresses",
+      "ec2:DescribeInstances",
+      "ec2:DescribeInstanceStatus",
+      "ec2:DescribeInternetGateways",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeTags",
+      "ec2:DescribeVpcs",
+      "ec2:ModifyInstanceAttribute",
+      "ec2:ModifyNetworkInterfaceAttribute",
+      "ec2:RevokeSecurityGroupIngress",
+      "elasticloadbalancing:AddListenerCertificates",
+      "elasticloadbalancing:AddTags",
+      "elasticloadbalancing:CreateListener",
+      "elasticloadbalancing:CreateLoadBalancer",
+      "elasticloadbalancing:CreateRule",
+      "elasticloadbalancing:CreateTargetGroup",
+      "elasticloadbalancing:DeleteListener",
+      "elasticloadbalancing:DeleteLoadBalancer",
+      "elasticloadbalancing:DeleteRule",
+      "elasticloadbalancing:DeleteTargetGroup",
+      "elasticloadbalancing:DeregisterTargets",
+      "elasticloadbalancing:DescribeListenerCertificates",
+      "elasticloadbalancing:DescribeListeners",
+      "elasticloadbalancing:DescribeLoadBalancers",
+      "elasticloadbalancing:DescribeLoadBalancerAttributes",
+      "elasticloadbalancing:DescribeRules",
+      "elasticloadbalancing:DescribeSSLPolicies",
+      "elasticloadbalancing:DescribeTags",
+      "elasticloadbalancing:DescribeTargetGroups",
+      "elasticloadbalancing:DescribeTargetGroupAttributes",
+      "elasticloadbalancing:DescribeTargetHealth",
+      "elasticloadbalancing:ModifyListener",
+      "elasticloadbalancing:ModifyLoadBalancerAttributes",
+      "elasticloadbalancing:ModifyRule",
+      "elasticloadbalancing:ModifyTargetGroup",
+      "elasticloadbalancing:ModifyTargetGroupAttributes",
+      "elasticloadbalancing:RegisterTargets",
+      "elasticloadbalancing:RemoveListenerCertificates",
+      "elasticloadbalancing:RemoveTags",
+      "elasticloadbalancing:SetIpAddressType",
+      "elasticloadbalancing:SetSecurityGroups",
+      "elasticloadbalancing:SetSubnets",
+      "elasticloadbalancing:SetWebAcl",
+      "iam:CreateServiceLinkedRole",
+      "iam:GetServerCertificate",
+      "iam:ListServerCertificates",
+      "cognito-idp:DescribeUserPoolClient",
+      "waf-regional:GetWebACLForResource",
+      "waf-regional:GetWebACL",
+      "waf-regional:AssociateWebACL",
+      "waf-regional:DisassociateWebACL",
+      "tag:GetResources",
+      "tag:TagResources",
+      "waf:GetWebACL",
+      "wafv2:GetWebACL",
+      "wafv2:GetWebACLForResource",
+      "wafv2:AssociateWebACL",
+      "wafv2:DisassociateWebACL",
+      "shield:DescribeProtection",
+      "shield:GetSubscriptionState",
+      "shield:DeleteProtection",
+      "shield:CreateProtection",
+      "shield:DescribeSubscription",
+      "shield:ListProtections"
+    ]
+    resources = ["*"]
+  }
+}
+
 
 resource "aws_s3_bucket_policy" "kakeibo_s3_bucket_policy" {
   bucket = aws_s3_bucket.kakeibo_s3.id
