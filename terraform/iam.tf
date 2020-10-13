@@ -221,7 +221,6 @@ data "aws_iam_policy_document" "alb-ingress" {
   }
 }
 
-
 resource "aws_s3_bucket_policy" "kakeibo_s3_bucket_policy" {
   bucket = aws_s3_bucket.kakeibo_s3.id
   policy = data.aws_iam_policy_document.kakeibo_s3_policy_document.json

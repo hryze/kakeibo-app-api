@@ -16,12 +16,6 @@ variable "default_region" {
   description = "Default region"
 }
 
-variable "acm_region" {
-  type        = string
-  default     = "us-east-1"
-  description = "ACM region"
-}
-
 variable "availability_zones" {
   type = list(string)
   default = [
