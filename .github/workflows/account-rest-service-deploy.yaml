@@ -1,10 +1,5 @@
 name: account-rest-service deploy
-on:
-  push:
-    paths:
-      - account-rest-service/**
-      - kubernetes/account-rest-service/**
-      - .github/workflows/account-rest-service-deploy.yaml
+on: push
 defaults:
   run:
     shell: bash
