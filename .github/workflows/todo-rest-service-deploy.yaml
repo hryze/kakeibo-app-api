@@ -1,8 +1,6 @@
 name: todo-rest-service deploy
 on:
   push:
-    branches:
-      - master
     paths:
       - todo-rest-service/**
       - kubernetes/todo-rest-service/**

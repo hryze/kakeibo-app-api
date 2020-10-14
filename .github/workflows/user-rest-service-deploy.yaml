@@ -1,8 +1,6 @@
 name: user-rest-service deploy
 on:
   push:
-    branches:
-      - master
     paths:
       - user-rest-service/**
       - kubernetes/user-rest-service/**

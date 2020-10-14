@@ -1,8 +1,6 @@
 name: Kubernetes apply
 on:
   push:
-    branches:
-      - master
     paths:
       - kubernetes/system-config/**
       - .github/workflows/kubernetes-system-config-apply.yaml
