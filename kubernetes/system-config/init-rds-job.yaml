@@ -6,7 +6,6 @@ metadata:
 data:
   init.sql: |
     CREATE DATABASE user;
-
     USE user;
 
     CREATE TABLE users
