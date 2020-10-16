@@ -24,6 +24,13 @@ spec:
           image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/todo-rest-service:${IMAGE_TAG}
           ports:
             - containerPort: 8082
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 250m
+            limits:
+              memory: 128Mi
+              cpu: 500m
           readinessProbe:
             httpGet:
               path: /readyz
