@@ -1,20 +1,17 @@
 resource "aws_iam_role" "eks_master" {
-  name = "eks-master-role"
-
-  assume_role_policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "eks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
+  name               = "eks-master-role"
+  assume_role_policy = data.aws_iam_policy_document.eks_master_assume_role_policy.json
 }
-POLICY
+
+data "aws_iam_policy_document" "eks_master_assume_role_policy" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
@@ -28,22 +25,19 @@ resource "aws_iam_role_policy_attachment" "eks_service_policy" {
 }
 
 resource "aws_iam_role" "eks_node" {
-  name = "eks-node-role"
-
-  assume_role_policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
+  name               = "eks-node-role"
+  assume_role_policy = data.aws_iam_policy_document.eks_node_assume_role_policy.json
 }
-POLICY
+
+data "aws_iam_policy_document" "eks_node_assume_role_policy" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
@@ -67,34 +61,34 @@ resource "aws_iam_openid_connect_provider" "openid" {
   url             = aws_eks_cluster.kakeibo_eks_cluster.identity[0].oidc[0].issuer
 }
 
-resource "aws_iam_role" "cluster-autoscaler" {
-  assume_role_policy = data.aws_iam_policy_document.cluster-autoscaler-assume-role-policy.json
+resource "aws_iam_role" "cluster_autoscaler" {
   name               = "cluster-autoscaler"
+  assume_role_policy = data.aws_iam_policy_document.cluster_autoscaler_assume_role_policy.json
 }
 
-data "aws_iam_policy_document" "cluster-autoscaler-assume-role-policy" {
+data "aws_iam_policy_document" "cluster_autoscaler_assume_role_policy" {
   statement {
+    effect = "Allow"
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.openid.arn]
+    }
     actions = ["sts:AssumeRoleWithWebIdentity"]
-    effect  = "Allow"
     condition {
       test     = "StringEquals"
       variable = "${replace(aws_iam_openid_connect_provider.openid.url, "https://", "")}:sub"
       values   = ["system:serviceaccount:kube-system:cluster-autoscaler"]
     }
-    principals {
-      identifiers = [aws_iam_openid_connect_provider.openid.arn]
-      type        = "Federated"
-    }
   }
 }
 
-resource "aws_iam_role_policy" "eks-cluster-autoscaler-role-policy" {
+resource "aws_iam_role_policy" "cluster_autoscaler_role_policy" {
   name   = "cluster-autoscaler-role-policy"
-  role   = aws_iam_role.cluster-autoscaler.id
-  policy = data.aws_iam_policy_document.cluster-autoscaler.json
+  role   = aws_iam_role.cluster_autoscaler.id
+  policy = data.aws_iam_policy_document.cluster_autoscaler.json
 }
 
-data "aws_iam_policy_document" "cluster-autoscaler" {
+data "aws_iam_policy_document" "cluster_autoscaler" {
   statement {
     effect = "Allow"
     actions = [
@@ -110,34 +104,84 @@ data "aws_iam_policy_document" "cluster-autoscaler" {
   }
 }
 
-resource "aws_iam_role" "alb-ingress" {
-  assume_role_policy = data.aws_iam_policy_document.alb-ingress-assume-role-policy.json
-  name               = "alb-ingress"
+resource "aws_iam_role" "external_dns" {
+  name               = "external-dns"
+  assume_role_policy = data.aws_iam_policy_document.external_dns_assume_role_policy.json
 }
 
-data "aws_iam_policy_document" "alb-ingress-assume-role-policy" {
+data "aws_iam_policy_document" "external_dns_assume_role_policy" {
   statement {
+    effect = "Allow"
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.openid.arn]
+    }
     actions = ["sts:AssumeRoleWithWebIdentity"]
-    effect  = "Allow"
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.openid.url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:external-dns"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "external_dns_role_policy" {
+  name   = "external-dns-role-policy"
+  role   = aws_iam_role.external_dns.id
+  policy = data.aws_iam_policy_document.external_dns.json
+}
+
+data aws_iam_policy_document external_dns {
+  statement {
+    effect = "Allow"
+    actions = [
+      "route53:ChangeResourceRecordSets",
+    ]
+    resources = [
+      "arn:aws:route53:::hostedzone/*",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "route53:ListHostedZones",
+      "route53:ListResourceRecordSets"
+    ]
+    resources = [
+      "*",
+    ]
+  }
+}
+
+resource "aws_iam_role" "alb_ingress" {
+  name               = "alb-ingress"
+  assume_role_policy = data.aws_iam_policy_document.alb_ingress_assume_role_policy.json
+}
+
+data "aws_iam_policy_document" "alb_ingress_assume_role_policy" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.openid.arn]
+    }
+    actions = ["sts:AssumeRoleWithWebIdentity"]
     condition {
       test     = "StringEquals"
       variable = "${replace(aws_iam_openid_connect_provider.openid.url, "https://", "")}:sub"
       values   = ["system:serviceaccount:kube-system:alb-ingress-controller"]
     }
-    principals {
-      identifiers = [aws_iam_openid_connect_provider.openid.arn]
-      type        = "Federated"
-    }
   }
 }
 
-resource "aws_iam_role_policy" "alb-ingress-role-policy" {
+resource "aws_iam_role_policy" "alb_ingress_role_policy" {
   name   = "alb-ingress-role-policy"
-  role   = aws_iam_role.alb-ingress.id
-  policy = data.aws_iam_policy_document.alb-ingress.json
+  role   = aws_iam_role.alb_ingress.id
+  policy = data.aws_iam_policy_document.alb_ingress.json
 }
 
-data "aws_iam_policy_document" "alb-ingress" {
+data "aws_iam_policy_document" "alb_ingress" {
   statement {
     effect = "Allow"
     actions = [
@@ -220,7 +264,6 @@ data "aws_iam_policy_document" "alb-ingress" {
     resources = ["*"]
   }
 }
-
 
 resource "aws_s3_bucket_policy" "kakeibo_s3_bucket_policy" {
   bucket = aws_s3_bucket.kakeibo_s3.id
