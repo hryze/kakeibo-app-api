@@ -243,6 +243,7 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Name:     "session_id",
 		Value:    sessionID,
 		Expires:  time.Now().Add(time.Duration(expiration) * time.Second),
+		Secure:   true,
 		HttpOnly: true,
 	})
 
