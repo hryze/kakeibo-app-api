@@ -6,4 +6,5 @@ metadata:
     app: user
 data:
   ALLOWED_ORIGIN: https://www.shakepiper.com
+  COOKIE_DOMAIN: shakepiper.com
   ACCOUNT_HOST: account-svc.default.svc.cluster.local
