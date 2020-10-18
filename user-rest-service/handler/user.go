@@ -242,6 +242,7 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
 		Value:    sessionID,
+		Domain:   "shakepiper.com",
 		Expires:  time.Now().Add(time.Duration(expiration) * time.Second),
 		Secure:   true,
 		HttpOnly: true,
