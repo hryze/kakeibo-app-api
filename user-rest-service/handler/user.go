@@ -241,12 +241,17 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	domain := os.Getenv("COOKIE_DOMAIN")
 
+	secure := true
+	if domain != "shakepiper.com" {
+		secure = false
+	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
 		Value:    sessionID,
 		Domain:   domain,
 		Expires:  time.Now().Add(time.Duration(expiration) * time.Second),
-		Secure:   true,
+		Secure:   secure,
 		HttpOnly: true,
 	})
 
