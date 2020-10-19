@@ -79,6 +79,7 @@ jobs:
           kubectl apply -f service.yaml &
           kubectl apply -f configmap.yaml &
           kubectl apply -f hpa.yaml &
+          kubectl apply -f pdb.yaml &
           wait
           envsubst < deployment.yaml | kubectl apply -f -
         working-directory: ${{env.KUBERNETES_DIRECTORY}}
