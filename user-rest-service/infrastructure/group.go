@@ -471,3 +471,47 @@ func (r *GroupRepository) DeleteGroupApprovedUser(groupID int, userID string) er
 	_, err := r.MySQLHandler.conn.Exec(query, groupID, userID)
 	return err
 }
+
+func (r *GroupRepository) FindApprovedUsersList(groupID int, groupUsersList []string) (model.GroupTasksUsersListReceiver, error) {
+	var dbGroupUsersList model.GroupTasksUsersListReceiver
+
+	sliceQuery := make([]string, len(groupUsersList))
+	for i := 0; i < len(groupUsersList); i++ {
+		sliceQuery[i] = `
+              SELECT
+                  user_id
+              FROM
+                  group_users
+              WHERE
+                  group_id = ?
+              AND
+                  user_id = ?`
+	}
+
+	query := strings.Join(sliceQuery, " UNION ")
+
+	var queryArgs []interface{}
+	for _, userID := range groupUsersList {
+		queryArgs = append(queryArgs, groupID, userID)
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, queryArgs...)
+	if err != nil {
+		return dbGroupUsersList, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var userID string
+		if err := rows.Scan(&userID); err != nil {
+			return dbGroupUsersList, err
+		}
+
+		dbGroupUsersList.GroupUsersList = append(dbGroupUsersList.GroupUsersList, userID)
+	}
+	if err := rows.Err(); err != nil {
+		return dbGroupUsersList, err
+	}
+
+	return dbGroupUsersList, nil
+}

@@ -36,6 +36,10 @@ type Group struct {
 	GroupName string `json:"group_name" db:"group_name"`
 }
 
+type GroupTasksUsersListReceiver struct {
+	GroupUsersList []string `json:"users_list"`
+}
+
 func NewGroupList(approvedGroupList []ApprovedGroup, unapprovedGroupList []UnapprovedGroup) GroupList {
 	return GroupList{
 		ApprovedGroupList:   approvedGroupList,

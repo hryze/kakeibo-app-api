@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 )
@@ -90,36 +91,23 @@ func (r *GroupTasksRepository) GetGroupTasksListAssignedToUser(groupID int) ([]m
 	return groupTasksListAssignedToUser, nil
 }
 
-func (r *GroupTasksRepository) GetGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (*model.GroupTasksUser, error) {
-	query := `
-        SELECT
-            id,
-            user_id,
-            group_id
-        FROM
-            group_tasks_users
-        WHERE
-            user_id = ?
-        AND
-            group_id = ?`
-
-	if err := r.MySQLHandler.conn.QueryRowx(query, groupTasksUser.UserID, groupID).StructScan(&groupTasksUser); err != nil {
-		return nil, err
-	}
-
-	return &groupTasksUser, nil
-}
-
-func (r *GroupTasksRepository) PostGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (sql.Result, error) {
+func (r *GroupTasksRepository) PostGroupTasksUsersList(groupTasksUsersList model.GroupTasksUsersListReceiver, groupID int) error {
 	query := `
         INSERT INTO group_tasks_users
             (user_id, group_id)
-        VALUES
-            (?,?)`
+        VALUES`
 
-	result, err := r.MySQLHandler.conn.Exec(query, groupTasksUser.UserID, groupID)
+	var queryArgs []interface{}
+	for _, userID := range groupTasksUsersList.GroupUsersList {
+		query += "(?, ?),"
+		queryArgs = append(queryArgs, userID, groupID)
+	}
 
-	return result, err
+	query = strings.TrimSuffix(query, ",")
+
+	_, err := r.MySQLHandler.conn.Exec(query, queryArgs...)
+
+	return err
 }
 
 func (r *GroupTasksRepository) GetGroupTasksList(groupID int) ([]model.GroupTask, error) {

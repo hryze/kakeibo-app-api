@@ -47,6 +47,7 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users/approved", h.PostGroupApprovedUser).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users/unapproved", h.DeleteGroupUnapprovedUser).Methods("DELETE")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users/{user_id:[\\S]{1,10}}", h.VerifyGroupAffiliation).Methods("GET")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.VerifyGroupAffiliationOfUsersList).Methods("GET")
 
 	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
 

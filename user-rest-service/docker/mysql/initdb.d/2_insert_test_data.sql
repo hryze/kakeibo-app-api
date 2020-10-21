@@ -6,12 +6,12 @@ VALUES
   ('anraku', '安楽りょうすけ', 'anraku@icloud.com', '$2a$10$6KihsMbh9tfCJEJcgo4fqujK.gbbGaq/v7YY9GZF7snhcMsGRQoVK'),
   ('ito', '伊藤りょうご', 'ito@icloud.com', '$2a$10$6KihsMbh9tfCJEJcgo4fqujK.gbbGaq/v7YY9GZF7snhcMsGRQoVK'),
   ('furusawa', '古澤ひろや', 'furusawa@icloud.com', '$2a$10$6KihsMbh9tfCJEJcgo4fqujK.gbbGaq/v7YY9GZF7snhcMsGRQoVK'),
-  ('tati1', '館ひろし', 'tati@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu'),
-  ('go2', '郷ひろみ', 'go@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu'),
-  ('saigo3', '西郷隆盛', 'saigo@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu'),
-  ('test4', 'test4', 'test4@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu'),
-  ('test5', 'test5', 'test5@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu'),
-  ('test6', 'test6', 'test6@developer.com', '$2a$10$iMB.JdS3kvyX60R31RbCcO.yBfMpDGlwuLL//7bibRHy89vjXgXQu');
+  ('tati1', '館ひろし', 'tati@developer.com', '$2a$10$6KihsMbh9tfCJEJcgo4fqujK.gbbGaq/v7YY9GZF7snhcMsGRQoVK'),
+  ('go2', '郷ひろみ', 'go@developer.com', '$2a$10$6KihsMbh9tfCJEJcgo4fqujK.gbbGaq/v7YY9GZF7snhcMsGRQoVK'),
+  ('saigo3', '西郷隆盛', 'saigo@developer.com', '$2a$10$6KihsMbh9tfCJEJcgo4fqujK.gbbGaq/v7YY9GZF7snhcMsGRQoVK'),
+  ('test4', 'test4', 'test4@developer.com', '$2a$10$6KihsMbh9tfCJEJcgo4fqujK.gbbGaq/v7YY9GZF7snhcMsGRQoVK'),
+  ('test5', 'test5', 'test5@developer.com', '$2a$10$6KihsMbh9tfCJEJcgo4fqujK.gbbGaq/v7YY9GZF7snhcMsGRQoVK'),
+  ('test6', 'test6', 'test6@developer.com', '$2a$10$6KihsMbh9tfCJEJcgo4fqujK.gbbGaq/v7YY9GZF7snhcMsGRQoVK');
 
 -- group_users table test data
 INSERT INTO group_names
@@ -40,6 +40,9 @@ VALUES
   (4, 'anraku'),
   (4, 'ito'),
   (4, 'furusawa'),
+  (4, 'test4'),
+  (4, 'test5'),
+  (4, 'test6'),
   (5, 'taira'),
   (5, 'anraku'),
   (5, 'ito'),

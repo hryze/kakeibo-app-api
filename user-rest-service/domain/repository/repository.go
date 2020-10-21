@@ -42,4 +42,5 @@ type GroupRepository interface {
 	GetApprovedUser(approvedUsersID int) (*model.ApprovedUser, error)
 	DeleteGroupApprovedUser(groupID int, userID string) error
 	DeleteGroupUnapprovedUser(groupID int, userID string) error
+	FindApprovedUsersList(groupID int, groupUsersList []string) (model.GroupTasksUsersListReceiver, error)
 }
