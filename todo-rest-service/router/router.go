@@ -50,6 +50,7 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/todo-list/search", h.SearchGroupTodoList).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks/users", h.GetGroupTasksListForEachUser).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks/users", h.PostGroupTasksUsersList).Methods("POST")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks/users", h.DeleteGroupTasksUsersList).Methods("DELETE")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks", h.GetGroupTasksList).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks", h.PostGroupTask).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks/{id:[0-9]+}", h.PutGroupTask).Methods("PUT")

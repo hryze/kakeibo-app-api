@@ -91,6 +91,14 @@ func (m MockGroupTasksRepository) PostGroupTasksUsersList(groupTasksUsersList mo
 	return nil
 }
 
+func (m MockGroupTasksRepository) GetGroupTasksIDListAssignedToUser(groupTasksUsersIdList []int, groupID int) ([]int, error) {
+	return []int{1, 2, 3}, nil
+}
+
+func (m MockGroupTasksRepository) DeleteGroupTasksUsersList(groupTasksUsersListReceiver model.GroupTasksUsersListReceiver, groupTasksIDList []int, groupID int) error {
+	return nil
+}
+
 func (m MockGroupTasksRepository) GetGroupTasksList(groupID int) ([]model.GroupTask, error) {
 	return []model.GroupTask{
 		{
@@ -219,7 +227,7 @@ func TestDBHandler_PostGroupTasksUsersList(t *testing.T) {
 		GroupTasksRepo: MockGroupTasksRepository{},
 	}
 
-	r := httptest.NewRequest("POST", "/groups/1/tasks/users", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest("POST", "/groups/2/tasks/users", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
@@ -243,6 +251,35 @@ func TestDBHandler_PostGroupTasksUsersList(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
 	testutil.AssertResponseBody(t, res, &model.GroupTasksListForEachUser{}, &model.GroupTasksListForEachUser{})
+}
+
+func TestDBHandler_DeleteGroupTasksUsersList(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:       MockAuthRepository{},
+		GroupTasksRepo: MockGroupTasksRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/groups/1/tasks/users", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteGroupTasksUsersList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }
 
 func TestDBHandler_GetGroupTasksList(t *testing.T) {

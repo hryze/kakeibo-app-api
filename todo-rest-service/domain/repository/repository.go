@@ -44,6 +44,8 @@ type GroupTasksRepository interface {
 	GetGroupTasksUsersList(groupID int) ([]model.GroupTasksUser, error)
 	GetGroupTasksListAssignedToUser(groupID int) ([]model.GroupTask, error)
 	PostGroupTasksUsersList(groupTasksUsersList model.GroupTasksUsersListReceiver, groupID int) error
+	GetGroupTasksIDListAssignedToUser(groupTasksUsersIdList []int, groupID int) ([]int, error)
+	DeleteGroupTasksUsersList(groupTasksUsersListReceiver model.GroupTasksUsersListReceiver, groupTasksIDList []int, groupID int) error
 	GetGroupTasksList(groupID int) ([]model.GroupTask, error)
 	GetGroupTask(groupTasksID int) (*model.GroupTask, error)
 	PostGroupTask(groupTask model.GroupTask, groupID int) (sql.Result, error)

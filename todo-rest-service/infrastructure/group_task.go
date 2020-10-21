@@ -110,6 +110,121 @@ func (r *GroupTasksRepository) PostGroupTasksUsersList(groupTasksUsersList model
 	return err
 }
 
+func (r *GroupTasksRepository) GetGroupTasksIDListAssignedToUser(groupTasksUsersIdList []int, groupID int) ([]int, error) {
+	sliceQuery := make([]string, len(groupTasksUsersIdList))
+	for i := 0; i < len(groupTasksUsersIdList); i++ {
+		sliceQuery[i] = `
+            SELECT
+                id
+            FROM
+                group_tasks
+            WHERE
+                group_id = ?
+            AND
+                group_tasks_users_id = ?`
+	}
+
+	query := strings.Join(sliceQuery, " UNION ")
+
+	var queryArgs []interface{}
+	for _, groupTasksUsersId := range groupTasksUsersIdList {
+		queryArgs = append(queryArgs, groupID, groupTasksUsersId)
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, queryArgs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groupTasksIDList []int
+	for rows.Next() {
+		var groupTasksID int
+
+		if err := rows.Scan(&groupTasksID); err != nil {
+			return nil, err
+		}
+
+		groupTasksIDList = append(groupTasksIDList, groupTasksID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return groupTasksIDList, nil
+}
+
+func (r *GroupTasksRepository) DeleteGroupTasksUsersList(groupTasksUsersListReceiver model.GroupTasksUsersListReceiver, groupTasksIDList []int, groupID int) error {
+	deleteQuery := `
+        DELETE
+        FROM
+            group_tasks_users
+        WHERE
+            user_id = ?
+        AND
+            group_id = ?`
+
+	updateQuery := `
+        UPDATE
+            group_tasks
+        SET
+            base_date = ?,
+            cycle_type = ?,
+            cycle = ?
+        WHERE
+            id = ?`
+
+	var deleteQueryArgs []interface{}
+	for _, userID := range groupTasksUsersListReceiver.GroupUsersList {
+		deleteQueryArgs = append(deleteQueryArgs, userID, groupID)
+	}
+
+	var updateQueryArgs []interface{}
+	for _, taskID := range groupTasksIDList {
+		updateQueryArgs = append(updateQueryArgs, nil, nil, nil, taskID)
+	}
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		for i := 0; i < len(deleteQueryArgs); i = i + 2 {
+			queryArgs := deleteQueryArgs[i : i+2]
+
+			if _, err := tx.Exec(deleteQuery, queryArgs...); err != nil {
+				return err
+			}
+		}
+
+		for i := 0; i < len(updateQueryArgs); i = i + 4 {
+			queryArgs := updateQueryArgs[i : i+4]
+
+			if _, err := tx.Exec(updateQuery, queryArgs...); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *GroupTasksRepository) GetGroupTasksList(groupID int) ([]model.GroupTask, error) {
 	query := `
         SELECT

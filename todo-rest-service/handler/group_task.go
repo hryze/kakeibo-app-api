@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 
@@ -120,7 +121,7 @@ func validateGroupTaskName(groupTask *model.GroupTask) error {
 		return &GroupTaskNameBadRequestErrorMsg{"タスク名の文字列末尾に空白がないか確認してください。"}
 	}
 
-	if len(groupTask.TaskName) == 0 || len(groupTask.TaskName) > 20 {
+	if utf8.RuneCountInString(groupTask.TaskName) == 0 || utf8.RuneCountInString(groupTask.TaskName) > 20 {
 		return &GroupTaskNameBadRequestErrorMsg{"タスク名は1文字以上20文字以内で入力してください。"}
 	}
 
@@ -335,6 +336,99 @@ func (h *DBHandler) PostGroupTasksUsersList(w http.ResponseWriter, r *http.Reque
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&groupTasksListForEachUser); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) DeleteGroupTasksUsersList(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	var groupTasksUsersListReceiver model.GroupTasksUsersListReceiver
+	if err := json.NewDecoder(r.Body).Decode(&groupTasksUsersListReceiver); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := verifyGroupAffiliationOfUsersList(groupID, groupTasksUsersListReceiver); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	dbGroupTasksUsersList, err := h.GroupTasksRepo.GetGroupTasksUsersList(groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	var groupTasksUsersIdList []int
+
+	for _, userID := range groupTasksUsersListReceiver.GroupUsersList {
+		var isExist bool
+
+		for _, dbUser := range dbGroupTasksUsersList {
+			if userID == dbUser.UserID {
+				groupTasksUsersIdList = append(groupTasksUsersIdList, dbUser.ID)
+
+				isExist = true
+				break
+			}
+		}
+
+		if isExist {
+			continue
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"選択したユーザーは、既にタスクメンバーから削除されています。"}))
+		return
+	}
+
+	groupTasksIDList, err := h.GroupTasksRepo.GetGroupTasksIDListAssignedToUser(groupTasksUsersIdList, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := h.GroupTasksRepo.DeleteGroupTasksUsersList(groupTasksUsersListReceiver, groupTasksIDList, groupID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"タスクメンバーを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
