@@ -79,6 +79,7 @@
 | **GET**<br>&emsp;/groups/{group_id}/todo-list/search | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループtodo検索 |
 | **GET**<br>&emsp;/groups/{group_id}/tasks/users | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | ユーザー別グループタスク一覧取得 |
 | **POST**<br>&emsp;/groups/{group_id}/tasks/users | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>409 Conflict<br>500 Internal Server Error</pre> | グループタスクユーザー追加 |
+| **DELETE**<br>&emsp;/groups/{group_id}/tasks/users | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループタスクユーザー削除 |
 | **GET**<br>&emsp;/groups/{group_id}/tasks | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループタスク一覧取得 |
 | **POST**<br>&emsp;/groups/{group_id}/tasks | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループタスク追加 |
 | **PUT**<br>&emsp;/groups/{group_id}/tasks/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループタスク更新 |
