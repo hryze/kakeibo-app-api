@@ -13,6 +13,10 @@ type TodoList struct {
 	DueTodoList            []Todo `json:"due_todo_list"`
 }
 
+type ExpiredTodoList struct {
+	ExpiredTodoList []Todo `json:"expired_todo_list"`
+}
+
 type SearchTodoList struct {
 	SearchTodoList []Todo `json:"search_todo_list"`
 }

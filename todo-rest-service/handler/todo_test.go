@@ -50,6 +50,15 @@ func (m MockTodoRepository) GetMonthlyDueTodoList(firstDay time.Time, lastDay ti
 	}, nil
 }
 
+func (m MockTodoRepository) GetExpiredTodoList(dueDate time.Time, userID string) (*model.ExpiredTodoList, error) {
+	return &model.ExpiredTodoList{
+		ExpiredTodoList: []model.Todo{
+			{ID: 1, PostedDate: time.Date(2020, 9, 4, 17, 11, 0, 0, time.UTC), ImplementationDate: model.Date{Time: time.Date(2020, 7, 5, 0, 0, 0, 0, time.UTC)}, DueDate: model.Date{Time: time.Date(2020, 7, 5, 0, 0, 0, 0, time.UTC)}, TodoContent: "今月の予算を立てる", CompleteFlag: false},
+			{ID: 4, PostedDate: time.Date(2020, 9, 4, 17, 11, 0, 0, time.UTC), ImplementationDate: model.Date{Time: time.Date(2020, 7, 10, 0, 0, 0, 0, time.UTC)}, DueDate: model.Date{Time: time.Date(2020, 7, 12, 0, 0, 0, 0, time.UTC)}, TodoContent: "醤油購入", CompleteFlag: false},
+		},
+	}, nil
+}
+
 func (m MockTodoRepository) GetTodo(todoId int) (*model.Todo, error) {
 	return &model.Todo{
 		ID:                 1,
@@ -137,6 +146,32 @@ func TestDBHandler_GetMonthlyTodoList(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.TodoList{}, &model.TodoList{})
+}
+
+func TestDBHandler_GetExpiredTodoList(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:   MockAuthRepository{},
+		TodoRepo:   MockTodoRepository{},
+		TimeManage: MockTime{},
+	}
+
+	r := httptest.NewRequest("GET", "/todo-list/expired", nil)
+	w := httptest.NewRecorder()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.GetExpiredTodoList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.ExpiredTodoList{}, &model.ExpiredTodoList{})
 }
 
 func TestDBHandler_PostTodo(t *testing.T) {

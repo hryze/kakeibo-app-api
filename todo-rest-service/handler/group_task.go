@@ -22,20 +22,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type TimeManager interface {
-	Now() time.Time
-}
-
-type RealTime struct{}
-
-func (r *RealTime) Now() time.Time {
-	return time.Now()
-}
-
-func NewRealTime() *RealTime {
-	return &RealTime{}
-}
-
 type DeleteGroupTaskMsg struct {
 	Message string `json:"message"`
 }

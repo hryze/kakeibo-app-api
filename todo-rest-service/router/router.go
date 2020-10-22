@@ -38,6 +38,7 @@ func Run() error {
 	router.HandleFunc("/readyz", h.Readyz).Methods("GET")
 	router.HandleFunc("/todo-list/{date:[0-9]{4}-[0-9]{2}-[0-9]{2}}", h.GetDailyTodoList).Methods("GET")
 	router.HandleFunc("/todo-list/{year_month:[0-9]{4}-[0-9]{2}}", h.GetMonthlyTodoList).Methods("GET")
+	router.HandleFunc("/todo-list/expired", h.GetExpiredTodoList).Methods("GET")
 	router.HandleFunc("/todo-list", h.PostTodo).Methods("POST")
 	router.HandleFunc("/todo-list/{id:[0-9]+}", h.PutTodo).Methods("PUT")
 	router.HandleFunc("/todo-list/{id:[0-9]+}", h.DeleteTodo).Methods("DELETE")

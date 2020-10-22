@@ -175,6 +175,49 @@ func (r *TodoRepository) GetMonthlyDueTodoList(firstDay time.Time, lastDay time.
 	return dueTodoList, nil
 }
 
+func (r *TodoRepository) GetExpiredTodoList(dueDate time.Time, userID string) (*model.ExpiredTodoList, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            implementation_date,
+            due_date,
+            todo_content,
+            complete_flag
+        FROM
+            todo_list
+        WHERE
+            user_id = ?
+        AND
+            complete_flag = b'0'
+        AND
+            due_date <= ?
+        ORDER BY
+            due_date, updated_date`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, userID, dueDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var expiredTodoList model.ExpiredTodoList
+	for rows.Next() {
+		var expiredTodo model.Todo
+		if err := rows.StructScan(&expiredTodo); err != nil {
+			return nil, err
+		}
+
+		expiredTodoList.ExpiredTodoList = append(expiredTodoList.ExpiredTodoList, expiredTodo)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &expiredTodoList, nil
+}
+
 func (r *TodoRepository) GetTodo(todoId int) (*model.Todo, error) {
 	query := `
         SELECT
