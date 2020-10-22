@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+type GroupTasksUsersListReceiver struct {
+	GroupUsersList []string `json:"users_list"`
+}
+
 type GroupTasksListForEachUser struct {
 	GroupTasksUsersList []GroupTasksUser `json:"group_tasks_list_for_each_user"`
 }

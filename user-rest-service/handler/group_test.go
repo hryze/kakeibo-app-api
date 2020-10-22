@@ -79,14 +79,6 @@ func (t MockGroupRepository) GetUnapprovedUsersList(unapprovedGroupIDList []inte
 	}, nil
 }
 
-func (t MockGroupRepository) PostGroupAndApprovedUser(group *model.Group, userID string) (sql.Result, error) {
-	return MockSqlResult{}, nil
-}
-
-func (t MockGroupRepository) DeleteGroupAndApprovedUser(groupID int, userID string) error {
-	return nil
-}
-
 func (t MockGroupRepository) GetGroup(groupID int) (*model.Group, error) {
 	return &model.Group{
 		GroupID:   1,
@@ -95,6 +87,14 @@ func (t MockGroupRepository) GetGroup(groupID int) (*model.Group, error) {
 }
 
 func (t MockGroupRepository) PutGroup(group *model.Group, groupID int) error {
+	return nil
+}
+
+func (t MockGroupRepository) PostGroupAndApprovedUser(group *model.Group, userID string) (sql.Result, error) {
+	return MockSqlResult{}, nil
+}
+
+func (t MockGroupRepository) DeleteGroupAndApprovedUser(groupID int, userID string) error {
 	return nil
 }
 
@@ -144,6 +144,16 @@ func (t MockGroupRepository) DeleteGroupApprovedUser(groupID int, userID string)
 
 func (t MockGroupRepository) DeleteGroupUnapprovedUser(groupID int, userID string) error {
 	return nil
+}
+
+func (t MockGroupRepository) FindApprovedUsersList(groupID int, groupUsersList []string) (model.GroupTasksUsersListReceiver, error) {
+	return model.GroupTasksUsersListReceiver{
+		GroupUsersList: []string{
+			"userID4",
+			"userID5",
+			"userID6",
+		},
+	}, nil
 }
 
 func TestDBHandler_GetGroupList(t *testing.T) {
@@ -376,6 +386,28 @@ func TestDBHandler_VerifyGroupAffiliation(t *testing.T) {
 	})
 
 	h.VerifyGroupAffiliation(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	if diff := cmp.Diff(http.StatusOK, res.StatusCode); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
+}
+
+func TestDBHandler_VerifyGroupAffiliationOfUsersList(t *testing.T) {
+	h := DBHandler{
+		GroupRepo: MockGroupRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/2/users", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "2",
+	})
+
+	h.VerifyGroupAffiliationOfUsersList(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()

@@ -552,3 +552,30 @@ func (h *DBHandler) VerifyGroupAffiliation(w http.ResponseWriter, r *http.Reques
 
 	w.WriteHeader(http.StatusOK)
 }
+
+func (h *DBHandler) VerifyGroupAffiliationOfUsersList(w http.ResponseWriter, r *http.Request) {
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	var groupUsersList model.GroupTasksUsersListReceiver
+	if err := json.NewDecoder(r.Body).Decode(&groupUsersList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	dbGroupUsersList, err := h.GroupRepo.FindApprovedUsersList(groupID, groupUsersList.GroupUsersList)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if len(groupUsersList.GroupUsersList) != len(dbGroupUsersList.GroupUsersList) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}

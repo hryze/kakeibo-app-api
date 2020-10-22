@@ -23,6 +23,10 @@ type DBHandler struct {
 	TimeManage     TimeManager
 }
 
+type DeleteContentMsg struct {
+	Message string `json:"message"`
+}
+
 type HTTPError struct {
 	Status       int   `json:"status"`
 	ErrorMessage error `json:"error"`

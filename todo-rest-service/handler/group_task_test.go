@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -15,13 +17,41 @@ import (
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
 )
 
+var (
+	counter int64
+	mu      sync.Mutex
+)
+
 type MockGroupTasksRepository struct{}
 
 func (m MockGroupTasksRepository) GetGroupTasksUsersList(groupID int) ([]model.GroupTasksUser, error) {
+	if groupID == 1 {
+		return []model.GroupTasksUser{
+			{ID: 1, UserID: "userID1", GroupID: 1, TasksList: make([]model.GroupTask, 0)},
+			{ID: 2, UserID: "userID2", GroupID: 1, TasksList: make([]model.GroupTask, 0)},
+			{ID: 3, UserID: "userID3", GroupID: 1, TasksList: make([]model.GroupTask, 0)},
+		}, nil
+	}
+
+	if counter == 1 {
+		atomic.AddInt64(&counter, -1)
+
+		return []model.GroupTasksUser{
+			{ID: 1, UserID: "userID1", GroupID: 2, TasksList: make([]model.GroupTask, 0)},
+			{ID: 2, UserID: "userID2", GroupID: 2, TasksList: make([]model.GroupTask, 0)},
+			{ID: 3, UserID: "userID3", GroupID: 2, TasksList: make([]model.GroupTask, 0)},
+			{ID: 4, UserID: "userID4", GroupID: 2, TasksList: make([]model.GroupTask, 0)},
+			{ID: 5, UserID: "userID5", GroupID: 2, TasksList: make([]model.GroupTask, 0)},
+			{ID: 6, UserID: "userID6", GroupID: 2, TasksList: make([]model.GroupTask, 0)},
+		}, nil
+	}
+
+	atomic.AddInt64(&counter, 1)
+
 	return []model.GroupTasksUser{
-		{ID: 1, UserID: "userID1", GroupID: 1, TasksList: make([]model.GroupTask, 0)},
-		{ID: 2, UserID: "userID2", GroupID: 1, TasksList: make([]model.GroupTask, 0)},
-		{ID: 3, UserID: "userID3", GroupID: 1, TasksList: make([]model.GroupTask, 0)},
+		{ID: 1, UserID: "userID1", GroupID: 2, TasksList: make([]model.GroupTask, 0)},
+		{ID: 2, UserID: "userID2", GroupID: 2, TasksList: make([]model.GroupTask, 0)},
+		{ID: 3, UserID: "userID3", GroupID: 2, TasksList: make([]model.GroupTask, 0)},
 	}, nil
 }
 
@@ -57,12 +87,16 @@ func (m MockGroupTasksRepository) GetGroupTasksListAssignedToUser(groupID int) (
 	}, nil
 }
 
-func (m MockGroupTasksRepository) GetGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (*model.GroupTasksUser, error) {
-	return nil, sql.ErrNoRows
+func (m MockGroupTasksRepository) PostGroupTasksUsersList(groupTasksUsersList model.GroupTasksUsersListReceiver, groupID int) error {
+	return nil
 }
 
-func (m MockGroupTasksRepository) PostGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (sql.Result, error) {
-	return MockSqlResult{}, nil
+func (m MockGroupTasksRepository) GetGroupTasksIDListAssignedToUser(groupTasksUsersIdList []int, groupID int) ([]int, error) {
+	return []int{1, 2, 3}, nil
+}
+
+func (m MockGroupTasksRepository) DeleteGroupTasksUsersList(groupTasksUsersListReceiver model.GroupTasksUsersListReceiver, groupTasksIDList []int, groupID int) error {
+	return nil
 }
 
 func (m MockGroupTasksRepository) GetGroupTasksList(groupID int) ([]model.GroupTask, error) {
@@ -187,13 +221,45 @@ func TestDBHandler_GetGroupTasksListForEachUser(t *testing.T) {
 	testutil.AssertResponseBody(t, res, &model.GroupTasksListForEachUser{}, &model.GroupTasksListForEachUser{})
 }
 
-func TestDBHandler_PostGroupTasksUser(t *testing.T) {
+func TestDBHandler_PostGroupTasksUsersList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
 		GroupTasksRepo: MockGroupTasksRepository{},
 	}
 
-	r := httptest.NewRequest("POST", "/groups/1/tasks/users", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest("POST", "/groups/2/tasks/users", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "2",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	mu.Lock()
+	defer mu.Unlock()
+
+	h.PostGroupTasksUsersList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res, &model.GroupTasksListForEachUser{}, &model.GroupTasksListForEachUser{})
+}
+
+func TestDBHandler_DeleteGroupTasksUsersList(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:       MockAuthRepository{},
+		GroupTasksRepo: MockGroupTasksRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/groups/1/tasks/users", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
@@ -207,13 +273,13 @@ func TestDBHandler_PostGroupTasksUser(t *testing.T) {
 
 	r.AddCookie(cookie)
 
-	h.PostGroupTasksUser(w, r)
+	h.DeleteGroupTasksUsersList(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()
 
-	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, &model.GroupTasksUser{}, &model.GroupTasksUser{})
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }
 
 func TestDBHandler_GetGroupTasksList(t *testing.T) {

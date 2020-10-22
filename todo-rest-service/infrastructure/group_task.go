@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 )
@@ -90,12 +91,73 @@ func (r *GroupTasksRepository) GetGroupTasksListAssignedToUser(groupID int) ([]m
 	return groupTasksListAssignedToUser, nil
 }
 
-func (r *GroupTasksRepository) GetGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (*model.GroupTasksUser, error) {
+func (r *GroupTasksRepository) PostGroupTasksUsersList(groupTasksUsersList model.GroupTasksUsersListReceiver, groupID int) error {
 	query := `
-        SELECT
-            id,
-            user_id,
-            group_id
+        INSERT INTO group_tasks_users
+            (user_id, group_id)
+        VALUES`
+
+	var queryArgs []interface{}
+	for _, userID := range groupTasksUsersList.GroupUsersList {
+		query += "(?, ?),"
+		queryArgs = append(queryArgs, userID, groupID)
+	}
+
+	query = strings.TrimSuffix(query, ",")
+
+	_, err := r.MySQLHandler.conn.Exec(query, queryArgs...)
+
+	return err
+}
+
+func (r *GroupTasksRepository) GetGroupTasksIDListAssignedToUser(groupTasksUsersIdList []int, groupID int) ([]int, error) {
+	sliceQuery := make([]string, len(groupTasksUsersIdList))
+	for i := 0; i < len(groupTasksUsersIdList); i++ {
+		sliceQuery[i] = `
+            SELECT
+                id
+            FROM
+                group_tasks
+            WHERE
+                group_id = ?
+            AND
+                group_tasks_users_id = ?`
+	}
+
+	query := strings.Join(sliceQuery, " UNION ")
+
+	var queryArgs []interface{}
+	for _, groupTasksUsersId := range groupTasksUsersIdList {
+		queryArgs = append(queryArgs, groupID, groupTasksUsersId)
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, queryArgs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groupTasksIDList []int
+	for rows.Next() {
+		var groupTasksID int
+
+		if err := rows.Scan(&groupTasksID); err != nil {
+			return nil, err
+		}
+
+		groupTasksIDList = append(groupTasksIDList, groupTasksID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return groupTasksIDList, nil
+}
+
+func (r *GroupTasksRepository) DeleteGroupTasksUsersList(groupTasksUsersListReceiver model.GroupTasksUsersListReceiver, groupTasksIDList []int, groupID int) error {
+	deleteQuery := `
+        DELETE
         FROM
             group_tasks_users
         WHERE
@@ -103,23 +165,64 @@ func (r *GroupTasksRepository) GetGroupTasksUser(groupTasksUser model.GroupTasks
         AND
             group_id = ?`
 
-	if err := r.MySQLHandler.conn.QueryRowx(query, groupTasksUser.UserID, groupID).StructScan(&groupTasksUser); err != nil {
-		return nil, err
+	updateQuery := `
+        UPDATE
+            group_tasks
+        SET
+            base_date = ?,
+            cycle_type = ?,
+            cycle = ?
+        WHERE
+            id = ?`
+
+	var deleteQueryArgs []interface{}
+	for _, userID := range groupTasksUsersListReceiver.GroupUsersList {
+		deleteQueryArgs = append(deleteQueryArgs, userID, groupID)
 	}
 
-	return &groupTasksUser, nil
-}
+	var updateQueryArgs []interface{}
+	for _, taskID := range groupTasksIDList {
+		updateQueryArgs = append(updateQueryArgs, nil, nil, nil, taskID)
+	}
 
-func (r *GroupTasksRepository) PostGroupTasksUser(groupTasksUser model.GroupTasksUser, groupID int) (sql.Result, error) {
-	query := `
-        INSERT INTO group_tasks_users
-            (user_id, group_id)
-        VALUES
-            (?,?)`
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
 
-	result, err := r.MySQLHandler.conn.Exec(query, groupTasksUser.UserID, groupID)
+	transactions := func(tx *sql.Tx) error {
+		for i := 0; i < len(deleteQueryArgs); i = i + 2 {
+			queryArgs := deleteQueryArgs[i : i+2]
 
-	return result, err
+			if _, err := tx.Exec(deleteQuery, queryArgs...); err != nil {
+				return err
+			}
+		}
+
+		for i := 0; i < len(updateQueryArgs); i = i + 4 {
+			queryArgs := updateQueryArgs[i : i+4]
+
+			if _, err := tx.Exec(updateQuery, queryArgs...); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *GroupTasksRepository) GetGroupTasksList(groupID int) ([]model.GroupTask, error) {
