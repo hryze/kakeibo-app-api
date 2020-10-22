@@ -110,7 +110,7 @@ locals {
 
 locals {
   cluster_name    = format("%s-cluster", local.base_name)
-  cluster_version = "1.17"
+  cluster_version = "1.18"
 
   base_name = format("%s-%s", var.project, var.environment)
 }
