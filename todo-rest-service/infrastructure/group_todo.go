@@ -20,6 +20,7 @@ func (r *GroupTodoRepository) GetDailyImplementationGroupTodoList(date time.Time
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,
@@ -61,6 +62,7 @@ func (r *GroupTodoRepository) GetDailyDueGroupTodoList(date time.Time, groupID i
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,
@@ -102,6 +104,7 @@ func (r *GroupTodoRepository) GetMonthlyImplementationGroupTodoList(firstDay tim
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,
@@ -145,6 +148,7 @@ func (r *GroupTodoRepository) GetMonthlyDueGroupTodoList(firstDay time.Time, las
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,
@@ -188,6 +192,7 @@ func (r *GroupTodoRepository) GetExpiredGroupTodoList(dueDate time.Time, groupID
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,
@@ -232,6 +237,7 @@ func (r *GroupTodoRepository) GetGroupTodo(groupTodoId int) (*model.GroupTodo, e
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,

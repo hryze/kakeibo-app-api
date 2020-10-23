@@ -3,6 +3,7 @@
     {
       "id": 3,
       "posted_date": "2020-09-05T01:29:08Z",
+      "updated_date": "2020-09-05T01:29:08Z",
       "implementation_date": "2020/07/10(金)",
       "due_date": "2020/07/12(日)",
       "todo_content": "醤油購入",
@@ -14,6 +15,7 @@
     {
       "id": 2,
       "posted_date": "2020-09-05T01:29:08Z",
+      "updated_date": "2020-09-05T01:29:08Z",
       "implementation_date": "2020/07/09(木)",
       "due_date": "2020/07/10(金)",
       "todo_content": "コストコ鶏肉セール 5パック購入",
