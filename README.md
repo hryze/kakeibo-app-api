@@ -67,12 +67,14 @@
 | :--- | :--- | :--- |
 | **GET**<br>&emsp;/todo-list/{date} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 日別実施予定todo,<br>締切予定todo一覧取得 |
 | **GET**<br>&emsp;/todo-list/{year_month} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 月別実施予定todo,<br>締切予定todo一覧取得 |
+| **GET**<br>&emsp;/todo-list/expired | <pre>200 OK<br>401 Unauthorized<br>500 Internal Server Error</pre> | 期限切れtodo一覧取得 |
 | **POST**<br>&emsp;/todo-list | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | todo追加 |
 | **PUT**<br>&emsp;/todo-list/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | todo更新 |
 | **DELETE**<br>&emsp;/todo-list/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | todo削除 |
 | **GET**<br>&emsp;/todo-list/search | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | todo検索 |
 | **GET**<br>&emsp;/groups/{group_id}/todo-list/{date} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ日別実施予定todo,<br>グループ締切予定todo一覧取得 |
 | **GET**<br>&emsp;/groups/{group_id}/todo-list/{year_month} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ月別実施予定todo,<br>グループ締切予定todo一覧取得 |
+| **GET**<br>&emsp;/groups/{group_id}/todo-list/expired | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ期限切れtodo一覧取得 |
 | **POST**<br>&emsp;/groups/{group_id}/todo-list | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループtodo追加 |
 | **PUT**<br>&emsp;/groups/{group_id}/todo-list/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループtodo更新 |
 | **DELETE**<br>&emsp;/groups/{group_id}/todo-list/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループtodo削除 |
