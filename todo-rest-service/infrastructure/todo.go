@@ -206,7 +206,9 @@ func (r *TodoRepository) GetExpiredTodoList(dueDate time.Time, userID string) (*
 	}
 	defer rows.Close()
 
-	var expiredTodoList model.ExpiredTodoList
+	expiredTodoList := model.ExpiredTodoList{
+		ExpiredTodoList: make([]model.Todo, 0),
+	}
 	for rows.Next() {
 		var expiredTodo model.Todo
 		if err := rows.StructScan(&expiredTodo); err != nil {
