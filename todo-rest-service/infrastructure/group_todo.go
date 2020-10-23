@@ -183,6 +183,50 @@ func (r *GroupTodoRepository) GetMonthlyDueGroupTodoList(firstDay time.Time, las
 	return dueGroupTodoList, nil
 }
 
+func (r *GroupTodoRepository) GetExpiredGroupTodoList(dueDate time.Time, groupID int) (*model.ExpiredGroupTodoList, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            implementation_date,
+            due_date,
+            todo_content,
+            complete_flag,
+            user_id
+        FROM
+            group_todo_list
+        WHERE
+            group_id = ?
+        AND
+            complete_flag = b'0'
+        AND
+            due_date <= ?
+        ORDER BY
+            due_date, updated_date`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, dueDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var expiredGroupTodoList model.ExpiredGroupTodoList
+	for rows.Next() {
+		var expiredGroupTodo model.GroupTodo
+		if err := rows.StructScan(&expiredGroupTodo); err != nil {
+			return nil, err
+		}
+
+		expiredGroupTodoList.ExpiredGroupTodoList = append(expiredGroupTodoList.ExpiredGroupTodoList, expiredGroupTodo)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &expiredGroupTodoList, nil
+}
+
 func (r *GroupTodoRepository) GetGroupTodo(groupTodoId int) (*model.GroupTodo, error) {
 	query := `
         SELECT

@@ -10,6 +10,10 @@ type GroupTodoList struct {
 	DueGroupTodoList            []GroupTodo `json:"due_todo_list"`
 }
 
+type ExpiredGroupTodoList struct {
+	ExpiredGroupTodoList []GroupTodo `json:"expired_group_todo_list"`
+}
+
 type SearchGroupTodoList struct {
 	SearchGroupTodoList []GroupTodo `json:"search_todo_list"`
 }

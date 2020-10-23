@@ -34,6 +34,7 @@ type GroupTodoRepository interface {
 	GetDailyDueGroupTodoList(date time.Time, groupID int) ([]model.GroupTodo, error)
 	GetMonthlyImplementationGroupTodoList(firstDay time.Time, lastDay time.Time, groupID int) ([]model.GroupTodo, error)
 	GetMonthlyDueGroupTodoList(firstDay time.Time, lastDay time.Time, groupID int) ([]model.GroupTodo, error)
+	GetExpiredGroupTodoList(dueDate time.Time, groupID int) (*model.ExpiredGroupTodoList, error)
 	PostGroupTodo(groupTodo *model.GroupTodo, userID string, groupID int) (sql.Result, error)
 	GetGroupTodo(groupTodoId int) (*model.GroupTodo, error)
 	PutGroupTodo(groupTodo *model.GroupTodo, groupTodoID int) error

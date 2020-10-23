@@ -1,0 +1,22 @@
+{
+  "expired_group_todo_list": [
+    {
+      "id": 1,
+      "posted_date": "2020-09-05T01:29:08Z",
+      "implementation_date": "2020/07/05(日)",
+      "due_date": "2020/07/05(日)",
+      "todo_content": "今月の予算を立てる",
+      "complete_flag": false,
+      "user_id": "userID1"
+    },
+    {
+      "id": 3,
+      "posted_date": "2020-09-05T01:29:08Z",
+      "implementation_date": "2020/07/10(金)",
+      "due_date": "2020/07/12(日)",
+      "todo_content": "醤油購入",
+      "complete_flag": false,
+      "user_id": "userID2"
+    }
+  ]
+}
