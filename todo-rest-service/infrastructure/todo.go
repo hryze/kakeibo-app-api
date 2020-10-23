@@ -20,6 +20,7 @@ func (r *TodoRepository) GetDailyImplementationTodoList(date time.Time, userID s
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,
@@ -59,6 +60,7 @@ func (r *TodoRepository) GetDailyDueTodoList(date time.Time, userID string) ([]m
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,
@@ -98,6 +100,7 @@ func (r *TodoRepository) GetMonthlyImplementationTodoList(firstDay time.Time, la
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,
@@ -139,6 +142,7 @@ func (r *TodoRepository) GetMonthlyDueTodoList(firstDay time.Time, lastDay time.
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,
@@ -180,6 +184,7 @@ func (r *TodoRepository) GetExpiredTodoList(dueDate time.Time, userID string) (*
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,
@@ -223,6 +228,7 @@ func (r *TodoRepository) GetTodo(todoId int) (*model.Todo, error) {
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,

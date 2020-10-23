@@ -202,6 +202,7 @@ func generateTodoSqlQuery(todoSearchQuery *TodoSearchQuery) (string, error) {
         SELECT
             id,
             posted_date,
+            updated_date,
             implementation_date,
             due_date,
             todo_content,

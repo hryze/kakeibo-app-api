@@ -24,6 +24,7 @@ type SearchTodoList struct {
 type Todo struct {
 	ID                 int       `json:"id"                  db:"id"`
 	PostedDate         time.Time `json:"posted_date"         db:"posted_date"`
+	UpdatedDate        time.Time `json:"updated_date"        db:"updated_date"`
 	ImplementationDate Date      `json:"implementation_date" db:"implementation_date" validate:"required,date"`
 	DueDate            Date      `json:"due_date"            db:"due_date"            validate:"required,date"`
 	TodoContent        string    `json:"todo_content"        db:"todo_content"        validate:"required,max=100,blank"`
