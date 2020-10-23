@@ -215,7 +215,9 @@ func (r *GroupTodoRepository) GetExpiredGroupTodoList(dueDate time.Time, groupID
 	}
 	defer rows.Close()
 
-	var expiredGroupTodoList model.ExpiredGroupTodoList
+	expiredGroupTodoList := model.ExpiredGroupTodoList{
+		ExpiredGroupTodoList: make([]model.GroupTodo, 0),
+	}
 	for rows.Next() {
 		var expiredGroupTodo model.GroupTodo
 		if err := rows.StructScan(&expiredGroupTodo); err != nil {
