@@ -20,6 +20,7 @@ func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string, first
         SELECT
             transactions.id id,
             transactions.transaction_type transaction_type,
+            transactions.posted_date posted_date,
             transactions.updated_date updated_date,
             transactions.transaction_date transaction_date,
             transactions.shop shop,
@@ -79,6 +80,7 @@ func (r *TransactionsRepository) Get10LatestTransactionsList(userID string) (*mo
         SELECT
             transactions.id id,
             transactions.transaction_type transaction_type,
+            transactions.posted_date posted_date,
             transactions.updated_date updated_date,
             transactions.transaction_date transaction_date,
             transactions.shop shop,
@@ -138,6 +140,7 @@ func (r *TransactionsRepository) GetTransaction(transactionSender *model.Transac
         SELECT
             transactions.id id,
             transactions.transaction_type transaction_type,
+            transactions.posted_date posted_date,
             transactions.updated_date updated_date,
             transactions.transaction_date transaction_date,
             transactions.shop shop,

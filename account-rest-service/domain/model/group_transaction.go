@@ -16,7 +16,8 @@ type GroupTransactionsList struct {
 type GroupTransactionSender struct {
 	ID                 int        `json:"id"                   db:"id"`
 	TransactionType    string     `json:"transaction_type"     db:"transaction_type"`
-	UpdatedDate        DateTime   `json:"updated_date"         db:"updated_date"`
+	PostedDate         time.Time  `json:"posted_date"          db:"posted_date"`
+	UpdatedDate        time.Time  `json:"updated_date"         db:"updated_date"`
 	TransactionDate    SenderDate `json:"transaction_date"     db:"transaction_date"`
 	Shop               NullString `json:"shop"                 db:"shop"`
 	Memo               NullString `json:"memo"                 db:"memo"`

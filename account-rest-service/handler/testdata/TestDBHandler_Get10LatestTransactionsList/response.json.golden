@@ -3,6 +3,7 @@
     {
       "id": 1,
       "transaction_type": "expense",
+      "posted_date": "2020-07-10T16:00:00Z",
       "updated_date": "2020-07-10T16:00:00Z",
       "transaction_date": "2020/07/01(水)",
       "shop": "コストコ",
@@ -15,6 +16,7 @@
     {
       "id": 2,
       "transaction_type": "expense",
+      "posted_date": "2020-07-09T16:00:00Z",
       "updated_date": "2020-07-09T16:00:00Z",
       "transaction_date": "2020/07/01(水)",
       "shop": "ニトリ",
@@ -27,6 +29,7 @@
     {
       "id": 3,
       "transaction_type": "expense",
+      "posted_date": "2020-07-08T16:00:00Z",
       "updated_date": "2020-07-08T16:00:00Z",
       "transaction_date": "2020/07/01(水)",
       "shop": null,
@@ -39,6 +42,7 @@
     {
       "id": 4,
       "transaction_type": "expense",
+      "posted_date": "2020-07-07T16:00:00Z",
       "updated_date": "2020-07-07T16:00:00Z",
       "transaction_date": "2020/07/01(水)",
       "shop": null,
@@ -51,6 +55,7 @@
     {
       "id": 5,
       "transaction_type": "expense",
+      "posted_date": "2020-07-06T16:00:00Z",
       "updated_date": "2020-07-06T16:00:00Z",
       "transaction_date": "2020/07/01(水)",
       "shop": null,
@@ -63,6 +68,7 @@
     {
       "id": 6,
       "transaction_type": "expense",
+      "posted_date": "2020-07-05T16:00:00Z",
       "updated_date": "2020-07-05T16:00:00Z",
       "transaction_date": "2020/07/01(水)",
       "shop": null,
@@ -75,6 +81,7 @@
     {
       "id": 7,
       "transaction_type": "expense",
+      "posted_date": "2020-07-04T16:00:00Z",
       "updated_date": "2020-07-04T16:00:00Z",
       "transaction_date": "2020/07/01(水)",
       "shop": null,
@@ -87,6 +94,7 @@
     {
       "id": 8,
       "transaction_type": "expense",
+      "posted_date": "2020-07-03T16:00:00Z",
       "updated_date": "2020-07-03T16:00:00Z",
       "transaction_date": "2020/07/01(水)",
       "shop": null,
@@ -99,6 +107,7 @@
     {
       "id": 9,
       "transaction_type": "expense",
+      "posted_date": "2020-07-02T16:00:00Z",
       "updated_date": "2020-07-02T16:00:00Z",
       "transaction_date": "2020/07/01(水)",
       "shop": "コンビニ",
@@ -111,6 +120,7 @@
     {
       "id": 10,
       "transaction_type": "expense",
+      "posted_date": "2020-07-01T16:00:00Z",
       "updated_date": "2020-07-01T16:00:00Z",
       "transaction_date": "2020/07/01(水)",
       "shop": null,

@@ -21,7 +21,8 @@ func (m MockGroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID
 		{
 			ID:                 3,
 			TransactionType:    "expense",
-			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC)},
+			PostedDate:         time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC),
 			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 15, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
@@ -34,7 +35,8 @@ func (m MockGroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID
 		{
 			ID:                 2,
 			TransactionType:    "income",
-			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC)},
+			PostedDate:         time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC),
 			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 10, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "賞与", Valid: true}},
@@ -47,7 +49,8 @@ func (m MockGroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID
 		{
 			ID:                 1,
 			TransactionType:    "expense",
-			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+			PostedDate:         time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
 			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
@@ -66,7 +69,8 @@ func (m MockGroupTransactionsRepository) Get10LatestGroupTransactionsList(groupI
 			{
 				ID:                 1,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "セールで牛肉購入", Valid: true}},
@@ -79,7 +83,8 @@ func (m MockGroupTransactionsRepository) Get10LatestGroupTransactionsList(groupI
 			{
 				ID:                 2,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 9, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 9, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 9, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
@@ -92,7 +97,8 @@ func (m MockGroupTransactionsRepository) Get10LatestGroupTransactionsList(groupI
 			{
 				ID:                 3,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 8, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 8, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 8, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
@@ -105,7 +111,8 @@ func (m MockGroupTransactionsRepository) Get10LatestGroupTransactionsList(groupI
 			{
 				ID:                 4,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 7, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 7, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 7, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "電車定期代", Valid: true}},
@@ -118,7 +125,8 @@ func (m MockGroupTransactionsRepository) Get10LatestGroupTransactionsList(groupI
 			{
 				ID:                 5,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 6, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 6, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 6, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
@@ -131,7 +139,8 @@ func (m MockGroupTransactionsRepository) Get10LatestGroupTransactionsList(groupI
 			{
 				ID:                 6,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 5, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 5, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 5, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
@@ -144,7 +153,8 @@ func (m MockGroupTransactionsRepository) Get10LatestGroupTransactionsList(groupI
 			{
 				ID:                 7,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 4, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 4, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 4, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
@@ -157,7 +167,8 @@ func (m MockGroupTransactionsRepository) Get10LatestGroupTransactionsList(groupI
 			{
 				ID:                 8,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 3, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 3, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 3, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "みんなのGo言語", Valid: true}},
@@ -170,7 +181,8 @@ func (m MockGroupTransactionsRepository) Get10LatestGroupTransactionsList(groupI
 			{
 				ID:                 9,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 2, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 2, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 2, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "コンビニ", Valid: true}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
@@ -183,7 +195,8 @@ func (m MockGroupTransactionsRepository) Get10LatestGroupTransactionsList(groupI
 			{
 				ID:                 10,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "歯磨き粉3つ購入", Valid: true}},
@@ -201,7 +214,8 @@ func (m MockGroupTransactionsRepository) GetGroupTransaction(groupTransactionID 
 	return &model.GroupTransactionSender{
 		ID:                 1,
 		TransactionType:    "expense",
-		UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+		PostedDate:         time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
+		UpdatedDate:        time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
 		TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 		Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
 		Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
@@ -230,7 +244,8 @@ func (m MockGroupTransactionsRepository) SearchGroupTransactionsList(query strin
 		{
 			ID:                 1,
 			TransactionType:    "expense",
-			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+			PostedDate:         time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
 			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
@@ -243,7 +258,8 @@ func (m MockGroupTransactionsRepository) SearchGroupTransactionsList(query strin
 		{
 			ID:                 3,
 			TransactionType:    "expense",
-			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC)},
+			PostedDate:         time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC),
 			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 15, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},

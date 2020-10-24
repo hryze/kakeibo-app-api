@@ -22,7 +22,8 @@ func (t MockTransactionsRepository) GetMonthlyTransactionsList(userID string, fi
 		{
 			ID:                 3,
 			TransactionType:    "expense",
-			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC)},
+			PostedDate:         time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC),
 			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 15, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
@@ -34,7 +35,8 @@ func (t MockTransactionsRepository) GetMonthlyTransactionsList(userID string, fi
 		{
 			ID:                 2,
 			TransactionType:    "income",
-			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC)},
+			PostedDate:         time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC),
 			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 10, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "賞与", Valid: true}},
@@ -46,7 +48,8 @@ func (t MockTransactionsRepository) GetMonthlyTransactionsList(userID string, fi
 		{
 			ID:                 1,
 			TransactionType:    "expense",
-			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+			PostedDate:         time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
 			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
@@ -64,7 +67,8 @@ func (t MockTransactionsRepository) Get10LatestTransactionsList(userID string) (
 			{
 				ID:                 1,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "セールで牛肉購入", Valid: true}},
@@ -76,7 +80,8 @@ func (t MockTransactionsRepository) Get10LatestTransactionsList(userID string) (
 			{
 				ID:                 2,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 9, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 9, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 9, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
@@ -88,7 +93,8 @@ func (t MockTransactionsRepository) Get10LatestTransactionsList(userID string) (
 			{
 				ID:                 3,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 8, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 8, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 8, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
@@ -100,7 +106,8 @@ func (t MockTransactionsRepository) Get10LatestTransactionsList(userID string) (
 			{
 				ID:                 4,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 7, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 7, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 7, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "電車定期代", Valid: true}},
@@ -112,7 +119,8 @@ func (t MockTransactionsRepository) Get10LatestTransactionsList(userID string) (
 			{
 				ID:                 5,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 6, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 6, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 6, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
@@ -124,7 +132,8 @@ func (t MockTransactionsRepository) Get10LatestTransactionsList(userID string) (
 			{
 				ID:                 6,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 5, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 5, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 5, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
@@ -136,7 +145,8 @@ func (t MockTransactionsRepository) Get10LatestTransactionsList(userID string) (
 			{
 				ID:                 7,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 4, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 4, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 4, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
@@ -148,7 +158,8 @@ func (t MockTransactionsRepository) Get10LatestTransactionsList(userID string) (
 			{
 				ID:                 8,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 3, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 3, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 3, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "みんなのGo言語", Valid: true}},
@@ -160,7 +171,8 @@ func (t MockTransactionsRepository) Get10LatestTransactionsList(userID string) (
 			{
 				ID:                 9,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 2, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 2, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 2, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "コンビニ", Valid: true}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
@@ -172,7 +184,8 @@ func (t MockTransactionsRepository) Get10LatestTransactionsList(userID string) (
 			{
 				ID:                 10,
 				TransactionType:    "expense",
-				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+				PostedDate:         time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
 				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "歯磨き粉3つ購入", Valid: true}},
@@ -193,7 +206,8 @@ func (t MockTransactionsRepository) GetTransaction(transactionSender *model.Tran
 	return &model.TransactionSender{
 		ID:                 1,
 		TransactionType:    "expense",
-		UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+		PostedDate:         time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
+		UpdatedDate:        time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
 		TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 		Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
 		Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
@@ -217,7 +231,8 @@ func (t MockTransactionsRepository) SearchTransactionsList(query string) ([]mode
 		{
 			ID:                 1,
 			TransactionType:    "expense",
-			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+			PostedDate:         time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
 			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
@@ -229,7 +244,8 @@ func (t MockTransactionsRepository) SearchTransactionsList(query string) ([]mode
 		{
 			ID:                 3,
 			TransactionType:    "expense",
-			UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC)},
+			PostedDate:         time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC),
 			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 15, 0, 0, 0, 0, time.UTC)},
 			Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
 			Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},

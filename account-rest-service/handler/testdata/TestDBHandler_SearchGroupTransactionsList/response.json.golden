@@ -3,6 +3,7 @@
     {
       "id": 1,
       "transaction_type": "expense",
+      "posted_date": "2020-07-01T16:00:00Z",
       "updated_date": "2020-07-01T16:00:00Z",
       "transaction_date": "2020/07/01(水)",
       "shop": "ニトリ",
@@ -16,6 +17,7 @@
     {
       "id": 3,
       "transaction_type": "expense",
+      "posted_date": "2020-07-15T16:00:00Z",
       "updated_date": "2020-07-15T16:00:00Z",
       "transaction_date": "2020/07/15(水)",
       "shop": null,

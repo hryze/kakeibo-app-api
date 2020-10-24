@@ -20,6 +20,7 @@ func (r *GroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID in
         SELECT
             group_transactions.id id,
             group_transactions.transaction_type transaction_type,
+            group_transactions.posted_date posted_date,
             group_transactions.updated_date updated_date,
             group_transactions.transaction_date transaction_date,
             group_transactions.shop shop,
@@ -80,6 +81,7 @@ func (r *GroupTransactionsRepository) Get10LatestGroupTransactionsList(groupID i
         SELECT
             group_transactions.id id,
             group_transactions.transaction_type transaction_type,
+            group_transactions.posted_date posted_date,
             group_transactions.updated_date updated_date,
             group_transactions.transaction_date transaction_date,
             group_transactions.shop shop,
@@ -140,6 +142,7 @@ func (r *GroupTransactionsRepository) GetGroupTransaction(groupTransactionID int
         SELECT
             group_transactions.id id,
             group_transactions.transaction_type transaction_type,
+            group_transactions.posted_date posted_date,
             group_transactions.updated_date updated_date,
             group_transactions.transaction_date transaction_date,
             group_transactions.shop shop,
