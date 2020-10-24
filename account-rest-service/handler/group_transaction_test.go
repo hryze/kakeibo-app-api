@@ -60,6 +60,143 @@ func (m MockGroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID
 	}, nil
 }
 
+func (m MockGroupTransactionsRepository) Get10LatestGroupTransactionsList(groupID int) (*model.GroupTransactionsList, error) {
+	return &model.GroupTransactionsList{
+		GroupTransactionsList: []model.GroupTransactionSender{
+			{
+				ID:                 1,
+				TransactionType:    "expense",
+				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 10, 16, 0, 0, 0, time.UTC)},
+				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+				Shop:               model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "セールで牛肉購入", Valid: true}},
+				Amount:             4500,
+				UserID:             "userID1",
+				BigCategoryName:    "食費",
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "食料品", Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			},
+			{
+				ID:                 2,
+				TransactionType:    "expense",
+				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 9, 16, 0, 0, 0, time.UTC)},
+				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+				Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
+				Amount:             15000,
+				UserID:             "userID1",
+				BigCategoryName:    "日用品",
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "家具", Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			},
+			{
+				ID:                 3,
+				TransactionType:    "expense",
+				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 8, 16, 0, 0, 0, time.UTC)},
+				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				Amount:             1300,
+				UserID:             "userID2",
+				BigCategoryName:    "食費",
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+			},
+			{
+				ID:                 4,
+				TransactionType:    "expense",
+				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 7, 16, 0, 0, 0, time.UTC)},
+				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "電車定期代", Valid: true}},
+				Amount:             12000,
+				UserID:             "userID2",
+				BigCategoryName:    "交通費",
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "電車", Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			},
+			{
+				ID:                 5,
+				TransactionType:    "expense",
+				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 6, 16, 0, 0, 0, time.UTC)},
+				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				Amount:             65000,
+				UserID:             "userID2",
+				BigCategoryName:    "住宅",
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "家賃", Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			},
+			{
+				ID:                 6,
+				TransactionType:    "expense",
+				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 5, 16, 0, 0, 0, time.UTC)},
+				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				Amount:             500,
+				UserID:             "userID3",
+				BigCategoryName:    "食費",
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "カフェ", Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			},
+			{
+				ID:                 7,
+				TransactionType:    "expense",
+				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 4, 16, 0, 0, 0, time.UTC)},
+				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				Amount:             4800,
+				UserID:             "userID3",
+				BigCategoryName:    "健康・医療",
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "フィットネス", Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			},
+			{
+				ID:                 8,
+				TransactionType:    "expense",
+				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 3, 16, 0, 0, 0, time.UTC)},
+				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "みんなのGo言語", Valid: true}},
+				Amount:             2500,
+				UserID:             "userID3",
+				BigCategoryName:    "教養・教育",
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "参考書", Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			},
+			{
+				ID:                 9,
+				TransactionType:    "expense",
+				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 2, 16, 0, 0, 0, time.UTC)},
+				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+				Shop:               model.NullString{NullString: sql.NullString{String: "コンビニ", Valid: true}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				Amount:             120,
+				UserID:             "userID1",
+				BigCategoryName:    "食費",
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "パン", Valid: true}},
+			},
+			{
+				ID:                 10,
+				TransactionType:    "expense",
+				UpdatedDate:        model.DateTime{Time: time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC)},
+				TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+				Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "歯磨き粉3つ購入", Valid: true}},
+				Amount:             300,
+				UserID:             "userID1",
+				BigCategoryName:    "日用品",
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "歯磨き粉", Valid: true}},
+			},
+		},
+	}, nil
+}
+
 func (m MockGroupTransactionsRepository) GetGroupTransaction(groupTransactionID int) (*model.GroupTransactionSender, error) {
 	return &model.GroupTransactionSender{
 		ID:                 1,
@@ -176,6 +313,35 @@ func TestDBHandler_GetMonthlyGroupTransactionsList(t *testing.T) {
 	r.AddCookie(cookie)
 
 	h.GetMonthlyGroupTransactionsList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.GroupTransactionsList{}, &model.GroupTransactionsList{})
+}
+
+func TestDBHandler_Get10LatestGroupTransactionsList(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:              MockAuthRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/1/transactions/latest", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.Get10LatestGroupTransactionsList(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()

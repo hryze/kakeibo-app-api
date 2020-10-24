@@ -75,6 +75,66 @@ func (r *GroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID in
 	return groupTransactionsList, nil
 }
 
+func (r *GroupTransactionsRepository) Get10LatestGroupTransactionsList(groupID int) (*model.GroupTransactionsList, error) {
+	query := `
+        SELECT
+            group_transactions.id id,
+            group_transactions.transaction_type transaction_type,
+            group_transactions.updated_date updated_date,
+            group_transactions.transaction_date transaction_date,
+            group_transactions.shop shop,
+            group_transactions.memo memo,
+            group_transactions.amount amount,
+            group_transactions.user_id user_id,
+            big_categories.category_name big_category_name,
+            medium_categories.category_name medium_category_name,
+            group_custom_categories.category_name custom_category_name
+        FROM
+            group_transactions
+        LEFT JOIN
+            big_categories
+        ON
+            group_transactions.big_category_id = big_categories.id
+        LEFT JOIN
+            medium_categories
+        ON
+            group_transactions.medium_category_id = medium_categories.id
+        LEFT JOIN
+            group_custom_categories
+        ON
+            group_transactions.custom_category_id = group_custom_categories.id
+        WHERE
+            group_transactions.group_id = ?
+        ORDER BY
+            group_transactions.updated_date DESC
+        LIMIT
+            10`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	groupTransactionsList := model.GroupTransactionsList{
+		GroupTransactionsList: make([]model.GroupTransactionSender, 0),
+	}
+	for rows.Next() {
+		var groupTransactionSender model.GroupTransactionSender
+		if err := rows.StructScan(&groupTransactionSender); err != nil {
+			return nil, err
+		}
+
+		groupTransactionsList.GroupTransactionsList = append(groupTransactionsList.GroupTransactionsList, groupTransactionSender)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &groupTransactionsList, nil
+}
+
 func (r *GroupTransactionsRepository) GetGroupTransaction(groupTransactionID int) (*model.GroupTransactionSender, error) {
 	query := `
         SELECT
