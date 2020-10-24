@@ -24,20 +24,8 @@ type NoContentMsg struct {
 	Message string `json:"message"`
 }
 
-type DeleteContentMsg struct {
-	Message string `json:"message"`
-}
-
-type GroupUserConflictErrorMsg struct {
-	Message string `json:"message"`
-}
-
 type UserIDValidationErrorMsg struct {
 	Message string `json:"message"`
-}
-
-func (e *GroupUserConflictErrorMsg) Error() string {
-	return e.Message
 }
 
 func (e *UserIDValidationErrorMsg) Error() string {
@@ -92,7 +80,7 @@ func postInitGroupStandardBudgets(groupID int) error {
 func checkForUniqueGroupUser(h *DBHandler, groupID int, userID string) error {
 	if err := h.GroupRepo.FindApprovedUser(groupID, userID); err != sql.ErrNoRows {
 		if err == nil {
-			return &GroupUserConflictErrorMsg{"こちらのユーザーは既にグループに参加しています。"}
+			return &ConflictErrorMsg{"こちらのユーザーは既にグループに参加しています。"}
 		}
 
 		return err
@@ -100,7 +88,7 @@ func checkForUniqueGroupUser(h *DBHandler, groupID int, userID string) error {
 
 	if err := h.GroupRepo.FindUnapprovedUser(groupID, userID); err != sql.ErrNoRows {
 		if err == nil {
-			return &GroupUserConflictErrorMsg{"こちらのユーザーは既にグループに招待しています。"}
+			return &ConflictErrorMsg{"こちらのユーザーは既にグループに招待しています。"}
 		}
 
 		return err
@@ -369,7 +357,7 @@ func (h *DBHandler) PostGroupUnapprovedUser(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err := checkForUniqueGroupUser(h, groupID, groupUnapprovedUser.UserID); err != nil {
-		groupUserConflictErrorMsg, ok := err.(*GroupUserConflictErrorMsg)
+		groupUserConflictErrorMsg, ok := err.(*ConflictErrorMsg)
 		if !ok {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return

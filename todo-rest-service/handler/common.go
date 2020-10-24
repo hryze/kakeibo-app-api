@@ -46,6 +46,10 @@ type AuthenticationErrorMsg struct {
 	Message string `json:"message"`
 }
 
+type ConflictErrorMsg struct {
+	Message string `json:"message"`
+}
+
 type InternalServerErrorMsg struct {
 	Message string `json:"message"`
 }
@@ -87,6 +91,10 @@ func (e *BadRequestErrorMsg) Error() string {
 }
 
 func (e *AuthenticationErrorMsg) Error() string {
+	return e.Message
+}
+
+func (e *ConflictErrorMsg) Error() string {
 	return e.Message
 }
 

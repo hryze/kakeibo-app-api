@@ -281,7 +281,7 @@ func TestDBHandler_DeleteCustomBudgets(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &DeleteCustomBudgetsMsg{}, &DeleteCustomBudgetsMsg{})
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }
 
 func TestDBHandler_GetYearlyBudgets(t *testing.T) {

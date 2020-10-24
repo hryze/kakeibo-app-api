@@ -15,23 +15,11 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
-type DeleteGroupCustomCategoryMsg struct {
-	Message string `json:"message"`
-}
-
 type GroupCustomCategoryValidationErrorMsg struct {
 	Message string `json:"message"`
 }
 
-type GroupCustomCategoryConflictErrorMsg struct {
-	Message string `json:"message"`
-}
-
 func (e *GroupCustomCategoryValidationErrorMsg) Error() string {
-	return e.Message
-}
-
-func (e *GroupCustomCategoryConflictErrorMsg) Error() string {
 	return e.Message
 }
 
@@ -185,7 +173,7 @@ func (h *DBHandler) PostGroupCustomCategory(w http.ResponseWriter, r *http.Reque
 
 	if err := h.GroupCategoriesRepo.FindGroupCustomCategory(&groupCustomCategory, groupID); err != sql.ErrNoRows {
 		if err == nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &GroupCustomCategoryConflictErrorMsg{"中カテゴリーの登録に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
+			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &ConflictErrorMsg{"中カテゴリーの登録に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
 		}
 
@@ -263,7 +251,7 @@ func (h *DBHandler) PutGroupCustomCategory(w http.ResponseWriter, r *http.Reques
 
 	if err := h.GroupCategoriesRepo.FindGroupCustomCategory(&groupCustomCategory, groupID); err != sql.ErrNoRows {
 		if err == nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &CustomCategoryConflictErrorMsg{"中カテゴリーの更新に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
+			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &ConflictErrorMsg{"中カテゴリーの更新に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
 		}
 
@@ -331,7 +319,7 @@ func (h *DBHandler) DeleteGroupCustomCategory(w http.ResponseWriter, r *http.Req
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&DeleteGroupCustomCategoryMsg{"カスタムカテゴリーを削除しました。"}); err != nil {
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"カスタムカテゴリーを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

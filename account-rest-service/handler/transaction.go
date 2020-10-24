@@ -47,10 +47,6 @@ type NoSearchContentMsg struct {
 	Message string `json:"message"`
 }
 
-type DeleteTransactionMsg struct {
-	Message string `json:"message"`
-}
-
 type TransactionValidationErrorMsg struct {
 	Message []string `json:"message"`
 }
@@ -539,7 +535,7 @@ func (h *DBHandler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&DeleteTransactionMsg{"トランザクションを削除しました。"}); err != nil {
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"トランザクションを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

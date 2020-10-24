@@ -34,10 +34,6 @@ type GroupTransactionsSearchQuery struct {
 	UsersID         []string
 }
 
-type DeleteContentMsg struct {
-	Message string `json:"message"`
-}
-
 type GroupTransactionProcessLockErrorMsg struct {
 	Message string `json:"message"`
 }

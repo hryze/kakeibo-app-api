@@ -25,10 +25,6 @@ type Users interface {
 	ShowUser() (string, error)
 }
 
-type LogoutMsg struct {
-	Message string `json:"message"`
-}
-
 type UserValidationErrorMsg struct {
 	ID       string `json:"id,omitempty"`
 	Name     string `json:"name,omitempty"`
@@ -300,7 +296,7 @@ func (h *DBHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&LogoutMsg{"ログアウトしました"}); err != nil {
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"ログアウトしました"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

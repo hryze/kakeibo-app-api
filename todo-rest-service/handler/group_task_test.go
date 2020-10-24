@@ -391,5 +391,5 @@ func TestDBHandler_DeleteGroupTask(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &DeleteGroupTaskMsg{}, &DeleteGroupTaskMsg{})
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }

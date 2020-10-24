@@ -22,26 +22,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type DeleteGroupTaskMsg struct {
-	Message string `json:"message"`
-}
-
-type GroupTasksUserConflictErrorMsg struct {
-	Message string `json:"message"`
-}
-
-type GroupTaskNameBadRequestErrorMsg struct {
-	Message string `json:"message"`
-}
-
-func (e *GroupTasksUserConflictErrorMsg) Error() string {
-	return e.Message
-}
-
-func (e *GroupTaskNameBadRequestErrorMsg) Error() string {
-	return e.Message
-}
-
 func verifyGroupAffiliationOfUsersList(groupID int, groupUsersList model.GroupTasksUsersListReceiver) error {
 	userHost := os.Getenv("USER_HOST")
 
@@ -100,15 +80,15 @@ func verifyGroupAffiliationOfUsersList(groupID int, groupUsersList model.GroupTa
 
 func validateGroupTaskName(groupTask *model.GroupTask) error {
 	if strings.HasPrefix(groupTask.TaskName, " ") || strings.HasPrefix(groupTask.TaskName, "　") {
-		return &GroupTaskNameBadRequestErrorMsg{"タスク名の文字列先頭に空白がないか確認してください。"}
+		return &BadRequestErrorMsg{"タスク名の文字列先頭に空白がないか確認してください。"}
 	}
 
 	if strings.HasSuffix(groupTask.TaskName, " ") || strings.HasSuffix(groupTask.TaskName, "　") {
-		return &GroupTaskNameBadRequestErrorMsg{"タスク名の文字列末尾に空白がないか確認してください。"}
+		return &BadRequestErrorMsg{"タスク名の文字列末尾に空白がないか確認してください。"}
 	}
 
 	if utf8.RuneCountInString(groupTask.TaskName) == 0 || utf8.RuneCountInString(groupTask.TaskName) > 20 {
-		return &GroupTaskNameBadRequestErrorMsg{"タスク名は1文字以上20文字以内で入力してください。"}
+		return &BadRequestErrorMsg{"タスク名は1文字以上20文字以内で入力してください。"}
 	}
 
 	return nil
@@ -296,7 +276,7 @@ func (h *DBHandler) PostGroupTasksUsersList(w http.ResponseWriter, r *http.Reque
 	for _, userID := range groupTasksUsersListReceiver.GroupUsersList {
 		for _, dbUser := range dbGroupTasksUsersList {
 			if userID == dbUser.UserID {
-				errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &GroupTasksUserConflictErrorMsg{"選択したユーザーは、既にタスクメンバーに追加されています。"}))
+				errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &ConflictErrorMsg{"選択したユーザーは、既にタスクメンバーに追加されています。"}))
 				return
 			}
 		}
@@ -662,7 +642,7 @@ func (h *DBHandler) DeleteGroupTask(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(DeleteGroupTaskMsg{"タスクを削除しました。"}); err != nil {
+	if err := json.NewEncoder(w).Encode(DeleteContentMsg{"タスクを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

@@ -13,10 +13,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type DeleteGroupCustomBudgetsMsg struct {
-	Message string `json:"message"`
-}
-
 func (h *DBHandler) PostInitGroupStandardBudgets(w http.ResponseWriter, r *http.Request) {
 	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
 	if err != nil {
@@ -355,7 +351,7 @@ func (h *DBHandler) DeleteGroupCustomBudgets(w http.ResponseWriter, r *http.Requ
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&DeleteGroupCustomBudgetsMsg{"カスタム予算を削除しました。"}); err != nil {
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"カスタム予算を削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

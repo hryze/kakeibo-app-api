@@ -15,10 +15,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type DeleteGroupTodoMsg struct {
-	Message string `json:"message"`
-}
-
 type GroupTodoSearchQuery struct {
 	DateType     string
 	StartDate    string
@@ -508,7 +504,7 @@ func (h *DBHandler) DeleteGroupTodo(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&DeleteGroupTodoMsg{"todoを削除しました。"}); err != nil {
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"todoを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

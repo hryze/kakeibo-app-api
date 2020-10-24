@@ -20,10 +20,6 @@ type UserID struct {
 	UserID string `json:"user_id"`
 }
 
-type DeleteCustomBudgetsMsg struct {
-	Message string `json:"message"`
-}
-
 type BudgetValidationErrorMsg struct {
 	Message string `json:"message"`
 }
@@ -280,7 +276,7 @@ func (h *DBHandler) DeleteCustomBudgets(w http.ResponseWriter, r *http.Request) 
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&DeleteCustomBudgetsMsg{"カスタム予算を削除しました。"}); err != nil {
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"カスタム予算を削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

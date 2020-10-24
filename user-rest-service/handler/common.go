@@ -15,6 +15,10 @@ type DBHandler struct {
 	GroupRepo  repository.GroupRepository
 }
 
+type DeleteContentMsg struct {
+	Message string `json:"message"`
+}
+
 type HTTPError struct {
 	Status       int   `json:"status"`
 	ErrorMessage error `json:"error"`
@@ -25,6 +29,10 @@ type BadRequestErrorMsg struct {
 }
 
 type AuthenticationErrorMsg struct {
+	Message string `json:"message"`
+}
+
+type ConflictErrorMsg struct {
 	Message string `json:"message"`
 }
 
@@ -61,6 +69,10 @@ func (e *BadRequestErrorMsg) Error() string {
 }
 
 func (e *AuthenticationErrorMsg) Error() string {
+	return e.Message
+}
+
+func (e *ConflictErrorMsg) Error() string {
 	return e.Message
 }
 
