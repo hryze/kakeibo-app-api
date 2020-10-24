@@ -238,7 +238,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *ht
 	if len(dbGroupTransactionsList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -537,7 +537,7 @@ func (h *DBHandler) SearchGroupTransactionsList(w http.ResponseWriter, r *http.R
 	if len(dbGroupTransactionsList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -601,7 +601,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 	if len(userPaymentAmountList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"当月の取引履歴は見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"当月の取引履歴は見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -624,7 +624,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 	if len(dbGroupAccountsList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -872,7 +872,7 @@ func (h *DBHandler) DeleteMonthlyGroupTransactionsAccount(w http.ResponseWriter,
 	if len(dbGroupAccountsList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

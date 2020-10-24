@@ -1,0 +1,124 @@
+{
+  "transactions_list": [
+    {
+      "id": 1,
+      "transaction_type": "expense",
+      "updated_date": "2020-07-10T16:00:00Z",
+      "transaction_date": "2020/07/01(水)",
+      "shop": "コストコ",
+      "memo": "セールで牛肉購入",
+      "amount": 4500,
+      "big_category_name": "食費",
+      "medium_category_name": "食料品",
+      "custom_category_name": null
+    },
+    {
+      "id": 2,
+      "transaction_type": "expense",
+      "updated_date": "2020-07-09T16:00:00Z",
+      "transaction_date": "2020/07/01(水)",
+      "shop": "ニトリ",
+      "memo": "ベッド購入",
+      "amount": 15000,
+      "big_category_name": "日用品",
+      "medium_category_name": "家具",
+      "custom_category_name": null
+    },
+    {
+      "id": 3,
+      "transaction_type": "expense",
+      "updated_date": "2020-07-08T16:00:00Z",
+      "transaction_date": "2020/07/01(水)",
+      "shop": null,
+      "memo": null,
+      "amount": 1300,
+      "big_category_name": "食費",
+      "medium_category_name": null,
+      "custom_category_name": "米"
+    },
+    {
+      "id": 4,
+      "transaction_type": "expense",
+      "updated_date": "2020-07-07T16:00:00Z",
+      "transaction_date": "2020/07/01(水)",
+      "shop": null,
+      "memo": "電車定期代",
+      "amount": 12000,
+      "big_category_name": "交通費",
+      "medium_category_name": "電車",
+      "custom_category_name": null
+    },
+    {
+      "id": 5,
+      "transaction_type": "expense",
+      "updated_date": "2020-07-06T16:00:00Z",
+      "transaction_date": "2020/07/01(水)",
+      "shop": null,
+      "memo": null,
+      "amount": 65000,
+      "big_category_name": "住宅",
+      "medium_category_name": "家賃",
+      "custom_category_name": null
+    },
+    {
+      "id": 6,
+      "transaction_type": "expense",
+      "updated_date": "2020-07-05T16:00:00Z",
+      "transaction_date": "2020/07/01(水)",
+      "shop": null,
+      "memo": null,
+      "amount": 500,
+      "big_category_name": "食費",
+      "medium_category_name": "カフェ",
+      "custom_category_name": null
+    },
+    {
+      "id": 7,
+      "transaction_type": "expense",
+      "updated_date": "2020-07-04T16:00:00Z",
+      "transaction_date": "2020/07/01(水)",
+      "shop": null,
+      "memo": null,
+      "amount": 4800,
+      "big_category_name": "健康・医療",
+      "medium_category_name": "フィットネス",
+      "custom_category_name": null
+    },
+    {
+      "id": 8,
+      "transaction_type": "expense",
+      "updated_date": "2020-07-03T16:00:00Z",
+      "transaction_date": "2020/07/01(水)",
+      "shop": null,
+      "memo": "みんなのGo言語",
+      "amount": 2500,
+      "big_category_name": "教養・教育",
+      "medium_category_name": "参考書",
+      "custom_category_name": null
+    },
+    {
+      "id": 9,
+      "transaction_type": "expense",
+      "updated_date": "2020-07-02T16:00:00Z",
+      "transaction_date": "2020/07/01(水)",
+      "shop": "コンビニ",
+      "memo": null,
+      "amount": 120,
+      "big_category_name": "食費",
+      "medium_category_name": null,
+      "custom_category_name": "パン"
+    },
+    {
+      "id": 10,
+      "transaction_type": "expense",
+      "updated_date": "2020-07-01T16:00:00Z",
+      "transaction_date": "2020/07/01(水)",
+      "shop": null,
+      "memo": "歯磨き粉3つ購入",
+      "amount": 300,
+      "big_category_name": "日用品",
+      "medium_category_name": null,
+      "custom_category_name": "歯磨き粉"
+    }
+  ]
+}
