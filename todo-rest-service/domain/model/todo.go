@@ -55,7 +55,9 @@ func (d *Date) Scan(value interface{}) error {
 	if !ok {
 		return errors.New("bad time.Time type assertion")
 	}
+
 	d.Time = date
+
 	return nil
 }
 
@@ -67,6 +69,7 @@ func (d *Date) MarshalJSON() ([]byte, error) {
 	date := d.Time.Format("2006/01/02")
 	dayOfWeeks := [...]string{"日", "月", "火", "水", "木", "金", "土"}
 	dayOfWeek := dayOfWeeks[d.Time.Weekday()]
+
 	return []byte(`"` + date + `(` + dayOfWeek + `)` + `"`), nil
 }
 
@@ -89,6 +92,7 @@ func (d *Date) UnmarshalJSON(data []byte) error {
 	}
 
 	d.Time = date
+
 	return nil
 }
 
@@ -96,6 +100,7 @@ func (b BitBool) Value() (driver.Value, error) {
 	if b {
 		return []byte{1}, nil
 	}
+
 	return []byte{0}, nil
 }
 
@@ -104,7 +109,9 @@ func (b *BitBool) Scan(src interface{}) error {
 	if !ok {
 		return errors.New("bad []byte type assertion")
 	}
+
 	*b = bitBool[0] == 1
+
 	return nil
 }
 
@@ -113,5 +120,6 @@ func (t Todo) ShowTodo() (string, error) {
 	if err != nil {
 		return string(b), err
 	}
+
 	return string(b), nil
 }

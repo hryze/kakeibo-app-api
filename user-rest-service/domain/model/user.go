@@ -21,6 +21,7 @@ func (u SignUpUser) ShowUser() (string, error) {
 	if err != nil {
 		return string(b), err
 	}
+
 	return string(b), nil
 }
 
@@ -29,5 +30,6 @@ func (u LoginUser) ShowUser() (string, error) {
 	if err != nil {
 		return string(b), err
 	}
+
 	return string(b), nil
 }

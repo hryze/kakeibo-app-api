@@ -55,12 +55,11 @@ func (e *TodoValidationErrorMsg) Error() string {
 	if err != nil {
 		log.Println(err)
 	}
+
 	return string(b)
 }
 
 func validateTodo(todos Todos) error {
-	var todoValidationErrorMsg TodoValidationErrorMsg
-
 	validate := validator.New()
 	validate.RegisterCustomTypeFunc(validateValuer, model.Date{})
 	if err := validate.RegisterValidation("date", dateValidation); err != nil {
@@ -76,6 +75,7 @@ func validateTodo(todos Todos) error {
 		return nil
 	}
 
+	var todoValidationErrorMsg TodoValidationErrorMsg
 	for _, err := range err.(validator.ValidationErrors) {
 		var errorMessage string
 
@@ -96,6 +96,7 @@ func validateTodo(todos Todos) error {
 				errorMessage = "内容の文字列先頭か末尾に空白がないか確認してください。"
 			}
 		}
+
 		todoValidationErrorMsg.Message = append(todoValidationErrorMsg.Message, errorMessage)
 	}
 
@@ -109,6 +110,7 @@ func validateValuer(field reflect.Value) interface{} {
 			return val
 		}
 	}
+
 	return nil
 }
 
@@ -128,6 +130,7 @@ func dateValidation(fl validator.FieldLevel) bool {
 	if err != nil {
 		return false
 	}
+
 	if dateTime.Before(minDate) || dateTime.After(maxDate) {
 		return false
 	}
@@ -275,6 +278,7 @@ func (h *DBHandler) GetDailyTodoList(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -325,6 +329,7 @@ func (h *DBHandler) GetMonthlyTodoList(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -334,6 +339,7 @@ func (h *DBHandler) GetMonthlyTodoList(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
 	}
+
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
 	implementationTodoList, err := h.TodoRepo.GetMonthlyImplementationTodoList(firstDay, lastDay, userID)
@@ -405,6 +411,7 @@ func (h *DBHandler) PostTodo(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -453,6 +460,7 @@ func (h *DBHandler) PutTodo(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -500,6 +508,7 @@ func (h *DBHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -530,6 +539,7 @@ func (h *DBHandler) SearchTodoList(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}

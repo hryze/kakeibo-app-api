@@ -64,8 +64,10 @@ func (r *GroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID in
 		if err := rows.StructScan(&groupTransactionSender); err != nil {
 			return nil, err
 		}
+
 		groupTransactionsList = append(groupTransactionsList, groupTransactionSender)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -171,8 +173,10 @@ func (r *GroupTransactionsRepository) SearchGroupTransactionsList(query string) 
 		if err := rows.StructScan(&groupTransactionSender); err != nil {
 			return nil, err
 		}
+
 		groupTransactionsList = append(groupTransactionsList, groupTransactionSender)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -208,6 +212,7 @@ func (r *GroupTransactionsRepository) GetUserPaymentAmountList(groupID int, firs
 		if err := rows.StructScan(&userPaymentAmount); err != nil {
 			return nil, err
 		}
+
 		userPaymentAmountList = append(userPaymentAmountList, userPaymentAmount)
 	}
 
@@ -250,6 +255,7 @@ func (r *GroupTransactionsRepository) GetGroupAccountsList(yearMonth time.Time, 
 		if err := rows.StructScan(&groupAccount); err != nil {
 			return nil, err
 		}
+
 		groupAccountsList = append(groupAccountsList, groupAccount)
 	}
 

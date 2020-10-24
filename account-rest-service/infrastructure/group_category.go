@@ -35,8 +35,10 @@ func (r *GroupCategoriesRepository) GetGroupBigCategoriesList() ([]model.GroupBi
 		if err := rows.StructScan(&groupBigCategory); err != nil {
 			return nil, err
 		}
+
 		groupBigCategoriesList = append(groupBigCategoriesList, groupBigCategory)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -65,8 +67,10 @@ func (r *GroupCategoriesRepository) GetGroupMediumCategoriesList() ([]model.Grou
 		if err := rows.StructScan(&groupMediumCategory); err != nil {
 			return nil, err
 		}
+
 		groupMediumCategoriesList = append(groupMediumCategoriesList, groupMediumCategory)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -98,8 +102,10 @@ func (r *GroupCategoriesRepository) GetGroupCustomCategoriesList(groupID int) ([
 		if err := rows.StructScan(&groupCustomCategory); err != nil {
 			return nil, err
 		}
+
 		groupCustomCategoriesList = append(groupCustomCategoriesList, groupCustomCategory)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -176,5 +182,6 @@ func (r *GroupCategoriesRepository) DeleteGroupCustomCategory(groupCustomCategor
             id = ?`
 
 	_, err := r.MySQLHandler.conn.Exec(query, groupCustomCategoryID)
+
 	return err
 }

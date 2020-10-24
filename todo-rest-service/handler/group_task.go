@@ -151,6 +151,7 @@ func (h *DBHandler) GetGroupTasksListForEachUser(w http.ResponseWriter, r *http.
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -167,6 +168,7 @@ func (h *DBHandler) GetGroupTasksListForEachUser(w http.ResponseWriter, r *http.
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -246,6 +248,7 @@ func (h *DBHandler) PostGroupTasksUsersList(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -262,6 +265,7 @@ func (h *DBHandler) PostGroupTasksUsersList(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -427,6 +431,7 @@ func (h *DBHandler) GetGroupTasksList(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -443,6 +448,7 @@ func (h *DBHandler) GetGroupTasksList(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -470,6 +476,7 @@ func (h *DBHandler) PostGroupTask(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -486,6 +493,7 @@ func (h *DBHandler) PostGroupTask(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -534,6 +542,7 @@ func (h *DBHandler) PutGroupTask(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -550,6 +559,7 @@ func (h *DBHandler) PutGroupTask(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -607,6 +617,7 @@ func (h *DBHandler) DeleteGroupTask(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -623,6 +634,7 @@ func (h *DBHandler) DeleteGroupTask(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}

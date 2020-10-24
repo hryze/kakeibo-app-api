@@ -66,24 +66,29 @@ func (h *DBHandler) GetCategoriesList(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	bigCategoriesList, err := h.CategoriesRepo.GetBigCategoriesList()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	mediumCategoriesList, err := h.CategoriesRepo.GetMediumCategoriesList()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	customCategoriesList, err := h.CategoriesRepo.GetCustomCategoriesList(userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	for i, bigCategory := range bigCategoriesList {
 		for _, customCategory := range customCategoriesList {
 			if bigCategory.TransactionType == "income" && bigCategory.ID == customCategory.BigCategoryID {
@@ -93,6 +98,7 @@ func (h *DBHandler) GetCategoriesList(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+
 	for i, bigCategory := range bigCategoriesList {
 		for _, mediumCategory := range mediumCategoriesList {
 			if bigCategory.TransactionType == "income" && bigCategory.ID == mediumCategory.BigCategoryID {
@@ -102,6 +108,7 @@ func (h *DBHandler) GetCategoriesList(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+
 	var categoriesList model.CategoriesList
 	for _, bigCategory := range bigCategoriesList {
 		if bigCategory.TransactionType == "income" {
@@ -126,36 +133,44 @@ func (h *DBHandler) PostCustomCategory(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	customCategory := model.NewCustomCategory()
 	if err := json.NewDecoder(r.Body).Decode(&customCategory); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	if err := validateCustomCategory(r, &customCategory); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
+
 	if err := h.CategoriesRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
 		if err == nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &CustomCategoryConflictErrorMsg{"中カテゴリーの登録に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	result, err := h.CategoriesRepo.PostCustomCategory(&customCategory, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	lastInsertId, err := result.LastInsertId()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	customCategory.ID = int(lastInsertId)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -173,31 +188,38 @@ func (h *DBHandler) PutCustomCategory(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	customCategory := model.NewCustomCategory()
 	if err := json.NewDecoder(r.Body).Decode(&customCategory); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	customCategory.ID, err = strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"custom category ID を正しく指定してください。"}))
 		return
 	}
+
 	if err := validateCustomCategory(r, &customCategory); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
+
 	if err := h.CategoriesRepo.FindCustomCategory(&customCategory, userID); err != sql.ErrNoRows {
 		if err == nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &CustomCategoryConflictErrorMsg{"中カテゴリーの更新に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	if err := h.CategoriesRepo.PutCustomCategory(&customCategory); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -218,14 +240,17 @@ func (h *DBHandler) DeleteCustomCategory(w http.ResponseWriter, r *http.Request)
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	customCategoryID, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"custom category ID を正しく指定してください。"}))
 		return
 	}
+
 	if err := h.CategoriesRepo.DeleteCustomCategory(customCategoryID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return

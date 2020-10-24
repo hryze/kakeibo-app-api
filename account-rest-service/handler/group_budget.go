@@ -39,6 +39,7 @@ func (h *DBHandler) GetGroupStandardBudgets(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -55,6 +56,7 @@ func (h *DBHandler) GetGroupStandardBudgets(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -80,6 +82,7 @@ func (h *DBHandler) PutGroupStandardBudgets(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -96,6 +99,7 @@ func (h *DBHandler) PutGroupStandardBudgets(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -137,6 +141,7 @@ func (h *DBHandler) GetGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -153,6 +158,7 @@ func (h *DBHandler) GetGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -184,6 +190,7 @@ func (h *DBHandler) PostGroupCustomBudgets(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -200,6 +207,7 @@ func (h *DBHandler) PostGroupCustomBudgets(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -247,6 +255,7 @@ func (h *DBHandler) PutGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -263,6 +272,7 @@ func (h *DBHandler) PutGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -310,6 +320,7 @@ func (h *DBHandler) DeleteGroupCustomBudgets(w http.ResponseWriter, r *http.Requ
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -326,6 +337,7 @@ func (h *DBHandler) DeleteGroupCustomBudgets(w http.ResponseWriter, r *http.Requ
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -356,6 +368,7 @@ func (h *DBHandler) GetYearlyGroupBudgets(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -372,6 +385,7 @@ func (h *DBHandler) GetYearlyGroupBudgets(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -401,6 +415,7 @@ func (h *DBHandler) GetYearlyGroupBudgets(w http.ResponseWriter, r *http.Request
 			if time.Month(i)+1 == monthlyGroupCustomBudgets[j].Month.Month() {
 				yearlyBudget.YearlyTotalBudget += monthlyGroupCustomBudgets[j].MonthlyTotalBudget
 				yearlyBudget.GroupMonthlyBudgets[i] = monthlyGroupCustomBudgets[j]
+
 				j++
 				continue
 			}

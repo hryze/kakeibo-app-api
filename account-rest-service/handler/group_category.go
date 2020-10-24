@@ -66,6 +66,7 @@ func (h *DBHandler) GetGroupCategoriesList(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -82,6 +83,7 @@ func (h *DBHandler) GetGroupCategoriesList(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -91,16 +93,19 @@ func (h *DBHandler) GetGroupCategoriesList(w http.ResponseWriter, r *http.Reques
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	groupMediumCategoriesList, err := h.GroupCategoriesRepo.GetGroupMediumCategoriesList()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	groupCustomCategoriesList, err := h.GroupCategoriesRepo.GetGroupCustomCategoriesList(groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	for i, groupBigCategory := range groupBigCategoriesList {
 		for _, groupCustomCategory := range groupCustomCategoriesList {
 			if groupBigCategory.TransactionType == "income" && groupBigCategory.ID == groupCustomCategory.BigCategoryID {
@@ -110,6 +115,7 @@ func (h *DBHandler) GetGroupCategoriesList(w http.ResponseWriter, r *http.Reques
 			}
 		}
 	}
+
 	for i, groupBigCategory := range groupBigCategoriesList {
 		for _, groupMediumCategory := range groupMediumCategoriesList {
 			if groupBigCategory.TransactionType == "income" && groupBigCategory.ID == groupMediumCategory.BigCategoryID {
@@ -119,6 +125,7 @@ func (h *DBHandler) GetGroupCategoriesList(w http.ResponseWriter, r *http.Reques
 			}
 		}
 	}
+
 	var groupCategoriesList model.GroupCategoriesList
 	for _, groupBigCategory := range groupBigCategoriesList {
 		if groupBigCategory.TransactionType == "income" {
@@ -143,6 +150,7 @@ func (h *DBHandler) PostGroupCustomCategory(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -159,6 +167,7 @@ func (h *DBHandler) PostGroupCustomCategory(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -179,6 +188,7 @@ func (h *DBHandler) PostGroupCustomCategory(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &GroupCustomCategoryConflictErrorMsg{"中カテゴリーの登録に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -188,6 +198,7 @@ func (h *DBHandler) PostGroupCustomCategory(w http.ResponseWriter, r *http.Reque
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	lastInsertId, err := result.LastInsertId()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -211,6 +222,7 @@ func (h *DBHandler) PutGroupCustomCategory(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -227,6 +239,7 @@ func (h *DBHandler) PutGroupCustomCategory(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -253,6 +266,7 @@ func (h *DBHandler) PutGroupCustomCategory(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusConflict, &CustomCategoryConflictErrorMsg{"中カテゴリーの更新に失敗しました。 同じカテゴリー名が既に存在していないか確認してください。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -277,6 +291,7 @@ func (h *DBHandler) DeleteGroupCustomCategory(w http.ResponseWriter, r *http.Req
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -293,6 +308,7 @@ func (h *DBHandler) DeleteGroupCustomCategory(w http.ResponseWriter, r *http.Req
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}

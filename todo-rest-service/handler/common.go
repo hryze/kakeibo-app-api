@@ -78,6 +78,7 @@ func (e *HTTPError) Error() string {
 	if err != nil {
 		log.Println(err)
 	}
+
 	return string(b)
 }
 
@@ -99,6 +100,7 @@ func errorResponseByJSON(w http.ResponseWriter, err error) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(httpError.Status)
 	if err := json.NewEncoder(w).Encode(httpError); err != nil {
@@ -111,11 +113,13 @@ func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (stri
 	if err != nil {
 		return "", err
 	}
+
 	sessionID := cookie.Value
 	userID, err := h.AuthRepo.GetUserID(sessionID)
 	if err != nil {
 		return "", err
 	}
+
 	return userID, nil
 }
 

@@ -47,5 +47,6 @@ func (t GroupTodo) ShowTodo() (string, error) {
 	if err != nil {
 		return string(b), err
 	}
+
 	return string(b), nil
 }

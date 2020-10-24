@@ -67,7 +67,9 @@ func (dt *DateTime) Scan(value interface{}) error {
 	if !ok {
 		return errors.New("type assertion error")
 	}
+
 	dt.Time = dateTime
+
 	return nil
 }
 
@@ -80,7 +82,9 @@ func (d *SenderDate) Scan(value interface{}) error {
 	if !ok {
 		return errors.New("type assertion error")
 	}
+
 	d.Time = date
+
 	return nil
 }
 
@@ -92,6 +96,7 @@ func (d *SenderDate) MarshalJSON() ([]byte, error) {
 	date := d.Time.Format("2006/01/02")
 	dayOfWeeks := [...]string{"日", "月", "火", "水", "木", "金", "土"}
 	dayOfWeek := dayOfWeeks[d.Time.Weekday()]
+
 	return []byte(`"` + date + `(` + dayOfWeek + `)` + `"`), nil
 }
 
@@ -101,7 +106,9 @@ func (d *SenderDate) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
+
 	d.Time = date
+
 	return nil
 }
 
@@ -110,7 +117,9 @@ func (d *ReceiverDate) Scan(value interface{}) error {
 	if !ok {
 		return errors.New("type assertion error")
 	}
+
 	d.Time = date
+
 	return nil
 }
 
@@ -124,7 +133,9 @@ func (d *ReceiverDate) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
+
 	d.Time = date
+
 	return nil
 }
 
@@ -132,6 +143,7 @@ func (ns *NullString) MarshalJSON() ([]byte, error) {
 	if !ns.Valid {
 		return []byte("null"), nil
 	}
+
 	return json.Marshal(ns.String)
 }
 
@@ -139,11 +151,13 @@ func (ns *NullString) UnmarshalJSON(b []byte) error {
 	if bytes.Equal(b, []byte("null")) {
 		return nil
 	}
+
 	err := json.Unmarshal(b, &ns.String)
 	if err == nil {
 		ns.Valid = true
 		return nil
 	}
+
 	return err
 }
 
@@ -151,11 +165,13 @@ func (ni *NullInt64) UnmarshalJSON(b []byte) error {
 	if bytes.Equal(b, []byte("null")) {
 		return nil
 	}
+
 	err := json.Unmarshal(b, &ni.Int64)
 	if err == nil {
 		ni.Valid = true
 		return nil
 	}
+
 	return err
 }
 
@@ -164,5 +180,6 @@ func (t TransactionReceiver) ShowTransactionReceiver() (string, error) {
 	if err != nil {
 		return string(b), err
 	}
+
 	return string(b), nil
 }
