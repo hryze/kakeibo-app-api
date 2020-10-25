@@ -249,6 +249,7 @@ func generateTransactionsSqlQuery(searchQuery TransactionsSearchQuery) (string, 
         SELECT
             transactions.id id,
             transactions.transaction_type transaction_type,
+            transactions.posted_date posted_date,
             transactions.updated_date updated_date,
             transactions.transaction_date transaction_date,
             transactions.shop shop,

@@ -7,7 +7,9 @@
   "shop": "ニトリ",
   "memo": "ベッド購入",
   "amount": 15000,
-  "user_id": "userID1",
+  "posted_user_id": "userID1",
+  "updated_user_id": null,
+  "payment_user_id": "userID1",
   "big_category_name": "日用品",
   "medium_category_name": "家具",
   "custom_category_name": null

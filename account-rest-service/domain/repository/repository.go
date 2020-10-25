@@ -63,8 +63,8 @@ type GroupTransactionsRepository interface {
 	GetMonthlyGroupTransactionsList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionSender, error)
 	Get10LatestGroupTransactionsList(groupID int) (*model.GroupTransactionsList, error)
 	GetGroupTransaction(groupTransactionID int) (*model.GroupTransactionSender, error)
-	PostGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupID int, userID string) (sql.Result, error)
-	PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int) error
+	PostGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupID int, postedUserID string) (sql.Result, error)
+	PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int, updatedUserID string) error
 	DeleteGroupTransaction(groupTransactionID int) error
 	SearchGroupTransactionsList(query string) ([]model.GroupTransactionSender, error)
 	GetUserPaymentAmountList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error)

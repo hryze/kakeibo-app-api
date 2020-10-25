@@ -26,7 +26,9 @@ func (r *GroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID in
             group_transactions.shop shop,
             group_transactions.memo memo,
             group_transactions.amount amount,
-            group_transactions.user_id user_id,
+            group_transactions.posted_user_id posted_user_id,
+            group_transactions.updated_user_id updated_user_id,
+            group_transactions.payment_user_id payment_user_id,
             big_categories.category_name big_category_name,
             medium_categories.category_name medium_category_name,
             group_custom_categories.category_name custom_category_name
@@ -87,7 +89,9 @@ func (r *GroupTransactionsRepository) Get10LatestGroupTransactionsList(groupID i
             group_transactions.shop shop,
             group_transactions.memo memo,
             group_transactions.amount amount,
-            group_transactions.user_id user_id,
+            group_transactions.posted_user_id posted_user_id,
+            group_transactions.updated_user_id updated_user_id,
+            group_transactions.payment_user_id payment_user_id,
             big_categories.category_name big_category_name,
             medium_categories.category_name medium_category_name,
             group_custom_categories.category_name custom_category_name
@@ -148,7 +152,9 @@ func (r *GroupTransactionsRepository) GetGroupTransaction(groupTransactionID int
             group_transactions.shop shop,
             group_transactions.memo memo,
             group_transactions.amount amount,
-            group_transactions.user_id user_id,
+            group_transactions.posted_user_id posted_user_id,
+            group_transactions.updated_user_id updated_user_id,
+            group_transactions.payment_user_id payment_user_id,
             big_categories.category_name big_category_name,
             medium_categories.category_name medium_category_name,
             group_custom_categories.category_name custom_category_name
@@ -177,19 +183,19 @@ func (r *GroupTransactionsRepository) GetGroupTransaction(groupTransactionID int
 	return &groupTransactionSender, nil
 }
 
-func (r *GroupTransactionsRepository) PostGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupID int, userID string) (sql.Result, error) {
+func (r *GroupTransactionsRepository) PostGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupID int, postedUserID string) (sql.Result, error) {
 	query := `
         INSERT INTO group_transactions
-            (transaction_type, transaction_date, shop, memo, amount, group_id, user_id, big_category_id, medium_category_id, custom_category_id)
+            (transaction_type, transaction_date, shop, memo, amount, group_id, posted_user_id, payment_user_id, big_category_id, medium_category_id, custom_category_id)
         VALUES
-            (?,?,?,?,?,?,?,?,?,?)`
+            (?,?,?,?,?,?,?,?,?,?,?)`
 
-	result, err := r.MySQLHandler.conn.Exec(query, groupTransaction.TransactionType, groupTransaction.TransactionDate, groupTransaction.Shop, groupTransaction.Memo, groupTransaction.Amount, groupID, userID, groupTransaction.BigCategoryID, groupTransaction.MediumCategoryID, groupTransaction.CustomCategoryID)
+	result, err := r.MySQLHandler.conn.Exec(query, groupTransaction.TransactionType, groupTransaction.TransactionDate, groupTransaction.Shop, groupTransaction.Memo, groupTransaction.Amount, groupID, postedUserID, groupTransaction.PaymentUserID, groupTransaction.BigCategoryID, groupTransaction.MediumCategoryID, groupTransaction.CustomCategoryID)
 
 	return result, err
 }
 
-func (r *GroupTransactionsRepository) PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int) error {
+func (r *GroupTransactionsRepository) PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int, updatedUserID string) error {
 	query := `
         UPDATE
             group_transactions
@@ -199,13 +205,15 @@ func (r *GroupTransactionsRepository) PutGroupTransaction(groupTransaction *mode
             shop = ?,
             memo = ?,
             amount = ?,
+            updated_user_id = ?,
+            payment_user_id = ?,
             big_category_id = ?,
             medium_category_id = ?,
             custom_category_id = ?
         WHERE
             id = ?`
 
-	_, err := r.MySQLHandler.conn.Exec(query, groupTransaction.TransactionType, groupTransaction.TransactionDate, groupTransaction.Shop, groupTransaction.Memo, groupTransaction.Amount, groupTransaction.BigCategoryID, groupTransaction.MediumCategoryID, groupTransaction.CustomCategoryID, groupTransactionID)
+	_, err := r.MySQLHandler.conn.Exec(query, groupTransaction.TransactionType, groupTransaction.TransactionDate, groupTransaction.Shop, groupTransaction.Memo, groupTransaction.Amount, updatedUserID, groupTransaction.PaymentUserID, groupTransaction.BigCategoryID, groupTransaction.MediumCategoryID, groupTransaction.CustomCategoryID, groupTransactionID)
 
 	return err
 }
@@ -250,7 +258,7 @@ func (r *GroupTransactionsRepository) SearchGroupTransactionsList(query string) 
 func (r *GroupTransactionsRepository) GetUserPaymentAmountList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error) {
 	query := `
         SELECT
-            user_id,
+            payment_user_id user_id,
             SUM(amount) total_payment_amount
         FROM
             group_transactions
@@ -261,7 +269,7 @@ func (r *GroupTransactionsRepository) GetUserPaymentAmountList(groupID int, firs
         AND
             transaction_date < ?
         GROUP BY
-            user_id`
+            payment_user_id`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, firstDay, lastDay)
 	if err != nil {
