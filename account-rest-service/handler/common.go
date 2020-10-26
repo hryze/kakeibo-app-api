@@ -25,6 +25,10 @@ type DBHandler struct {
 	GroupBudgetsRepo      repository.GroupBudgetsRepository
 }
 
+type NoContentMsg struct {
+	Message string `json:"message"`
+}
+
 type DeleteContentMsg struct {
 	Message string `json:"message"`
 }

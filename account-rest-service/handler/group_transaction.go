@@ -19,19 +19,19 @@ import (
 )
 
 type GroupTransactionsSearchQuery struct {
-	TransactionType string
-	BigCategoryID   string
-	Shop            string
-	Memo            string
-	LowAmount       string
-	HighAmount      string
-	StartDate       string
-	EndDate         string
-	Sort            string
-	SortType        string
-	Limit           string
-	GroupID         string
-	UsersID         []string
+	TransactionType   string
+	BigCategoryID     string
+	Shop              string
+	Memo              string
+	LowAmount         string
+	HighAmount        string
+	StartDate         string
+	EndDate           string
+	Sort              string
+	SortType          string
+	Limit             string
+	GroupID           string
+	PaymentUserIDList []string
 }
 
 type GroupTransactionProcessLockErrorMsg struct {
@@ -43,19 +43,19 @@ func NewGroupTransactionsSearchQuery(urlQuery url.Values, groupID string) GroupT
 	endDate := trimDate(urlQuery.Get("end_date"))
 
 	return GroupTransactionsSearchQuery{
-		TransactionType: urlQuery.Get("transaction_type"),
-		BigCategoryID:   urlQuery.Get("big_category_id"),
-		Shop:            urlQuery.Get("shop"),
-		Memo:            urlQuery.Get("memo"),
-		LowAmount:       urlQuery.Get("low_amount"),
-		HighAmount:      urlQuery.Get("high_amount"),
-		StartDate:       startDate,
-		EndDate:         endDate,
-		Sort:            urlQuery.Get("sort"),
-		SortType:        urlQuery.Get("sort_type"),
-		Limit:           urlQuery.Get("limit"),
-		GroupID:         groupID,
-		UsersID:         urlQuery["user_id"],
+		TransactionType:   urlQuery.Get("transaction_type"),
+		BigCategoryID:     urlQuery.Get("big_category_id"),
+		Shop:              urlQuery.Get("shop"),
+		Memo:              urlQuery.Get("memo"),
+		LowAmount:         urlQuery.Get("low_amount"),
+		HighAmount:        urlQuery.Get("high_amount"),
+		StartDate:         startDate,
+		EndDate:           endDate,
+		Sort:              urlQuery.Get("sort"),
+		SortType:          urlQuery.Get("sort_type"),
+		Limit:             urlQuery.Get("limit"),
+		GroupID:           groupID,
+		PaymentUserIDList: urlQuery["payment_user_id"],
 	}
 }
 
@@ -68,12 +68,15 @@ func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery)
         SELECT
             group_transactions.id id,
             group_transactions.transaction_type transaction_type,
+            group_transactions.posted_date posted_date,
             group_transactions.updated_date updated_date,
             group_transactions.transaction_date transaction_date,
             group_transactions.shop shop,
             group_transactions.memo memo,
             group_transactions.amount amount,
-            group_transactions.user_id user_id,
+            group_transactions.posted_user_id posted_user_id,
+            group_transactions.updated_user_id updated_user_id,
+            group_transactions.payment_user_id payment_user_id,
             big_categories.category_name big_category_name,
             medium_categories.category_name medium_category_name,
             group_custom_categories.category_name custom_category_name
@@ -94,25 +97,25 @@ func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery)
         WHERE
             group_transactions.group_id = {{.GroupID}}
 
-        {{ if eq (len .UsersID) 1 }}
-        {{ range $i, $UserID := .UsersID }}
+        {{ if eq (len .PaymentUserIDList) 1 }}
+        {{ range $i, $PaymentUserID := .PaymentUserIDList }}
         AND
-            group_transactions.user_id = "{{ $UserID }}"
+            group_transactions.payment_user_id = "{{ $PaymentUserID }}"
         {{ end }}
         {{ end }}
 
-        {{ if gt (len .UsersID) 1 }}
-        {{ range $i, $UserID := .UsersID }}
+        {{ if gt (len .PaymentUserIDList) 1 }}
+        {{ range $i, $PaymentUserID := .PaymentUserIDList }}
         {{ if eq $i 0}}
         AND
-            group_transactions.user_id IN("{{ $UserID }}"
+            group_transactions.payment_user_id IN("{{ $PaymentUserID }}"
         {{ end }}
         {{ if gt $i 0 }}
-        ,"{{ $UserID }}"
+        ,"{{ $PaymentUserID }}"
         {{ end }}
         {{ end }}
         {{ end }}
-        {{ if gt (len .UsersID) 1 }}
+        {{ if gt (len .PaymentUserIDList) 1 }}
         )
         {{ end }}
 
@@ -238,7 +241,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *ht
 	if len(dbGroupTransactionsList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -251,6 +254,60 @@ func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *ht
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&groupTransactionsList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) Get10LatestGroupTransactionsList(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	latestGroupTransactionsList, err := h.GroupTransactionsRepo.Get10LatestGroupTransactionsList(groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(latestGroupTransactionsList.GroupTransactionsList) == 0 {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"取引履歴がありません。"}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&latestGroupTransactionsList); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -390,7 +447,7 @@ func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if err := h.GroupTransactionsRepo.PutGroupTransaction(&groupTransactionReceiver, groupTransactionID); err != nil {
+	if err := h.GroupTransactionsRepo.PutGroupTransaction(&groupTransactionReceiver, groupTransactionID, userID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -537,7 +594,7 @@ func (h *DBHandler) SearchGroupTransactionsList(w http.ResponseWriter, r *http.R
 	if len(dbGroupTransactionsList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -601,7 +658,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 	if len(userPaymentAmountList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"当月の取引履歴は見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"当月の取引履歴は見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -624,7 +681,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 	if len(dbGroupAccountsList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -872,7 +929,7 @@ func (h *DBHandler) DeleteMonthlyGroupTransactionsAccount(w http.ResponseWriter,
 	if len(dbGroupAccountsList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

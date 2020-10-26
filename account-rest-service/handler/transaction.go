@@ -43,10 +43,6 @@ type TransactionsSearchQuery struct {
 	UserID          string
 }
 
-type NoSearchContentMsg struct {
-	Message string `json:"message"`
-}
-
 type TransactionValidationErrorMsg struct {
 	Message []string `json:"message"`
 }
@@ -253,6 +249,7 @@ func generateTransactionsSqlQuery(searchQuery TransactionsSearchQuery) (string, 
         SELECT
             transactions.id id,
             transactions.transaction_type transaction_type,
+            transactions.posted_date posted_date,
             transactions.updated_date updated_date,
             transactions.transaction_date transaction_date,
             transactions.shop shop,
@@ -383,7 +380,7 @@ func (h *DBHandler) GetMonthlyTransactionsList(w http.ResponseWriter, r *http.Re
 	if len(dbTransactionsList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -396,6 +393,43 @@ func (h *DBHandler) GetMonthlyTransactionsList(w http.ResponseWriter, r *http.Re
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&transactionsList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) Get10LatestTransactionsList(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	latestTransactionsList, err := h.TransactionsRepo.Get10LatestTransactionsList(userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(latestTransactionsList.TransactionsList) == 0 {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"取引履歴がありません。"}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&latestTransactionsList); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -572,7 +606,7 @@ func (h *DBHandler) SearchTransactionsList(w http.ResponseWriter, r *http.Reques
 	if len(dbTransactionsList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoSearchContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
+		if err := json.NewEncoder(w).Encode(&NoContentMsg{"条件に一致する取引履歴は見つかりませんでした。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

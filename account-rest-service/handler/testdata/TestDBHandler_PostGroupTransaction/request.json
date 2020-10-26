@@ -4,6 +4,7 @@
   "shop": "ニトリ",
   "memo": "ベッド購入",
   "amount": 15000,
+  "payment_user_id": "userID1",
   "big_category_id": 3,
   "medium_category_id": 16,
   "custom_category_id": null

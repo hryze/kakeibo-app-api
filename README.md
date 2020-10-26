@@ -27,6 +27,7 @@
 | **PUT**<br>&emsp;/categories/custom-categories/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>409 Conflict<br>500 Internal Server Error</pre> | カスタムカテゴリー更新 |
 | **DELETE**<br>&emsp;/categories/custom-categories/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | カスタムカテゴリー削除 |
 | **GET**<br>&emsp;/transactions/{year_month} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 月別家計簿トランザクション一覧取得 |
+| **GET**<br>&emsp;/transactions/latest | <pre>200 OK<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿トランザクション最新更新10件取得 |
 | **POST**<br>&emsp;/transactions | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿トランザクション追加 |
 | **PUT**<br>&emsp;/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿トランザクション更新 |
 | **DELETE**<br>&emsp;/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿トランザクション削除 |
@@ -44,6 +45,7 @@
 | **PUT**<br>&emsp;/groups/{group_id}/categories/custom-categories/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>409 Conflict<br>500 Internal Server Error</pre> | グループカスタムカテゴリー更新 |
 | **DELETE**<br>&emsp;/groups/{group_id}/categories/custom-categories/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループカスタムカテゴリー削除 |
 | **GET**<br>&emsp;/groups/{group_id}/transactions/{year_month} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション一覧取得 |
+| **GET**<br>&emsp;/groups/{group_id}/transactions/latest | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション最新更新10件取得 |
 | **POST**<br>&emsp;/groups/{group_id}/transactions | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション追加 |
 | **PUT**<br>&emsp;/groups/{group_id}/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション更新 |
 | **DELETE**<br>&emsp;/groups/{group_id}/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション削除 |

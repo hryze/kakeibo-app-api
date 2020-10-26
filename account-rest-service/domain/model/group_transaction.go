@@ -16,12 +16,15 @@ type GroupTransactionsList struct {
 type GroupTransactionSender struct {
 	ID                 int        `json:"id"                   db:"id"`
 	TransactionType    string     `json:"transaction_type"     db:"transaction_type"`
-	UpdatedDate        DateTime   `json:"updated_date"         db:"updated_date"`
+	PostedDate         time.Time  `json:"posted_date"          db:"posted_date"`
+	UpdatedDate        time.Time  `json:"updated_date"         db:"updated_date"`
 	TransactionDate    SenderDate `json:"transaction_date"     db:"transaction_date"`
 	Shop               NullString `json:"shop"                 db:"shop"`
 	Memo               NullString `json:"memo"                 db:"memo"`
 	Amount             int        `json:"amount"               db:"amount"`
-	UserID             string     `json:"user_id"              db:"user_id"`
+	PostedUserID       string     `json:"posted_user_id"       db:"posted_user_id"`
+	UpdatedUserID      NullString `json:"updated_user_id"      db:"updated_user_id"`
+	PaymentUserID      string     `json:"payment_user_id"      db:"payment_user_id"`
 	BigCategoryName    string     `json:"big_category_name"    db:"big_category_name"`
 	MediumCategoryName NullString `json:"medium_category_name" db:"medium_category_name"`
 	CustomCategoryName NullString `json:"custom_category_name" db:"custom_category_name"`
@@ -33,6 +36,7 @@ type GroupTransactionReceiver struct {
 	Shop             NullString   `json:"shop"               db:"shop"               validate:"omitempty,max=20,blank"`
 	Memo             NullString   `json:"memo"               db:"memo"               validate:"omitempty,max=50,blank"`
 	Amount           int          `json:"amount"             db:"amount"             validate:"required,min=1"`
+	PaymentUserID    string       `json:"payment_user_id"    db:"payment_user_id"`
 	BigCategoryID    int          `json:"big_category_id"    db:"big_category_id"    validate:"required,min=1,max=17,either_id"`
 	MediumCategoryID NullInt64    `json:"medium_category_id" db:"medium_category_id" validate:"omitempty,min=1,max=99"`
 	CustomCategoryID NullInt64    `json:"custom_category_id" db:"custom_category_id" validate:"omitempty,min=1"`

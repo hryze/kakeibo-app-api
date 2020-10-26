@@ -20,6 +20,7 @@ func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string, first
         SELECT
             transactions.id id,
             transactions.transaction_type transaction_type,
+            transactions.posted_date posted_date,
             transactions.updated_date updated_date,
             transactions.transaction_date transaction_date,
             transactions.shop shop,
@@ -57,7 +58,7 @@ func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string, first
 	}
 	defer rows.Close()
 
-	var transactionsList []model.TransactionSender
+	transactionsList := make([]model.TransactionSender, 0)
 	for rows.Next() {
 		var transactionSender model.TransactionSender
 		if err := rows.StructScan(&transactionSender); err != nil {
@@ -74,11 +75,72 @@ func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string, first
 	return transactionsList, nil
 }
 
+func (r *TransactionsRepository) Get10LatestTransactionsList(userID string) (*model.TransactionsList, error) {
+	query := `
+        SELECT
+            transactions.id id,
+            transactions.transaction_type transaction_type,
+            transactions.posted_date posted_date,
+            transactions.updated_date updated_date,
+            transactions.transaction_date transaction_date,
+            transactions.shop shop,
+            transactions.memo memo,
+            transactions.amount amount,
+            big_categories.category_name big_category_name,
+            medium_categories.category_name medium_category_name,
+            custom_categories.category_name custom_category_name
+        FROM
+            transactions
+        LEFT JOIN
+            big_categories
+        ON
+            transactions.big_category_id = big_categories.id
+        LEFT JOIN
+            medium_categories
+        ON
+            transactions.medium_category_id = medium_categories.id
+        LEFT JOIN
+            custom_categories
+        ON
+            transactions.custom_category_id = custom_categories.id
+        WHERE
+            transactions.user_id = ?
+        ORDER BY
+            transactions.updated_date DESC
+        LIMIT
+            10`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	transactionsList := model.TransactionsList{
+		TransactionsList: make([]model.TransactionSender, 0),
+	}
+	for rows.Next() {
+		var transactionSender model.TransactionSender
+		if err := rows.StructScan(&transactionSender); err != nil {
+			return nil, err
+		}
+
+		transactionsList.TransactionsList = append(transactionsList.TransactionsList, transactionSender)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &transactionsList, nil
+}
+
 func (r *TransactionsRepository) GetTransaction(transactionSender *model.TransactionSender, transactionID int) (*model.TransactionSender, error) {
 	query := `
         SELECT
             transactions.id id,
             transactions.transaction_type transaction_type,
+            transactions.posted_date posted_date,
             transactions.updated_date updated_date,
             transactions.transaction_date transaction_date,
             transactions.shop shop,
@@ -164,7 +226,7 @@ func (r *TransactionsRepository) SearchTransactionsList(query string) ([]model.T
 	}
 	defer rows.Close()
 
-	var transactionsList []model.TransactionSender
+	transactionsList := make([]model.TransactionSender, 0)
 	for rows.Next() {
 		var transactionSender model.TransactionSender
 		if err := rows.StructScan(&transactionSender); err != nil {

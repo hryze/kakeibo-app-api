@@ -17,7 +17,8 @@ type TransactionsList struct {
 type TransactionSender struct {
 	ID                 int        `json:"id"                   db:"id"`
 	TransactionType    string     `json:"transaction_type"     db:"transaction_type"`
-	UpdatedDate        DateTime   `json:"updated_date"         db:"updated_date"`
+	PostedDate         time.Time  `json:"posted_date"          db:"posted_date"`
+	UpdatedDate        time.Time  `json:"updated_date"         db:"updated_date"`
 	TransactionDate    SenderDate `json:"transaction_date"     db:"transaction_date"`
 	Shop               NullString `json:"shop"                 db:"shop"`
 	Memo               NullString `json:"memo"                 db:"memo"`
@@ -38,10 +39,6 @@ type TransactionReceiver struct {
 	CustomCategoryID NullInt64    `json:"custom_category_id" db:"custom_category_id" validate:"omitempty,min=1"`
 }
 
-type DateTime struct {
-	time.Time
-}
-
 type SenderDate struct {
 	time.Time
 }
@@ -60,21 +57,6 @@ type NullInt64 struct {
 
 func NewTransactionsList(transactionsList []TransactionSender) TransactionsList {
 	return TransactionsList{TransactionsList: transactionsList}
-}
-
-func (dt *DateTime) Scan(value interface{}) error {
-	dateTime, ok := value.(time.Time)
-	if !ok {
-		return errors.New("type assertion error")
-	}
-
-	dt.Time = dateTime
-
-	return nil
-}
-
-func (dt DateTime) Value() (driver.Value, error) {
-	return dt.Time, nil
 }
 
 func (d *SenderDate) Scan(value interface{}) error {
