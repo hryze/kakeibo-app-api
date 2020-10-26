@@ -51,7 +51,6 @@ func NewYearlyGroupBudget(year time.Time) YearlyGroupBudget {
 
 func (b GroupStandardBudgets) ShowBudgetsList() []int {
 	budgetsList := make([]int, len(b.GroupStandardBudgets))
-
 	for i := 0; i < len(b.GroupStandardBudgets); i++ {
 		budgetsList[i] = b.GroupStandardBudgets[i].Budget
 	}
@@ -61,7 +60,6 @@ func (b GroupStandardBudgets) ShowBudgetsList() []int {
 
 func (b GroupCustomBudgets) ShowBudgetsList() []int {
 	budgetsList := make([]int, len(b.GroupCustomBudgets))
-
 	for i := 0; i < len(b.GroupCustomBudgets); i++ {
 		budgetsList[i] = b.GroupCustomBudgets[i].Budget
 	}

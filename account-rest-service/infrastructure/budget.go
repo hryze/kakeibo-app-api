@@ -36,7 +36,9 @@ func (r *BudgetsRepository) PostInitStandardBudgets(userID string) error {
             (?,15),
             (?,16),
             (?,17)`
+
 	_, err := r.MySQLHandler.conn.Exec(query, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID, userID)
+
 	return err
 }
 
@@ -69,6 +71,7 @@ func (r *BudgetsRepository) GetStandardBudgets(userID string) (*model.StandardBu
 		if err := rows.StructScan(&standardBudgetByCategory); err != nil {
 			return nil, err
 		}
+
 		standardBudgetByCategoryList = append(standardBudgetByCategoryList, standardBudgetByCategory)
 	}
 
@@ -83,14 +86,14 @@ func (r *BudgetsRepository) GetStandardBudgets(userID string) (*model.StandardBu
 
 func (r *BudgetsRepository) PutStandardBudgets(standardBudgets *model.StandardBudgets, userID string) error {
 	query := `
-	   UPDATE
-	       standard_budgets
-	   SET
-	       budget = ?
-	   WHERE
-	       user_id = ?
-	   AND
-	       big_category_id = ?`
+	    UPDATE
+	        standard_budgets
+	    SET
+	        budget = ?
+	    WHERE
+	        user_id = ?
+	    AND
+	        big_category_id = ?`
 
 	tx, err := r.MySQLHandler.conn.Begin()
 	if err != nil {
@@ -153,6 +156,7 @@ func (r *BudgetsRepository) GetCustomBudgets(yearMonth time.Time, userID string)
 		if err := rows.StructScan(&customBudgetByCategory); err != nil {
 			return nil, err
 		}
+
 		customBudgetByCategoryList = append(customBudgetByCategoryList, customBudgetByCategory)
 	}
 
@@ -193,6 +197,7 @@ func (r *BudgetsRepository) PostCustomBudgets(customBudgets *model.CustomBudgets
 	}
 
 	_, err := r.MySQLHandler.conn.Exec(query, queryArgs...)
+
 	return err
 }
 
@@ -248,7 +253,9 @@ func (r *BudgetsRepository) DeleteCustomBudgets(yearMonth time.Time, userID stri
             user_id = ?
         AND
             years_months = ?`
+
 	_, err := r.MySQLHandler.conn.Exec(query, userID, yearMonth)
+
 	return err
 }
 
@@ -265,6 +272,7 @@ func (r *BudgetsRepository) GetMonthlyStandardBudget(userID string) (model.Month
 	if err := r.MySQLHandler.conn.QueryRowx(query, userID).StructScan(&monthlyStandardBudget); err != nil {
 		return monthlyStandardBudget, err
 	}
+
 	return monthlyStandardBudget, nil
 }
 
@@ -296,10 +304,13 @@ func (r *BudgetsRepository) GetMonthlyCustomBudgets(year time.Time, userID strin
 		if err := rows.StructScan(&monthlyCustomBudget); err != nil {
 			return nil, err
 		}
+
 		monthlyCustomBudgets = append(monthlyCustomBudgets, monthlyCustomBudget)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
 	return monthlyCustomBudgets, nil
 }

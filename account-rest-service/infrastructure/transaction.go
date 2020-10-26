@@ -50,6 +50,7 @@ func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string, first
             transactions.transaction_date <= ?
         ORDER BY
             transactions.transaction_date DESC, transactions.updated_date DESC`
+
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, firstDay, lastDay)
 	if err != nil {
 		return nil, err
@@ -62,11 +63,14 @@ func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string, first
 		if err := rows.StructScan(&transactionSender); err != nil {
 			return nil, err
 		}
+
 		transactionsList = append(transactionsList, transactionSender)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
 	return transactionsList, nil
 }
 
@@ -99,9 +103,11 @@ func (r *TransactionsRepository) GetTransaction(transactionSender *model.Transac
             transactions.custom_category_id = custom_categories.id
         WHERE
             transactions.id = ?`
+
 	if err := r.MySQLHandler.conn.QueryRowx(query, transactionID).StructScan(transactionSender); err != nil {
 		return nil, err
 	}
+
 	return transactionSender, nil
 }
 
@@ -111,7 +117,9 @@ func (r *TransactionsRepository) PostTransaction(transaction *model.TransactionR
             (transaction_type, transaction_date, shop, memo, amount, user_id, big_category_id, medium_category_id, custom_category_id)
         VALUES
             (?,?,?,?,?,?,?,?,?)`
+
 	result, err := r.MySQLHandler.conn.Exec(query, transaction.TransactionType, transaction.TransactionDate, transaction.Shop, transaction.Memo, transaction.Amount, userID, transaction.BigCategoryID, transaction.MediumCategoryID, transaction.CustomCategoryID)
+
 	return result, err
 }
 
@@ -130,7 +138,9 @@ func (r *TransactionsRepository) PutTransaction(transaction *model.TransactionRe
             custom_category_id = ?
         WHERE
             id = ?`
+
 	_, err := r.MySQLHandler.conn.Exec(query, transaction.TransactionType, transaction.TransactionDate, transaction.Shop, transaction.Memo, transaction.Amount, transaction.BigCategoryID, transaction.MediumCategoryID, transaction.CustomCategoryID, transactionID)
+
 	return err
 }
 
@@ -141,7 +151,9 @@ func (r *TransactionsRepository) DeleteTransaction(transactionID int) error {
             transactions
         WHERE 
             id = ?`
+
 	_, err := r.MySQLHandler.conn.Exec(query, transactionID)
+
 	return err
 }
 
@@ -158,10 +170,13 @@ func (r *TransactionsRepository) SearchTransactionsList(query string) ([]model.T
 		if err := rows.StructScan(&transactionSender); err != nil {
 			return nil, err
 		}
+
 		transactionsList = append(transactionsList, transactionSender)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
 	return transactionsList, nil
 }

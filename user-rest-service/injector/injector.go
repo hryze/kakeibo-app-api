@@ -14,6 +14,7 @@ func InjectMySQL() *infrastructure.MySQLHandler {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+
 	return mySQLHandler
 }
 
@@ -23,6 +24,7 @@ func InjectRedis() *infrastructure.RedisHandler {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+
 	return redisHandler
 }
 

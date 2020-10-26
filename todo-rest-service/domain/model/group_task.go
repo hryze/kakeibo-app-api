@@ -68,6 +68,7 @@ func (nt *NullTime) MarshalJSON() ([]byte, error) {
 	if !nt.Valid {
 		return []byte("null"), nil
 	}
+
 	return json.Marshal(nt.Time)
 }
 
@@ -75,12 +76,15 @@ func (nt *NullTime) UnmarshalJSON(b []byte) error {
 	if bytes.Equal(b, []byte("null")) {
 		return nil
 	}
+
 	trimData := strings.Trim(string(b), "\"")[:10]
 	dateTime, err := time.Parse("2006-01-02", trimData)
 	if err != nil {
 		return err
 	}
+
 	nt.Time, nt.Valid = dateTime, true
+
 	return nil
 }
 
@@ -88,6 +92,7 @@ func (ns *NullString) MarshalJSON() ([]byte, error) {
 	if !ns.Valid {
 		return []byte("null"), nil
 	}
+
 	return json.Marshal(ns.String)
 }
 
@@ -95,10 +100,13 @@ func (ns *NullString) UnmarshalJSON(b []byte) error {
 	if bytes.Equal(b, []byte("null")) {
 		return nil
 	}
+
 	if err := json.Unmarshal(b, &ns.String); err != nil {
 		return err
 	}
+
 	ns.Valid = true
+
 	return nil
 }
 
@@ -106,6 +114,7 @@ func (ni *NullInt) MarshalJSON() ([]byte, error) {
 	if !ni.Valid {
 		return []byte("null"), nil
 	}
+
 	return json.Marshal(ni.Int)
 }
 
@@ -113,10 +122,13 @@ func (ni *NullInt) UnmarshalJSON(b []byte) error {
 	if bytes.Equal(b, []byte("null")) {
 		return nil
 	}
+
 	if err := json.Unmarshal(b, &ni.Int); err != nil {
 		return err
 	}
+
 	ni.Valid = true
+
 	return nil
 }
 
@@ -130,7 +142,9 @@ func (ni *NullInt) Scan(value interface{}) error {
 	if !ok {
 		return errors.New("type assertion error")
 	}
+
 	ni.Int, ni.Valid = int(intValue), true
+
 	return nil
 }
 
@@ -138,5 +152,6 @@ func (ni NullInt) Value() (driver.Value, error) {
 	if !ni.Valid {
 		return nil, nil
 	}
+
 	return int64(ni.Int), nil
 }

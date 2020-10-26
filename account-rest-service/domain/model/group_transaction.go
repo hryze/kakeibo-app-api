@@ -83,12 +83,12 @@ func (t GroupTransactionReceiver) ShowTransactionReceiver() (string, error) {
 	if err != nil {
 		return string(b), err
 	}
+
 	return string(b), nil
 }
 
 func NewPayerList(userPaymentAmountList []UserPaymentAmount) PayerList {
 	var payerList PayerList
-
 	for _, userPaymentAmount := range userPaymentAmountList {
 		if userPaymentAmount.PaymentAmountToUser < 0 {
 			payerList.PayerList = append(payerList.PayerList, userPaymentAmount)
@@ -104,7 +104,6 @@ func NewPayerList(userPaymentAmountList []UserPaymentAmount) PayerList {
 
 func NewRecipientList(userPaymentAmountList []UserPaymentAmount) RecipientList {
 	var recipientList RecipientList
-
 	for _, userPaymentAmount := range userPaymentAmountList {
 		if userPaymentAmount.PaymentAmountToUser > 0 {
 			recipientList.RecipientList = append(recipientList.RecipientList, userPaymentAmount)
@@ -119,25 +118,28 @@ func NewRecipientList(userPaymentAmountList []UserPaymentAmount) RecipientList {
 }
 
 func NewGroupAccountsList(userPaymentAmountList []UserPaymentAmount, groupID int, month time.Time) GroupAccountsList {
-	var groupAccountsList GroupAccountsList
-
+	var totalPaymentAmount int
 	for _, userPaymentAmount := range userPaymentAmountList {
-		groupAccountsList.GroupTotalPaymentAmount += userPaymentAmount.TotalPaymentAmount
-		groupAccountsList.GroupRemainingAmount += userPaymentAmount.TotalPaymentAmount
+		totalPaymentAmount += userPaymentAmount.TotalPaymentAmount
 	}
 
-	groupAccountsList.GroupID = groupID
-	groupAccountsList.Month = month
-	groupAccountsList.GroupAveragePaymentAmount = int(math.Round((float64(groupAccountsList.GroupTotalPaymentAmount)) / float64(len(userPaymentAmountList))))
-	groupAccountsList.GroupRemainingAmount = groupAccountsList.GroupTotalPaymentAmount - groupAccountsList.GroupAveragePaymentAmount*len(userPaymentAmountList)
+	averagePaymentAmount := int(math.Round((float64(totalPaymentAmount)) / float64(len(userPaymentAmountList))))
+	remainingAmount := totalPaymentAmount - averagePaymentAmount*len(userPaymentAmountList)
 
-	return groupAccountsList
+	return GroupAccountsList{
+		GroupID:                   groupID,
+		Month:                     month,
+		GroupTotalPaymentAmount:   totalPaymentAmount,
+		GroupAveragePaymentAmount: averagePaymentAmount,
+		GroupRemainingAmount:      remainingAmount,
+	}
 }
 
 func (b BitBool) Value() (driver.Value, error) {
 	if b {
 		return []byte{1}, nil
 	}
+
 	return []byte{0}, nil
 }
 
@@ -146,6 +148,8 @@ func (b *BitBool) Scan(src interface{}) error {
 	if !ok {
 		return errors.New("bad []byte type assertion")
 	}
+
 	*b = bitBool[0] == 1
+
 	return nil
 }

@@ -13,10 +13,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type DeleteGroupCustomBudgetsMsg struct {
-	Message string `json:"message"`
-}
-
 func (h *DBHandler) PostInitGroupStandardBudgets(w http.ResponseWriter, r *http.Request) {
 	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
 	if err != nil {
@@ -39,6 +35,7 @@ func (h *DBHandler) GetGroupStandardBudgets(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -55,6 +52,7 @@ func (h *DBHandler) GetGroupStandardBudgets(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -80,6 +78,7 @@ func (h *DBHandler) PutGroupStandardBudgets(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -96,6 +95,7 @@ func (h *DBHandler) PutGroupStandardBudgets(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -137,6 +137,7 @@ func (h *DBHandler) GetGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -153,6 +154,7 @@ func (h *DBHandler) GetGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -184,6 +186,7 @@ func (h *DBHandler) PostGroupCustomBudgets(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -200,6 +203,7 @@ func (h *DBHandler) PostGroupCustomBudgets(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -247,6 +251,7 @@ func (h *DBHandler) PutGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -263,6 +268,7 @@ func (h *DBHandler) PutGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -310,6 +316,7 @@ func (h *DBHandler) DeleteGroupCustomBudgets(w http.ResponseWriter, r *http.Requ
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -326,6 +333,7 @@ func (h *DBHandler) DeleteGroupCustomBudgets(w http.ResponseWriter, r *http.Requ
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -343,7 +351,7 @@ func (h *DBHandler) DeleteGroupCustomBudgets(w http.ResponseWriter, r *http.Requ
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&DeleteGroupCustomBudgetsMsg{"カスタム予算を削除しました。"}); err != nil {
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"カスタム予算を削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -356,6 +364,7 @@ func (h *DBHandler) GetYearlyGroupBudgets(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -372,6 +381,7 @@ func (h *DBHandler) GetYearlyGroupBudgets(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -401,6 +411,7 @@ func (h *DBHandler) GetYearlyGroupBudgets(w http.ResponseWriter, r *http.Request
 			if time.Month(i)+1 == monthlyGroupCustomBudgets[j].Month.Month() {
 				yearlyBudget.YearlyTotalBudget += monthlyGroupCustomBudgets[j].MonthlyTotalBudget
 				yearlyBudget.GroupMonthlyBudgets[i] = monthlyGroupCustomBudgets[j]
+
 				j++
 				continue
 			}

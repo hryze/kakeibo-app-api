@@ -255,7 +255,7 @@ func TestDBHandler_DeleteTodo(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &DeleteTodoMsg{}, &DeleteTodoMsg{})
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }
 
 func TestDBHandler_SearchTodoList(t *testing.T) {

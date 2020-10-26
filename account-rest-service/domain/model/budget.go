@@ -62,7 +62,6 @@ func NewYearlyBudget(year time.Time) YearlyBudget {
 
 func (b StandardBudgets) ShowBudgetsList() []int {
 	budgetsList := make([]int, len(b.StandardBudgets))
-
 	for i := 0; i < len(b.StandardBudgets); i++ {
 		budgetsList[i] = b.StandardBudgets[i].Budget
 	}
@@ -72,7 +71,6 @@ func (b StandardBudgets) ShowBudgetsList() []int {
 
 func (b CustomBudgets) ShowBudgetsList() []int {
 	budgetsList := make([]int, len(b.CustomBudgets))
-
 	for i := 0; i < len(b.CustomBudgets); i++ {
 		budgetsList[i] = b.CustomBudgets[i].Budget
 	}
@@ -85,7 +83,9 @@ func (m *Months) Scan(value interface{}) error {
 	if !ok {
 		return errors.New("type assertion error")
 	}
+
 	m.Time = month
+
 	return nil
 }
 
@@ -107,6 +107,7 @@ func (m *Months) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
+
 	m.Time = date
 
 	return nil

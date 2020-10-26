@@ -24,20 +24,8 @@ type NoContentMsg struct {
 	Message string `json:"message"`
 }
 
-type DeleteContentMsg struct {
-	Message string `json:"message"`
-}
-
-type GroupUserConflictErrorMsg struct {
-	Message string `json:"message"`
-}
-
 type UserIDValidationErrorMsg struct {
 	Message string `json:"message"`
-}
-
-func (e *GroupUserConflictErrorMsg) Error() string {
-	return e.Message
 }
 
 func (e *UserIDValidationErrorMsg) Error() string {
@@ -92,7 +80,7 @@ func postInitGroupStandardBudgets(groupID int) error {
 func checkForUniqueGroupUser(h *DBHandler, groupID int, userID string) error {
 	if err := h.GroupRepo.FindApprovedUser(groupID, userID); err != sql.ErrNoRows {
 		if err == nil {
-			return &GroupUserConflictErrorMsg{"こちらのユーザーは既にグループに参加しています。"}
+			return &ConflictErrorMsg{"こちらのユーザーは既にグループに参加しています。"}
 		}
 
 		return err
@@ -100,7 +88,7 @@ func checkForUniqueGroupUser(h *DBHandler, groupID int, userID string) error {
 
 	if err := h.GroupRepo.FindUnapprovedUser(groupID, userID); err != sql.ErrNoRows {
 		if err == nil {
-			return &GroupUserConflictErrorMsg{"こちらのユーザーは既にグループに招待しています。"}
+			return &ConflictErrorMsg{"こちらのユーザーは既にグループに招待しています。"}
 		}
 
 		return err
@@ -146,6 +134,7 @@ func (h *DBHandler) GetGroupList(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -165,6 +154,7 @@ func (h *DBHandler) GetGroupList(w http.ResponseWriter, r *http.Request) {
 	if len(approvedGroupList) == 0 && len(unapprovedGroupList) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
+
 		if err := json.NewEncoder(w).Encode(&NoContentMsg{"参加しているグループ、招待されているグループはありません。"}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -232,6 +222,7 @@ func (h *DBHandler) PostGroup(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -259,6 +250,7 @@ func (h *DBHandler) PostGroup(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -284,6 +276,7 @@ func (h *DBHandler) PutGroup(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -311,6 +304,7 @@ func (h *DBHandler) PutGroup(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"グループ名を取得できませんでした"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -330,6 +324,7 @@ func (h *DBHandler) PostGroupUnapprovedUser(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -362,7 +357,7 @@ func (h *DBHandler) PostGroupUnapprovedUser(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err := checkForUniqueGroupUser(h, groupID, groupUnapprovedUser.UserID); err != nil {
-		groupUserConflictErrorMsg, ok := err.(*GroupUserConflictErrorMsg)
+		groupUserConflictErrorMsg, ok := err.(*ConflictErrorMsg)
 		if !ok {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
@@ -405,6 +400,7 @@ func (h *DBHandler) DeleteGroupApprovedUser(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -445,6 +441,7 @@ func (h *DBHandler) PostGroupApprovedUser(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -498,6 +495,7 @@ func (h *DBHandler) DeleteGroupUnapprovedUser(w http.ResponseWriter, r *http.Req
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}

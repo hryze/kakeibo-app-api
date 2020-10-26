@@ -25,10 +25,6 @@ type Users interface {
 	ShowUser() (string, error)
 }
 
-type LogoutMsg struct {
-	Message string `json:"message"`
-}
-
 type UserValidationErrorMsg struct {
 	ID       string `json:"id,omitempty"`
 	Name     string `json:"name,omitempty"`
@@ -46,6 +42,7 @@ func (e *UserValidationErrorMsg) Error() string {
 	if err != nil {
 		log.Println(err)
 	}
+
 	return string(b)
 }
 
@@ -54,16 +51,18 @@ func (e *UserConflictErrorMsg) Error() string {
 	if err != nil {
 		log.Println(err)
 	}
+
 	return string(b)
 }
 
 func validateUser(users Users) error {
-	var userValidationErrorMsg UserValidationErrorMsg
 	validate := validator.New()
 	err := validate.Struct(users)
 	if err == nil {
 		return nil
 	}
+
+	var userValidationErrorMsg UserValidationErrorMsg
 	for _, err := range err.(validator.ValidationErrors) {
 		fieldName := err.Field()
 		switch fieldName {
@@ -110,6 +109,7 @@ func checkForUniqueUser(h *DBHandler, signUpUser *model.SignUpUser) error {
 
 	userConflictErrorMsg.ID = "このIDは既に利用されています"
 	userConflictErrorMsg.Email = "このメールアドレスは既に利用されています"
+
 	return &userConflictErrorMsg
 }
 
@@ -166,19 +166,23 @@ func (h *DBHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	if err := validateUser(&signUpUser); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
+
 	if err := checkForUniqueUser(h, &signUpUser); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusConflict, err))
 		return
 	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(signUpUser.Password), 10)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	signUpUser.Password = string(hash)
 	if err := h.UserRepo.CreateUser(&signUpUser); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -196,6 +200,7 @@ func (h *DBHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	signUpUser.Password = ""
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&signUpUser); err != nil {
@@ -210,11 +215,14 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	if err := validateUser(&loginUser); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
+
 	password := loginUser.Password
+
 	dbUser, err := h.UserRepo.FindUser(&loginUser)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -225,11 +233,14 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
 	hashedPassword := dbUser.Password
+
 	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"認証に失敗しました"}))
 		return
 	}
+
 	dbUser.Password = ""
 
 	sessionID := uuid.New().String()
@@ -240,8 +251,8 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	domain := os.Getenv("COOKIE_DOMAIN")
-
 	secure := true
+
 	if domain != "shakepiper.com" {
 		secure = false
 	}
@@ -269,11 +280,13 @@ func (h *DBHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"ログアウト済みです"}))
 		return
 	}
+
 	sessionID := cookie.Value
 	if err := h.UserRepo.DeleteSessionID(sessionID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
 		Value:    "",
@@ -283,7 +296,7 @@ func (h *DBHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&LogoutMsg{"ログアウトしました"}); err != nil {
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"ログアウトしました"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

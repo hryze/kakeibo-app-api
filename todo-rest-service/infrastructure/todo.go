@@ -46,8 +46,10 @@ func (r *TodoRepository) GetDailyImplementationTodoList(date time.Time, userID s
 		if err := rows.StructScan(&implementationTodo); err != nil {
 			return nil, err
 		}
+
 		implementationTodoList = append(implementationTodoList, implementationTodo)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -86,8 +88,10 @@ func (r *TodoRepository) GetDailyDueTodoList(date time.Time, userID string) ([]m
 		if err := rows.StructScan(&dueTodo); err != nil {
 			return nil, err
 		}
+
 		dueTodoList = append(dueTodoList, dueTodo)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -128,8 +132,10 @@ func (r *TodoRepository) GetMonthlyImplementationTodoList(firstDay time.Time, la
 		if err := rows.StructScan(&implementationTodo); err != nil {
 			return nil, err
 		}
+
 		implementationTodoList = append(implementationTodoList, implementationTodo)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -170,8 +176,10 @@ func (r *TodoRepository) GetMonthlyDueTodoList(firstDay time.Time, lastDay time.
 		if err := rows.StructScan(&dueTodo); err != nil {
 			return nil, err
 		}
+
 		dueTodoList = append(dueTodoList, dueTodo)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -286,6 +294,7 @@ func (r *TodoRepository) DeleteTodo(todoID int) error {
             id = ?`
 
 	_, err := r.MySQLHandler.conn.Exec(query, todoID)
+
 	return err
 }
 
@@ -302,8 +311,10 @@ func (r *TodoRepository) SearchTodoList(todoSqlQuery string) ([]model.Todo, erro
 		if err := rows.StructScan(&searchTodo); err != nil {
 			return nil, err
 		}
+
 		searchTodoList = append(searchTodoList, searchTodo)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

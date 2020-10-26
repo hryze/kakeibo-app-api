@@ -35,11 +35,14 @@ func (r *CategoriesRepository) GetBigCategoriesList() ([]model.BigCategory, erro
 		if err := rows.StructScan(&bigCategory); err != nil {
 			return nil, err
 		}
+
 		bigCategoriesList = append(bigCategoriesList, bigCategory)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
 	return bigCategoriesList, nil
 }
 
@@ -64,11 +67,14 @@ func (r *CategoriesRepository) GetMediumCategoriesList() ([]model.AssociatedCate
 		if err := rows.StructScan(&mediumCategory); err != nil {
 			return nil, err
 		}
+
 		mediumCategoriesList = append(mediumCategoriesList, mediumCategory)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
 	return mediumCategoriesList, nil
 }
 
@@ -96,11 +102,14 @@ func (r *CategoriesRepository) GetCustomCategoriesList(userID string) ([]model.A
 		if err := rows.StructScan(&customCategory); err != nil {
 			return nil, err
 		}
+
 		customCategoriesList = append(customCategoriesList, customCategory)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
 	return customCategoriesList, nil
 }
 
@@ -119,6 +128,7 @@ func (r *CategoriesRepository) FindCustomCategory(customCategory *model.CustomCa
             category_name = ?`
 
 	err := r.MySQLHandler.conn.QueryRowx(query, userID, customCategory.BigCategoryID, customCategory.Name).Scan(&dbCustomCategoryName)
+
 	return err
 }
 
@@ -130,6 +140,7 @@ func (r *CategoriesRepository) PostCustomCategory(customCategory *model.CustomCa
             (?,?,?)`
 
 	result, err := r.MySQLHandler.conn.Exec(query, customCategory.Name, customCategory.BigCategoryID, userID)
+
 	return result, err
 }
 
@@ -143,6 +154,7 @@ func (r *CategoriesRepository) PutCustomCategory(customCategory *model.CustomCat
             id = ?`
 
 	_, err := r.MySQLHandler.conn.Exec(query, customCategory.Name, customCategory.ID)
+
 	return err
 }
 
@@ -155,5 +167,6 @@ func (r *CategoriesRepository) DeleteCustomCategory(customCategoryID int) error 
             id = ?`
 
 	_, err := r.MySQLHandler.conn.Exec(query, customCategoryID)
+
 	return err
 }

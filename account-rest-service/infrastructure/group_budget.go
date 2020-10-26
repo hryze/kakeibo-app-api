@@ -38,6 +38,7 @@ func (r *GroupBudgetsRepository) PostInitGroupStandardBudgets(groupID int) error
             (?,17)`
 
 	_, err := r.MySQLHandler.conn.Exec(query, groupID, groupID, groupID, groupID, groupID, groupID, groupID, groupID, groupID, groupID, groupID, groupID, groupID, groupID, groupID, groupID)
+
 	return err
 }
 
@@ -70,6 +71,7 @@ func (r *GroupBudgetsRepository) GetGroupStandardBudgets(groupID int) (*model.Gr
 		if err := rows.StructScan(&groupStandardBudgetByCategory); err != nil {
 			return nil, err
 		}
+
 		groupStandardBudgetByCategoryList = append(groupStandardBudgetByCategoryList, groupStandardBudgetByCategory)
 	}
 
@@ -154,6 +156,7 @@ func (r *GroupBudgetsRepository) GetGroupCustomBudgets(yearMonth time.Time, grou
 		if err := rows.StructScan(&groupCustomBudgetByCategory); err != nil {
 			return nil, err
 		}
+
 		groupCustomBudgetByCategoryList = append(groupCustomBudgetByCategoryList, groupCustomBudgetByCategory)
 	}
 
@@ -194,6 +197,7 @@ func (r *GroupBudgetsRepository) PostGroupCustomBudgets(groupCustomBudgets *mode
 	}
 
 	_, err := r.MySQLHandler.conn.Exec(query, queryArgs...)
+
 	return err
 }
 
@@ -300,6 +304,7 @@ func (r *GroupBudgetsRepository) GetMonthlyGroupCustomBudgets(year time.Time, gr
 		if err := rows.StructScan(&monthlyGroupCustomBudget); err != nil {
 			return nil, err
 		}
+
 		monthlyGroupCustomBudgets = append(monthlyGroupCustomBudgets, monthlyGroupCustomBudget)
 	}
 

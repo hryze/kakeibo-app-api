@@ -15,10 +15,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type DeleteGroupTodoMsg struct {
-	Message string `json:"message"`
-}
-
 type GroupTodoSearchQuery struct {
 	DateType     string
 	StartDate    string
@@ -158,6 +154,7 @@ func (h *DBHandler) GetDailyGroupTodoList(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -174,6 +171,7 @@ func (h *DBHandler) GetDailyGroupTodoList(w http.ResponseWriter, r *http.Request
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -224,6 +222,7 @@ func (h *DBHandler) GetMonthlyGroupTodoList(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -240,6 +239,7 @@ func (h *DBHandler) GetMonthlyGroupTodoList(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -249,6 +249,7 @@ func (h *DBHandler) GetMonthlyGroupTodoList(w http.ResponseWriter, r *http.Reque
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
 	}
+
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
 	implementationGroupTodoList, err := h.GroupTodoRepo.GetMonthlyImplementationGroupTodoList(firstDay, lastDay, groupID)
@@ -291,6 +292,7 @@ func (h *DBHandler) GetExpiredGroupTodoList(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -307,6 +309,7 @@ func (h *DBHandler) GetExpiredGroupTodoList(w http.ResponseWriter, r *http.Reque
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -335,6 +338,7 @@ func (h *DBHandler) PostGroupTodo(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -351,6 +355,7 @@ func (h *DBHandler) PostGroupTodo(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -399,6 +404,7 @@ func (h *DBHandler) PutGroupTodo(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -415,6 +421,7 @@ func (h *DBHandler) PutGroupTodo(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -462,6 +469,7 @@ func (h *DBHandler) DeleteGroupTodo(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -478,6 +486,7 @@ func (h *DBHandler) DeleteGroupTodo(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -495,7 +504,7 @@ func (h *DBHandler) DeleteGroupTodo(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&DeleteGroupTodoMsg{"todoを削除しました。"}); err != nil {
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"todoを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -508,6 +517,7 @@ func (h *DBHandler) SearchGroupTodoList(w http.ResponseWriter, r *http.Request) 
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -526,6 +536,7 @@ func (h *DBHandler) SearchGroupTodoList(w http.ResponseWriter, r *http.Request) 
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}

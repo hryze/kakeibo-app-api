@@ -15,6 +15,10 @@ type DBHandler struct {
 	GroupRepo  repository.GroupRepository
 }
 
+type DeleteContentMsg struct {
+	Message string `json:"message"`
+}
+
 type HTTPError struct {
 	Status       int   `json:"status"`
 	ErrorMessage error `json:"error"`
@@ -25,6 +29,10 @@ type BadRequestErrorMsg struct {
 }
 
 type AuthenticationErrorMsg struct {
+	Message string `json:"message"`
+}
+
+type ConflictErrorMsg struct {
 	Message string `json:"message"`
 }
 
@@ -52,6 +60,7 @@ func (e *HTTPError) Error() string {
 	if err != nil {
 		log.Println(err)
 	}
+
 	return string(b)
 }
 
@@ -60,6 +69,10 @@ func (e *BadRequestErrorMsg) Error() string {
 }
 
 func (e *AuthenticationErrorMsg) Error() string {
+	return e.Message
+}
+
+func (e *ConflictErrorMsg) Error() string {
 	return e.Message
 }
 
@@ -73,6 +86,7 @@ func errorResponseByJSON(w http.ResponseWriter, err error) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(httpError.Status)
 	if err := json.NewEncoder(w).Encode(httpError); err != nil {
@@ -85,10 +99,12 @@ func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (stri
 	if err != nil {
 		return "", err
 	}
+
 	sessionID := cookie.Value
 	userID, err := h.AuthRepo.GetUserID(sessionID)
 	if err != nil {
 		return "", err
 	}
+
 	return userID, nil
 }

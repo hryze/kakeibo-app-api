@@ -34,10 +34,6 @@ type GroupTransactionsSearchQuery struct {
 	UsersID         []string
 }
 
-type DeleteContentMsg struct {
-	Message string `json:"message"`
-}
-
 type GroupTransactionProcessLockErrorMsg struct {
 	Message string `json:"message"`
 }
@@ -203,6 +199,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *ht
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -219,6 +216,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *ht
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -228,6 +226,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *ht
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
 	}
+
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
 	dbGroupTransactionsList, err := h.GroupTransactionsRepo.GetMonthlyGroupTransactionsList(groupID, firstDay, lastDay)
@@ -264,6 +263,7 @@ func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request)
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -280,6 +280,7 @@ func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request)
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -339,6 +340,7 @@ func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) 
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -355,6 +357,7 @@ func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) 
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -398,6 +401,7 @@ func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) 
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"トランザクションを取得できませんでした。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -417,6 +421,7 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -433,6 +438,7 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -449,6 +455,7 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"こちらのトランザクションは既に削除されています。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -484,6 +491,7 @@ func (h *DBHandler) SearchGroupTransactionsList(w http.ResponseWriter, r *http.R
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -502,6 +510,7 @@ func (h *DBHandler) SearchGroupTransactionsList(w http.ResponseWriter, r *http.R
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -553,9 +562,11 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
@@ -568,6 +579,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -577,6 +589,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
 	}
+
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
 	userPaymentAmountList, err := h.GroupTransactionsRepo.GetUserPaymentAmountList(groupID, firstDay, lastDay)
@@ -636,6 +649,7 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -652,6 +666,7 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -661,6 +676,7 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
 	}
+
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
 	userPaymentAmountList, err := h.GroupTransactionsRepo.GetUserPaymentAmountList(groupID, firstDay, lastDay)
@@ -721,6 +737,7 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 
 			recipientList.RecipientList[i].PaymentAmountToUser = 0
 			payerList.PayerList[j].PaymentAmountToUser = 0
+
 			i++
 			j++
 		case remainingAmount < 0:
@@ -729,6 +746,7 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 
 			recipientList.RecipientList[i].PaymentAmountToUser = 0
 			payerList.PayerList[j].PaymentAmountToUser = remainingAmount
+
 			i++
 		case remainingAmount > 0:
 			groupAccount.PaymentAmount = int(math.Abs(float64(payerList.PayerList[j].PaymentAmountToUser)))
@@ -736,6 +754,7 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 
 			recipientList.RecipientList[i].PaymentAmountToUser = remainingAmount
 			payerList.PayerList[j].PaymentAmountToUser = 0
+
 			j++
 		}
 	}
@@ -768,6 +787,7 @@ func (h *DBHandler) PutMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -784,6 +804,7 @@ func (h *DBHandler) PutMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}
@@ -814,6 +835,7 @@ func (h *DBHandler) DeleteMonthlyGroupTransactionsAccount(w http.ResponseWriter,
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -830,6 +852,7 @@ func (h *DBHandler) DeleteMonthlyGroupTransactionsAccount(w http.ResponseWriter,
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
 		return
 	}

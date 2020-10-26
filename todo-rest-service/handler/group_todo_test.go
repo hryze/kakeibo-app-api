@@ -262,7 +262,7 @@ func TestDBHandler_DeleteGroupTodo(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &DeleteGroupTodoMsg{}, &DeleteGroupTodoMsg{})
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }
 
 func TestDBHandler_SearchGroupTodoList(t *testing.T) {

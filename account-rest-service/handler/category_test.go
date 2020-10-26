@@ -275,5 +275,5 @@ func TestDBHandler_DeleteCustomCategory(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &DeleteCustomCategoryMsg{}, &DeleteCustomCategoryMsg{})
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }

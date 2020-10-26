@@ -121,6 +121,6 @@ func TestDBHandler_Logout(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &LogoutMsg{}, &LogoutMsg{})
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 	testutil.AssertDeleteResponseCookie(t, res)
 }

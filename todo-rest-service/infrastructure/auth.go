@@ -15,9 +15,11 @@ func NewAuthRepository(redisHandler *RedisHandler) *AuthRepository {
 func (r *AuthRepository) GetUserID(sessionID string) (string, error) {
 	conn := r.RedisHandler.pool.Get()
 	defer conn.Close()
+
 	userID, err := redis.String(conn.Do("GET", sessionID))
 	if err != nil {
 		return userID, err
 	}
+
 	return userID, nil
 }

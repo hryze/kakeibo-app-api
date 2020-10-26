@@ -47,10 +47,6 @@ type NoSearchContentMsg struct {
 	Message string `json:"message"`
 }
 
-type DeleteTransactionMsg struct {
-	Message string `json:"message"`
-}
-
 type TransactionValidationErrorMsg struct {
 	Message []string `json:"message"`
 }
@@ -64,8 +60,6 @@ func (e *TransactionValidationErrorMsg) Error() string {
 }
 
 func validateTransaction(transactionReceivers TransactionReceivers) error {
-	var transactionValidationErrorMsg TransactionValidationErrorMsg
-
 	validate := validator.New()
 	validate.RegisterCustomTypeFunc(validateValuer, model.ReceiverDate{}, model.NullString{}, model.NullInt64{})
 	if err := validate.RegisterValidation("blank", blankValidation); err != nil {
@@ -85,6 +79,7 @@ func validateTransaction(transactionReceivers TransactionReceivers) error {
 		return nil
 	}
 
+	var transactionValidationErrorMsg TransactionValidationErrorMsg
 	for _, err := range err.(validator.ValidationErrors) {
 		var errorMessage string
 
@@ -152,6 +147,7 @@ func validateValuer(field reflect.Value) interface{} {
 			return val
 		}
 	}
+
 	return nil
 }
 
@@ -181,6 +177,7 @@ func dateValidation(fl validator.FieldLevel) bool {
 	if err != nil {
 		return false
 	}
+
 	if dateTime.Before(minDate) || dateTime.After(maxDate) {
 		return false
 	}
@@ -364,6 +361,7 @@ func (h *DBHandler) GetMonthlyTransactionsList(w http.ResponseWriter, r *http.Re
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -373,6 +371,7 @@ func (h *DBHandler) GetMonthlyTransactionsList(w http.ResponseWriter, r *http.Re
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
 	}
+
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
 	dbTransactionsList, err := h.TransactionsRepo.GetMonthlyTransactionsList(userID, firstDay, lastDay)
@@ -409,6 +408,7 @@ func (h *DBHandler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -429,6 +429,7 @@ func (h *DBHandler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
+
 	lastInsertId, err := result.LastInsertId()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -442,6 +443,7 @@ func (h *DBHandler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"トランザクションを取得できませんでした"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -461,6 +463,7 @@ func (h *DBHandler) PutTransaction(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -494,6 +497,7 @@ func (h *DBHandler) PutTransaction(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"トランザクションを取得できませんでした"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -513,6 +517,7 @@ func (h *DBHandler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -530,7 +535,7 @@ func (h *DBHandler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&DeleteTransactionMsg{"トランザクションを削除しました。"}); err != nil {
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"トランザクションを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -543,6 +548,7 @@ func (h *DBHandler) SearchTransactionsList(w http.ResponseWriter, r *http.Reques
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
 			return
 		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}

@@ -47,6 +47,7 @@ func (r *GroupTodoRepository) GetDailyImplementationGroupTodoList(date time.Time
 		if err := rows.StructScan(&implementationGroupTodo); err != nil {
 			return nil, err
 		}
+
 		implementationGroupTodoList = append(implementationGroupTodoList, implementationGroupTodo)
 	}
 
@@ -89,6 +90,7 @@ func (r *GroupTodoRepository) GetDailyDueGroupTodoList(date time.Time, groupID i
 		if err := rows.StructScan(&groupDueTodo); err != nil {
 			return nil, err
 		}
+
 		dueGroupTodoList = append(dueGroupTodoList, groupDueTodo)
 	}
 
@@ -133,6 +135,7 @@ func (r *GroupTodoRepository) GetMonthlyImplementationGroupTodoList(firstDay tim
 		if err := rows.StructScan(&implementationGroupTodo); err != nil {
 			return nil, err
 		}
+
 		implementationGroupTodoList = append(implementationGroupTodoList, implementationGroupTodo)
 	}
 
@@ -177,6 +180,7 @@ func (r *GroupTodoRepository) GetMonthlyDueGroupTodoList(firstDay time.Time, las
 		if err := rows.StructScan(&groupDueTodo); err != nil {
 			return nil, err
 		}
+
 		dueGroupTodoList = append(dueGroupTodoList, groupDueTodo)
 	}
 
@@ -313,6 +317,7 @@ func (r *GroupTodoRepository) SearchGroupTodoList(groupTodoSqlQuery string) ([]m
 		if err := rows.StructScan(&searchGroupTodo); err != nil {
 			return nil, err
 		}
+
 		searchGroupTodoList = append(searchGroupTodoList, searchGroupTodo)
 	}
 

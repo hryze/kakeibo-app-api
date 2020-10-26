@@ -40,6 +40,7 @@ func (r *GroupTasksRepository) GetGroupTasksUsersList(groupID int) ([]model.Grou
 		if err := rows.StructScan(&groupTasksUser); err != nil {
 			return nil, err
 		}
+
 		groupTasksUsersList = append(groupTasksUsersList, groupTasksUser)
 	}
 
@@ -81,6 +82,7 @@ func (r *GroupTasksRepository) GetGroupTasksListAssignedToUser(groupID int) ([]m
 		if err := rows.StructScan(&groupTaskAssignedToUser); err != nil {
 			return nil, err
 		}
+
 		groupTasksListAssignedToUser = append(groupTasksListAssignedToUser, groupTaskAssignedToUser)
 	}
 
@@ -140,7 +142,6 @@ func (r *GroupTasksRepository) GetGroupTasksIDListAssignedToUser(groupTasksUsers
 	var groupTasksIDList []int
 	for rows.Next() {
 		var groupTasksID int
-
 		if err := rows.Scan(&groupTasksID); err != nil {
 			return nil, err
 		}
@@ -254,6 +255,7 @@ func (r *GroupTasksRepository) GetGroupTasksList(groupID int) ([]model.GroupTask
 		if err := rows.StructScan(&groupTask); err != nil {
 			return nil, err
 		}
+
 		groupTasksList = append(groupTasksList, groupTask)
 	}
 

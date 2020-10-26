@@ -17,17 +17,17 @@ func NewGroupRepository(mysqlHandler *MySQLHandler) *GroupRepository {
 
 func (r *GroupRepository) GetApprovedGroupList(userID string) ([]model.ApprovedGroup, error) {
 	query := `
-       SELECT
-           group_users.group_id group_id,
-           group_names.group_name group_name
-       FROM
-           group_users
-       LEFT JOIN
-           group_names
-       ON
-           group_users.group_id = group_names.id
-       WHERE
-           group_users.user_id = ?`
+        SELECT
+            group_users.group_id group_id,
+            group_names.group_name group_name
+        FROM
+            group_users
+        LEFT JOIN
+            group_names
+        ON
+            group_users.group_id = group_names.id
+        WHERE
+            group_users.user_id = ?`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID)
 	if err != nil {
@@ -44,8 +44,10 @@ func (r *GroupRepository) GetApprovedGroupList(userID string) ([]model.ApprovedG
 		if err := rows.StructScan(&approvedGroup); err != nil {
 			return nil, err
 		}
+
 		approvedGroupList = append(approvedGroupList, approvedGroup)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -55,17 +57,17 @@ func (r *GroupRepository) GetApprovedGroupList(userID string) ([]model.ApprovedG
 
 func (r *GroupRepository) GetUnApprovedGroupList(userID string) ([]model.UnapprovedGroup, error) {
 	query := `
-       SELECT
-           group_unapproved_users.group_id group_id,
-           group_names.group_name group_name
-       FROM
-           group_unapproved_users
-       LEFT JOIN
-           group_names
-       ON
-           group_unapproved_users.group_id = group_names.id
-       WHERE
-           group_unapproved_users.user_id = ?`
+        SELECT
+            group_unapproved_users.group_id group_id,
+            group_names.group_name group_name
+        FROM
+            group_unapproved_users
+        LEFT JOIN
+            group_names
+        ON
+            group_unapproved_users.group_id = group_names.id
+        WHERE
+            group_unapproved_users.user_id = ?`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID)
 	if err != nil {
@@ -79,12 +81,13 @@ func (r *GroupRepository) GetUnApprovedGroupList(userID string) ([]model.Unappro
 			ApprovedUsersList:   make([]model.ApprovedUser, 0),
 			UnapprovedUsersList: make([]model.UnapprovedUser, 0),
 		}
-
 		if err := rows.StructScan(&unapprovedGroup); err != nil {
 			return nil, err
 		}
+
 		unapprovedGroupList = append(unapprovedGroupList, unapprovedGroup)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -96,18 +99,18 @@ func (r *GroupRepository) GetApprovedUsersList(groupIDList []interface{}) ([]mod
 	sliceQuery := make([]string, len(groupIDList))
 	for i := 0; i < len(groupIDList); i++ {
 		sliceQuery[i] = `
-           SELECT
-               group_users.group_id group_id,
-               group_users.user_id user_id,
-               users.name user_name
-           FROM
-               group_users
-           LEFT JOIN
-               users
-           ON
-               group_users.user_id = users.user_id
-           WHERE
-               group_users.group_id = ?`
+            SELECT
+                group_users.group_id group_id,
+                group_users.user_id user_id,
+                users.name user_name
+            FROM
+                group_users
+            LEFT JOIN
+                users
+            ON
+                group_users.user_id = users.user_id
+            WHERE
+                group_users.group_id = ?`
 	}
 
 	query := strings.Join(sliceQuery, " UNION ")
@@ -124,8 +127,10 @@ func (r *GroupRepository) GetApprovedUsersList(groupIDList []interface{}) ([]mod
 		if err := rows.StructScan(&approvedUser); err != nil {
 			return nil, err
 		}
+
 		approvedUsersList = append(approvedUsersList, approvedUser)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -137,18 +142,18 @@ func (r *GroupRepository) GetUnapprovedUsersList(groupIDList []interface{}) ([]m
 	sliceQuery := make([]string, len(groupIDList))
 	for i := 0; i < len(groupIDList); i++ {
 		sliceQuery[i] = `
-           SELECT
-               group_unapproved_users.group_id group_id,
-               group_unapproved_users.user_id user_id,
-               users.name user_name
-           FROM
-               group_unapproved_users
-           LEFT JOIN
-               users
-           ON
-               group_unapproved_users.user_id = users.user_id
-           WHERE
-               group_unapproved_users.group_id = ?`
+            SELECT
+                group_unapproved_users.group_id group_id,
+                group_unapproved_users.user_id user_id,
+                users.name user_name
+            FROM
+                group_unapproved_users
+            LEFT JOIN
+                users
+            ON
+                group_unapproved_users.user_id = users.user_id
+            WHERE
+                group_unapproved_users.group_id = ?`
 	}
 
 	query := strings.Join(sliceQuery, " UNION ")
@@ -165,8 +170,10 @@ func (r *GroupRepository) GetUnapprovedUsersList(groupIDList []interface{}) ([]m
 		if err := rows.StructScan(&unapprovedUser); err != nil {
 			return nil, err
 		}
+
 		unapprovedUsersList = append(unapprovedUsersList, unapprovedUser)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -202,6 +209,7 @@ func (r *GroupRepository) PutGroup(group *model.Group, groupID int) error {
             id = ?`
 
 	_, err := r.MySQLHandler.conn.Exec(query, group.GroupName, groupID)
+
 	return err
 }
 
@@ -246,6 +254,7 @@ func (r *GroupRepository) PostGroupAndApprovedUser(group *model.Group, userID st
 		if err := tx.Rollback(); err != nil {
 			return nil, err
 		}
+
 		return nil, err
 	}
 
@@ -279,7 +288,6 @@ func (r *GroupRepository) DeleteGroupAndApprovedUser(groupID int, userID string)
 	}
 
 	transactions := func(tx *sql.Tx) error {
-
 		if _, err := tx.Exec(approvedUserQuery, groupID, userID); err != nil {
 			return err
 		}
@@ -287,6 +295,7 @@ func (r *GroupRepository) DeleteGroupAndApprovedUser(groupID int, userID string)
 		if _, err := tx.Exec(groupQuery, groupID); err != nil {
 			return err
 		}
+
 		return nil
 	}
 
@@ -341,14 +350,15 @@ func (r *GroupRepository) GetUnapprovedUser(groupUnapprovedUsersID int) (*model.
 }
 
 func (r *GroupRepository) FindApprovedUser(groupID int, userID string) error {
-	query := `SELECT
-                  id 
-              FROM
-                  group_users
-              WHERE 
-                  group_id = ? 
-              AND 
-                  user_id = ?`
+	query := `
+        SELECT
+            id 
+        FROM
+            group_users
+        WHERE 
+            group_id = ? 
+        AND 
+            user_id = ?`
 
 	var groupUsersID int
 	err := r.MySQLHandler.conn.QueryRowx(query, groupID, userID).Scan(&groupUsersID)
@@ -357,14 +367,15 @@ func (r *GroupRepository) FindApprovedUser(groupID int, userID string) error {
 }
 
 func (r *GroupRepository) FindUnapprovedUser(groupID int, userID string) error {
-	query := `SELECT
-                  id 
-              FROM
-                  group_unapproved_users
-              WHERE 
-                  group_id = ? 
-              AND 
-                  user_id = ?`
+	query := `
+        SELECT
+            id 
+        FROM
+            group_unapproved_users
+        WHERE 
+            group_id = ? 
+        AND 
+            user_id = ?`
 
 	var groupUnapprovedUsersID int
 	err := r.MySQLHandler.conn.QueryRowx(query, groupID, userID).Scan(&groupUnapprovedUsersID)
@@ -411,6 +422,7 @@ func (r *GroupRepository) PostGroupApprovedUserAndDeleteGroupUnapprovedUser(grou
 		if err := tx.Rollback(); err != nil {
 			return nil, err
 		}
+
 		return nil, err
 	}
 
@@ -455,6 +467,7 @@ func (r *GroupRepository) DeleteGroupUnapprovedUser(groupID int, userID string) 
             user_id = ?`
 
 	_, err := r.MySQLHandler.conn.Exec(query, groupID, userID)
+
 	return err
 }
 
@@ -469,23 +482,22 @@ func (r *GroupRepository) DeleteGroupApprovedUser(groupID int, userID string) er
             user_id = ?`
 
 	_, err := r.MySQLHandler.conn.Exec(query, groupID, userID)
+
 	return err
 }
 
 func (r *GroupRepository) FindApprovedUsersList(groupID int, groupUsersList []string) (model.GroupTasksUsersListReceiver, error) {
-	var dbGroupUsersList model.GroupTasksUsersListReceiver
-
 	sliceQuery := make([]string, len(groupUsersList))
 	for i := 0; i < len(groupUsersList); i++ {
 		sliceQuery[i] = `
-              SELECT
-                  user_id
-              FROM
-                  group_users
-              WHERE
-                  group_id = ?
-              AND
-                  user_id = ?`
+            SELECT
+                user_id
+            FROM
+                group_users
+            WHERE
+                group_id = ?
+            AND
+                user_id = ?`
 	}
 
 	query := strings.Join(sliceQuery, " UNION ")
@@ -495,6 +507,7 @@ func (r *GroupRepository) FindApprovedUsersList(groupID int, groupUsersList []st
 		queryArgs = append(queryArgs, groupID, userID)
 	}
 
+	var dbGroupUsersList model.GroupTasksUsersListReceiver
 	rows, err := r.MySQLHandler.conn.Queryx(query, queryArgs...)
 	if err != nil {
 		return dbGroupUsersList, err
@@ -509,6 +522,7 @@ func (r *GroupRepository) FindApprovedUsersList(groupID int, groupUsersList []st
 
 		dbGroupUsersList.GroupUsersList = append(dbGroupUsersList.GroupUsersList, userID)
 	}
+
 	if err := rows.Err(); err != nil {
 		return dbGroupUsersList, err
 	}
