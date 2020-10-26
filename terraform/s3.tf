@@ -9,7 +9,7 @@ resource "aws_s3_bucket" "kakeibo_s3" {
 
   website {
     index_document = "index.html"
-    error_document = "public/404.html"
+    error_document = "index.html"
   }
 
   lifecycle_rule {
