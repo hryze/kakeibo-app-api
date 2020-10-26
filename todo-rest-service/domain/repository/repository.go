@@ -21,6 +21,7 @@ type TodoRepository interface {
 	GetDailyDueTodoList(date time.Time, userID string) ([]model.Todo, error)
 	GetMonthlyImplementationTodoList(firstDay time.Time, lastDay time.Time, userID string) ([]model.Todo, error)
 	GetMonthlyDueTodoList(firstDay time.Time, lastDay time.Time, userID string) ([]model.Todo, error)
+	GetExpiredTodoList(dueDate time.Time, userID string) (*model.ExpiredTodoList, error)
 	GetTodo(todoId int) (*model.Todo, error)
 	PostTodo(todo *model.Todo, userID string) (sql.Result, error)
 	PutTodo(todo *model.Todo, todoID int) error
@@ -33,6 +34,7 @@ type GroupTodoRepository interface {
 	GetDailyDueGroupTodoList(date time.Time, groupID int) ([]model.GroupTodo, error)
 	GetMonthlyImplementationGroupTodoList(firstDay time.Time, lastDay time.Time, groupID int) ([]model.GroupTodo, error)
 	GetMonthlyDueGroupTodoList(firstDay time.Time, lastDay time.Time, groupID int) ([]model.GroupTodo, error)
+	GetExpiredGroupTodoList(dueDate time.Time, groupID int) (*model.ExpiredGroupTodoList, error)
 	PostGroupTodo(groupTodo *model.GroupTodo, userID string, groupID int) (sql.Result, error)
 	GetGroupTodo(groupTodoId int) (*model.GroupTodo, error)
 	PutGroupTodo(groupTodo *model.GroupTodo, groupTodoID int) error

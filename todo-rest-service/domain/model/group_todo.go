@@ -10,6 +10,10 @@ type GroupTodoList struct {
 	DueGroupTodoList            []GroupTodo `json:"due_todo_list"`
 }
 
+type ExpiredGroupTodoList struct {
+	ExpiredGroupTodoList []GroupTodo `json:"expired_group_todo_list"`
+}
+
 type SearchGroupTodoList struct {
 	SearchGroupTodoList []GroupTodo `json:"search_todo_list"`
 }
@@ -17,6 +21,7 @@ type SearchGroupTodoList struct {
 type GroupTodo struct {
 	ID                 int       `json:"id"                  db:"id"`
 	PostedDate         time.Time `json:"posted_date"         db:"posted_date"`
+	UpdatedDate        time.Time `json:"updated_date"        db:"updated_date"`
 	ImplementationDate Date      `json:"implementation_date" db:"implementation_date" validate:"required,date"`
 	DueDate            Date      `json:"due_date"            db:"due_date"            validate:"required,date"`
 	TodoContent        string    `json:"todo_content"        db:"todo_content"        validate:"required,max=100,blank"`

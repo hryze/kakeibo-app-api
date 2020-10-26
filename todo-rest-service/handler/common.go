@@ -23,6 +23,12 @@ type DBHandler struct {
 	TimeManage     TimeManager
 }
 
+type TimeManager interface {
+	Now() time.Time
+}
+
+type RealTime struct{}
+
 type DeleteContentMsg struct {
 	Message string `json:"message"`
 }
@@ -42,6 +48,14 @@ type AuthenticationErrorMsg struct {
 
 type InternalServerErrorMsg struct {
 	Message string `json:"message"`
+}
+
+func NewRealTime() *RealTime {
+	return &RealTime{}
+}
+
+func (r *RealTime) Now() time.Time {
+	return time.Now()
 }
 
 func NewHTTPError(status int, err error) error {
