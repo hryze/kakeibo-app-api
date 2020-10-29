@@ -85,7 +85,7 @@ variable "elasticache_port" {
 variable "rds_port" {
   type        = number
   default     = 3306
-  description = "Password for RDS"
+  description = "Port for RDS"
 }
 
 variable "rds_user" {
@@ -95,7 +95,27 @@ variable "rds_user" {
 
 variable "rds_password" {
   type        = string
-  description = "User for RDS"
+  description = "Password for RDS"
+}
+
+variable "rds_secret" {
+  type        = map(string)
+  description = "Secret for RDS"
+}
+
+variable "user_db_dsn" {
+  type        = map(string)
+  description = "DSN for user service"
+}
+
+variable "account_db_dsn" {
+  type        = map(string)
+  description = "DSN for account service"
+}
+
+variable "todo_db_dsn" {
+  type        = map(string)
+  description = "DSN for todo service"
 }
 
 locals {
