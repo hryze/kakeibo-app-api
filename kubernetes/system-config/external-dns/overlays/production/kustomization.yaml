@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../bases
+patchesStrategicMerge:
+  - serviceaccount/external-dns.yaml
+  - deployment/external-dns.yaml
+namespace: kube-system
+images:
+  - name: k8s.gcr.io/external-dns/external-dns
+    newTag: v0.7.3
