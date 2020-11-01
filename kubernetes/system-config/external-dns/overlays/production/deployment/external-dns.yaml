@@ -6,7 +6,8 @@ spec:
   template:
     spec:
       containers:
-        - args:
+        - name: external-dns
+          args:
             - --source=service
             - --source=ingress
             - --domain-filter=shakepiper.com
