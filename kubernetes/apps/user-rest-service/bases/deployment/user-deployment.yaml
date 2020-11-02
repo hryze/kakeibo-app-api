@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: user
-          image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/user-rest-service:${IMAGE_TAG}
+          image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/user-rest-service
           ports:
             - containerPort: 8080
           resources:

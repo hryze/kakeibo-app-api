@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment/user-deployment.yaml
+  - hpa/user-hpa.yaml
+  - pdb/user-pdb.yaml
+  - secret/user-secret.yaml
+  - service/user-service.yaml
