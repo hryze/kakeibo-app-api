@@ -28,8 +28,22 @@ jobs:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v1
 
+      - name: Setup Kustomize
+        uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: "3.8.6"
+
       - name: Define KUBECONFIG
         run: aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name kakeibo-prod-cluster
 
       - name: Kubectl apply
-        run: kubectl apply -f .
+        run: |
+          kustomize build cert-manager/overlays/production | kubectl apply --validate=false -f -
+          kustomize build aws-load-balancer-controller/overlays/production | kubectl apply -f -
+          kustomize build alb-ingress/overlays/production | kubectl apply -f -
+          kustomize build cluster-autoscaler/overlays/production | kubectl apply -f -
+          kustomize build metrics-server/overlays/production | kubectl apply -f -
+          kustomize build external-dns/overlays/production | kubectl apply -f -
+          kustomize build external-secrets/overlays/production | kubectl apply -f -
+          kustomize build secret/overlays/production | kubectl apply -f -
+          kustomize build init-rds-job/overlays/production | kubectl apply -f -
