@@ -21,7 +21,7 @@ spec:
               servicePort: use-annotation
           - path: /*
             backend:
-              serviceName: user-svc
+              serviceName: user-service
               servicePort: 8080
     - host: account.shakepiper.com
       http:
@@ -32,7 +32,7 @@ spec:
               servicePort: use-annotation
           - path: /*
             backend:
-              serviceName: account-svc
+              serviceName: account-service
               servicePort: 8081
     - host: todo.shakepiper.com
       http:
@@ -43,5 +43,5 @@ spec:
               servicePort: use-annotation
           - path: /*
             backend:
-              serviceName: todo-svc
+              serviceName: todo-service
               servicePort: 8082
