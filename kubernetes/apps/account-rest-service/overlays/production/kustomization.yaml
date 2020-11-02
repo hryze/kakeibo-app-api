@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../bases
+patchesStrategicMerge:
+  - deployment/account-deployment.yaml
+  - hpa/account-hpa.yaml
+  - pdb/account-pdb.yaml
+  - secret/account-secret.yaml
+  - service/account-service.yaml
+commonLabels:
+  app: account
+images:
+  - name: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/account-rest-service
+    newTag: IMAGE_TAG
+configMapGenerator:
+  - name: account-configmap
+    literals:
+      - ALLOWED_ORIGIN=https://www.shakepiper.com
+      - USER_HOST=user-service.default.svc.cluster.local

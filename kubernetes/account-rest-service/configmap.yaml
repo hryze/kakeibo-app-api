@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: account-configmap
-  labels:
-    app: account
-data:
-  ALLOWED_ORIGIN: https://www.shakepiper.com
-  USER_HOST: user-svc.default.svc.cluster.local

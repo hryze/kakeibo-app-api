@@ -20,17 +20,17 @@ spec:
     spec:
       containers:
         - name: account
-          image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/account-rest-service:${IMAGE_TAG}
+          image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/account-rest-service
           ports:
             - containerPort: 8081
-          resources:
-            requests:
-              memory: 64Mi
-              cpu: 250m
           readinessProbe:
             httpGet:
               path: /readyz
               port: 8081
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 250m
           envFrom:
             - configMapRef:
                 name: account-configmap
