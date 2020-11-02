@@ -20,17 +20,17 @@ spec:
     spec:
       containers:
         - name: todo
-          image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/todo-rest-service:${IMAGE_TAG}
+          image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/todo-rest-service
           ports:
             - containerPort: 8082
-          resources:
-            requests:
-              memory: 64Mi
-              cpu: 250m
           readinessProbe:
             httpGet:
               path: /readyz
               port: 8082
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 250m
           envFrom:
             - configMapRef:
                 name: todo-configmap

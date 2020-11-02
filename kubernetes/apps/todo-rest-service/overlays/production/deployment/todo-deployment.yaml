@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-deployment
+  labels:
+    app: todo
+spec:
+  template:
+    spec:
+      containers:
+        - name: todo
+          ports:
+            - containerPort: 8082
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8082
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 250m

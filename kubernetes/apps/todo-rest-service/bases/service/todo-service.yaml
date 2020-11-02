@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: todo-svc
+  name: todo-service
   labels:
     app: todo
 spec:
