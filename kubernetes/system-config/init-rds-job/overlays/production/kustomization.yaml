@@ -5,6 +5,9 @@ resources:
 patchesStrategicMerge:
   - job/init-rds-job.yaml
 namespace: kube-system
+images:
+  - name: paytaira/mysql-client
+    newTag: v1.0.0
 configMapGenerator:
   - name: init-rds-configmap
     files:

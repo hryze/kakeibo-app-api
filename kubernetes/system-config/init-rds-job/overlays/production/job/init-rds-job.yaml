@@ -6,8 +6,7 @@ spec:
   template:
     spec:
       containers:
-        - image: paytaira/mysql-client:latest
-          name: init-rds
+        - name: init-rds
           command: [ "sh", "-c" ]
           args: [ "mysql -u${MYSQL_USER} -p${MYSQL_PASSWORD} -h${MYSQL_HOST} -P${MYSQL_PORT} < /rds/init.sql" ]
           envFrom:
@@ -16,7 +15,6 @@ spec:
           volumeMounts:
             - name: init-rds-configmap
               mountPath: /rds
-      restartPolicy: Never
       volumes:
         - name: init-rds-configmap
           configMap:

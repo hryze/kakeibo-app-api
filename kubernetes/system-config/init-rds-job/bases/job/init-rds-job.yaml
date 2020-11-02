@@ -2,3 +2,10 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: init-rds-job
+spec:
+  template:
+    spec:
+      containers:
+        - name: init-rds
+          image: paytaira/mysql-client
+      restartPolicy: Never
