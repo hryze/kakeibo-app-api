@@ -3,5 +3,5 @@ kind: Kustomization
 resources:
   - ../../bases
 patchesStrategicMerge:
-  - serviceaccount/alb-ingress-controller.yaml
-  - deployment/alb-ingress-controller.yaml
+  - serviceaccount/aws-load-balancer-controller.yaml
+  - deployment/aws-load-balancer-controller.yaml
