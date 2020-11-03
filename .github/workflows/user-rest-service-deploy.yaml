@@ -19,7 +19,7 @@ jobs:
       ECR_REPOSITORY: user-rest-service
       IMAGE_TAG: release.${{ github.sha }}
       BUILD_DIRECTORY: user-rest-service
-      KUBERNETES_DIRECTORY: kubernetes/user-rest-service
+      KUBERNETES_DIRECTORY: kubernetes/apps/user-rest-service/overlays/production
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -66,21 +66,18 @@ jobs:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v1
 
+      - name: Setup Kustomize
+        uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: "3.8.6"
+
       - name: Define KUBECONFIG
         run: aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name kakeibo-prod-cluster
 
-      - name: Install dependent package
-        run: |
-          sudo apt update -y
-          sudo apt install -y gettext
+      - name: kustomize edit set image tag
+        run: kustomize edit set image 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/user-rest-service:$IMAGE_TAG
+        working-directory: ${{env.KUBERNETES_DIRECTORY}}
 
       - name: Kubectl apply
-        run: |
-          kubectl apply -f service.yaml &
-          kubectl apply -f configmap.yaml &
-          kubectl apply -f secret.yaml &
-          kubectl apply -f hpa.yaml &
-          kubectl apply -f pdb.yaml &
-          wait
-          envsubst < deployment.yaml | kubectl apply -f -
+        run: kustomize build . | kubectl apply -f -
         working-directory: ${{env.KUBERNETES_DIRECTORY}}
