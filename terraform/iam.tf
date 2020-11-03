@@ -104,6 +104,51 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
   }
 }
 
+resource "aws_iam_role" "external_secrets" {
+  name               = "external-secrets"
+  assume_role_policy = data.aws_iam_policy_document.external_secrets_assume_role_policy.json
+}
+
+data "aws_iam_policy_document" "external_secrets_assume_role_policy" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.openid.arn]
+    }
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.openid.url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:external-secrets"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "external_secrets_role_policy" {
+  name   = "external-secrets-role-policy"
+  role   = aws_iam_role.external_secrets.id
+  policy = data.aws_iam_policy_document.external_secrets.json
+}
+
+data "aws_iam_policy_document" "external_secrets" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetResourcePolicy",
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret",
+      "secretsmanager:ListSecretVersionIds"
+    ]
+    resources = [
+      aws_secretsmanager_secret.rds_secret.arn,
+      aws_secretsmanager_secret.user_db_dsn.arn,
+      aws_secretsmanager_secret.account_db_dsn.arn,
+      aws_secretsmanager_secret.todo_db_dsn.arn
+    ]
+  }
+}
+
 resource "aws_iam_role" "external_dns" {
   name               = "external-dns"
   assume_role_policy = data.aws_iam_policy_document.external_dns_assume_role_policy.json
@@ -131,7 +176,7 @@ resource "aws_iam_role_policy" "external_dns_role_policy" {
   policy = data.aws_iam_policy_document.external_dns.json
 }
 
-data aws_iam_policy_document external_dns {
+data "aws_iam_policy_document" "external_dns" {
   statement {
     effect = "Allow"
     actions = [

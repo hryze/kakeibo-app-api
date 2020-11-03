@@ -17,6 +17,10 @@ jobs:
     env:
       TF_VAR_rds_user: ${{ secrets.RDS_USER }}
       TF_VAR_rds_password: ${{ secrets.RDS_PASSWORD }}
+      TF_VAR_rds_secret: ${{ secrets.RDS_SECRET }}
+      TF_VAR_user_db_dsn: ${{ secrets.USER_DB_DSN }}
+      TF_VAR_account_db_dsn: ${{ secrets.ACCOUNT_DB_DSN }}
+      TF_VAR_todo_db_dsn: ${{ secrets.TODO_DB_DSN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
