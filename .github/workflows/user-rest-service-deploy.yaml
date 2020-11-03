@@ -1,5 +1,12 @@
 name: user-rest-service deploy
-on: push
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - user-rest-service/**
+      - kubernetes/user-rest-service/**
+      - .github/workflows/user-rest-service-deploy.yaml
 defaults:
   run:
     shell: bash

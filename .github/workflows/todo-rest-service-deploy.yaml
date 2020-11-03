@@ -1,5 +1,12 @@
 name: todo-rest-service deploy
-on: push
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - todo-rest-service/**
+      - kubernetes/todo-rest-service/**
+      - .github/workflows/todo-rest-service-deploy.yaml
 defaults:
   run:
     shell: bash
