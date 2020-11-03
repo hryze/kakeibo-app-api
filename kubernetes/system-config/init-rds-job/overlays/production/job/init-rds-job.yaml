@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-rds-job
+spec:
+  template:
+    spec:
+      containers:
+        - name: init-rds
+          command: [ "sh", "-c" ]
+          args: [ "mysql -u${MYSQL_USER} -p${MYSQL_PASSWORD} -h${MYSQL_HOST} -P${MYSQL_PORT} < /rds/init.sql" ]
+          envFrom:
+            - secretRef:
+                name: rds-secret
+          volumeMounts:
+            - name: init-rds-configmap
+              mountPath: /rds
+      volumes:
+        - name: init-rds-configmap
+          configMap:
+            name: init-rds-configmap
