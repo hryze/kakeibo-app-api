@@ -1,5 +1,11 @@
 name: Kubernetes apply
-on: push
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - kubernetes/system-config/**
+      - .github/workflows/kubernetes-system-config-apply.yaml
 defaults:
   run:
     shell: bash
