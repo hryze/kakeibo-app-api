@@ -199,12 +199,12 @@ data "aws_iam_policy_document" "external_dns" {
   }
 }
 
-resource "aws_iam_role" "alb_ingress" {
-  name               = "alb-ingress"
-  assume_role_policy = data.aws_iam_policy_document.alb_ingress_assume_role_policy.json
+resource "aws_iam_role" "aws_load_balancer_controller" {
+  name               = "aws-load-balancer-controller"
+  assume_role_policy = data.aws_iam_policy_document.aws_load_balancer_controller_assume_role_policy.json
 }
 
-data "aws_iam_policy_document" "alb_ingress_assume_role_policy" {
+data "aws_iam_policy_document" "aws_load_balancer_controller_assume_role_policy" {
   statement {
     effect = "Allow"
     principals {
@@ -215,18 +215,18 @@ data "aws_iam_policy_document" "alb_ingress_assume_role_policy" {
     condition {
       test     = "StringEquals"
       variable = "${replace(aws_iam_openid_connect_provider.openid.url, "https://", "")}:sub"
-      values   = ["system:serviceaccount:kube-system:alb-ingress-controller"]
+      values   = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
     }
   }
 }
 
-resource "aws_iam_role_policy" "alb_ingress_role_policy" {
-  name   = "alb-ingress-role-policy"
-  role   = aws_iam_role.alb_ingress.id
-  policy = data.aws_iam_policy_document.alb_ingress.json
+resource "aws_iam_role_policy" "aws_load_balancer_controller_role_policy" {
+  name   = "aws-load-balancer-controller-role-policy"
+  role   = aws_iam_role.aws_load_balancer_controller.id
+  policy = data.aws_iam_policy_document.aws_load_balancer_controller.json
 }
 
-data "aws_iam_policy_document" "alb_ingress" {
+data "aws_iam_policy_document" "aws_load_balancer_controller" {
   statement {
     effect = "Allow"
     actions = [
