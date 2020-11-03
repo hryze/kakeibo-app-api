@@ -1,0 +1,8 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: todo-pdb
+  labels:
+    app: todo
+spec:
+  maxUnavailable: 1

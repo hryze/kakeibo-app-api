@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: account-deployment
+  labels:
+    app: account
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: account
+  template:
+    metadata:
+      labels:
+        app: account
+    spec:
+      containers:
+        - name: account
+          image: 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/account-rest-service
+          ports:
+            - containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 250m
+          envFrom:
+            - configMapRef:
+                name: account-configmap
+            - secretRef:
+                name: account-secret
