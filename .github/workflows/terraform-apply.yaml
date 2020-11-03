@@ -1,11 +1,5 @@
 name: Terraform apply
-on:
-  push:
-    branches:
-      - master
-    paths:
-      - terraform/**
-      - .github/workflows/terraform-apply.yaml
+on: push
 defaults:
   run:
     shell: bash
