@@ -10,7 +10,7 @@ defaults:
     working-directory: todo-rest-service
 jobs:
   test:
-    name: Test
+    name: todo-rest-service test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
