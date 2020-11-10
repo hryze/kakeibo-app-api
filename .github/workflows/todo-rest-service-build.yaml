@@ -89,7 +89,7 @@ jobs:
           git add -A
           git commit -m "Update docker image tag for todo-rest-service to $IMAGE_TAG"
           git push origin $RELEASE_BRANCH
-          COMMIT_HASH=`git rev-parse --short HEAD`
+          COMMIT_HASH=$(git rev-parse --short HEAD)
           gh pr create \
           --base master \
           --head $RELEASE_BRANCH \
