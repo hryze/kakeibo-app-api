@@ -89,15 +89,18 @@ jobs:
           git add -A
           git commit -m "Update docker image tag for user-rest-service to $IMAGE_TAG"
           git push origin $RELEASE_BRANCH
+
           COMMIT_HASH=$(git rev-parse --short HEAD)
+          PR_COMMENT="$COMMIT_HASH<br>Update docker image tag for user-rest-service to \`$IMAGE_TAG\`"
+
           gh pr create \
           --base master \
           --head $RELEASE_BRANCH \
           --assignee $ASSIGNEES \
-          --title "Update docker image tag" \
-          --body "$COMMIT_HASH<br>Update docker image tag for user-rest-service to \`$IMAGE_TAG\`" || \
+          --title "Update docker image tag for api" \
+          --body "$PR_COMMENT" || \
           gh pr review \
           --comment \
-          --body "$COMMIT_HASH<br>Update docker image tag for user-rest-service to \`$IMAGE_TAG\`"
+          --body "$PR_COMMENT"
         env:
           ASSIGNEES: ${{ github.actor }}
