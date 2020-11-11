@@ -93,7 +93,6 @@ jobs:
           gh pr create \
           --base master \
           --head $RELEASE_BRANCH \
-          --reviewer $REVIEWERS \
           --assignee $ASSIGNEES \
           --title "Update docker image tag" \
           --body "$COMMIT_HASH<br>Update docker image tag for todo-rest-service to \`$IMAGE_TAG\`" || \
@@ -101,5 +100,4 @@ jobs:
           --comment \
           --body "$COMMIT_HASH<br>Update docker image tag for todo-rest-service to \`$IMAGE_TAG\`"
         env:
-          REVIEWERS: "d-kuro"
           ASSIGNEES: ${{ github.actor }}
