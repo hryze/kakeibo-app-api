@@ -18,7 +18,7 @@ jobs:
       ECR_REPOSITORY: todo-rest-service
       IMAGE_TAG: release.${{ github.sha }}
       GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-      RELEASE_BRANCH: release
+      RELEASE_BRANCH: $(uuidgen)
     steps:
       - name: Checkout paypay3/kakeibo-app-api code
         uses: actions/checkout@v2
