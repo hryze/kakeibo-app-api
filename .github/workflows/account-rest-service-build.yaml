@@ -7,7 +7,6 @@ on:
 defaults:
   run:
     shell: bash
-    working-directory: account-rest-service
 jobs:
   build:
     name: account-rest-service build
@@ -42,7 +41,8 @@ jobs:
           --target builder \
           --cache-from=$ECR_REGISTRY/$ECR_REPOSITORY:builder \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
-          -t $ECR_REGISTRY/$ECR_REPOSITORY:builder .
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:builder \
+          ./account-rest-service
 
       - name: Build image
         run: |
@@ -50,7 +50,8 @@ jobs:
           --cache-from=$ECR_REGISTRY/$ECR_REPOSITORY:builder \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-          -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+          ./account-rest-service
 
       - name: Push image to Amazon ECR
         run: |
@@ -66,6 +67,7 @@ jobs:
 
       - name: Setup git
         run: |
+          git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | xargs -L1 git config --unset-all
           git config --global user.name $GITHUB_USER
           git config --global user.email $GITHUB_EMAIL
           git remote set-url origin https://paypay3:$GITHUB_PASSWORD@github.com/paypay3/kakeibo-app-kubernetes.git
@@ -91,7 +93,7 @@ jobs:
           PR_COMMENT="$COMMIT_HASH<br>Update docker image tag for account-rest-service to \`$IMAGE_TAG\`"
 
           gh pr create \
-          --base master \
+          --base main \
           --head $RELEASE_BRANCH \
           --assignee $ASSIGNEES \
           --title "Update docker image tag for api" \

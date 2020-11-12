@@ -93,7 +93,7 @@ jobs:
           PR_COMMENT="$COMMIT_HASH<br>Update docker image tag for user-rest-service to \`$IMAGE_TAG\`"
 
           gh pr create \
-          --base master \
+          --base main \
           --head $RELEASE_BRANCH \
           --assignee $ASSIGNEES \
           --title "Update docker image tag for api" \
