@@ -9,7 +9,6 @@ on:
 defaults:
   run:
     shell: bash
-    working-directory: user-rest-service
 jobs:
   build:
     name: user-rest-service build
@@ -44,7 +43,8 @@ jobs:
           --target builder \
           --cache-from=$ECR_REGISTRY/$ECR_REPOSITORY:builder \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
-          -t $ECR_REGISTRY/$ECR_REPOSITORY:builder .
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:builder \
+          ./user-rest-service
 
       - name: Build image
         run: |
@@ -52,7 +52,8 @@ jobs:
           --cache-from=$ECR_REGISTRY/$ECR_REPOSITORY:builder \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-          -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+          ./user-rest-service
 
       - name: Push image to Amazon ECR
         run: |
@@ -94,7 +95,7 @@ jobs:
           PR_COMMENT="$COMMIT_HASH<br>Update docker image tag for user-rest-service to \`$IMAGE_TAG\`"
 
           gh pr create \
-          --base master \
+          --base main \
           --head $RELEASE_BRANCH \
           --assignee $ASSIGNEES \
           --title "Update docker image tag for api" \
