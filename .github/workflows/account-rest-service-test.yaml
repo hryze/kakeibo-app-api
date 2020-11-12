@@ -10,7 +10,7 @@ defaults:
     working-directory: account-rest-service
 jobs:
   test:
-    name: Test
+    name: account-rest-service test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

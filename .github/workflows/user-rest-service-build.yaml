@@ -1,25 +1,23 @@
-name: user-rest-service deploy
+name: user-rest-service build
 on:
   push:
     branches:
       - master
     paths:
       - user-rest-service/**
-      - kubernetes/user-rest-service/**
-      - .github/workflows/user-rest-service-deploy.yaml
+      - .github/workflows/user-rest-service-build.yaml
 defaults:
   run:
     shell: bash
+    working-directory: user-rest-service
 jobs:
-  deploy:
-    name: user-rest-service deploy
+  build:
+    name: user-rest-service build
     runs-on: ubuntu-latest
     env:
       DOCKER_BUILDKIT: 1
       ECR_REPOSITORY: user-rest-service
       IMAGE_TAG: release.${{ github.sha }}
-      BUILD_DIRECTORY: user-rest-service
-      KUBERNETES_DIRECTORY: kubernetes/apps/user-rest-service/overlays/production
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -45,7 +43,6 @@ jobs:
           --cache-from=$ECR_REGISTRY/$ECR_REPOSITORY:builder \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           -t $ECR_REGISTRY/$ECR_REPOSITORY:builder .
-        working-directory: ${{env.BUILD_DIRECTORY}}
 
       - name: Build image
         run: |
@@ -54,7 +51,6 @@ jobs:
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-        working-directory: ${{env.BUILD_DIRECTORY}}
 
       - name: Push image to Amazon ECR
         run: |
@@ -62,22 +58,3 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG &
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest &
           wait
-
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v1
-
-      - name: Setup Kustomize
-        uses: imranismail/setup-kustomize@v1
-        with:
-          kustomize-version: "3.8.6"
-
-      - name: Define KUBECONFIG
-        run: aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name kakeibo-prod-cluster
-
-      - name: Kustomize edit set image tag
-        run: kustomize edit set image 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/user-rest-service:$IMAGE_TAG
-        working-directory: ${{env.KUBERNETES_DIRECTORY}}
-
-      - name: Kubectl apply
-        run: kustomize build . | kubectl apply -f -
-        working-directory: ${{env.KUBERNETES_DIRECTORY}}
