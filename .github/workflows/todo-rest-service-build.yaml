@@ -1,6 +1,8 @@
 name: todo-rest-service build
 on:
   push:
+    branches:
+      - master
     paths:
       - todo-rest-service/**
       - .github/workflows/todo-rest-service-build.yaml
