@@ -1,8 +1,6 @@
 name: todo-rest-service build
 on:
   push:
-    branches:
-      - master
     paths:
       - todo-rest-service/**
       - .github/workflows/todo-rest-service-build.yaml
@@ -68,7 +66,6 @@ jobs:
 
       - name: Setup git
         run: |
-          git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | xargs -L1 git config --unset-all
           git config --global user.name $GITHUB_USER
           git config --global user.email $GITHUB_EMAIL
           git remote set-url origin https://paypay3:$GITHUB_PASSWORD@github.com/paypay3/kakeibo-app-kubernetes.git
