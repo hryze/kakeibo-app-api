@@ -18,8 +18,10 @@ jobs:
       DOCKER_BUILDKIT: 1
       ECR_REPOSITORY: todo-rest-service
       IMAGE_TAG: release.${{ github.sha }}
+      GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      RELEASE_BRANCH: release
     steps:
-      - name: Checkout code
+      - name: Checkout paypay3/kakeibo-app-api code
         uses: actions/checkout@v2
 
       - name: Configure AWS credentials
@@ -34,7 +36,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Define ECR registry name
-        run: echo ::set-env name=ECR_REGISTRY::${{ steps.login-ecr.outputs.registry }}
+        run: echo "ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}" >> $GITHUB_ENV
 
       - name: Build builder image
         run: |
@@ -58,3 +60,47 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG &
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest &
           wait
+
+      - name: Checkout paypay3/kakeibo-app-kubernetes code
+        uses: actions/checkout@v2
+        with:
+          repository: paypay3/kakeibo-app-kubernetes
+
+      - name: Setup git
+        run: |
+          git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | xargs -L1 git config --unset-all
+          git config --global user.name $GITHUB_USER
+          git config --global user.email $GITHUB_EMAIL
+          git remote set-url origin https://paypay3:$GITHUB_PASSWORD@github.com/paypay3/kakeibo-app-kubernetes.git
+          git checkout -b $RELEASE_BRANCH
+          git pull origin $RELEASE_BRANCH || true
+        env:
+          GITHUB_USER: "Yusuke Taira"
+          GITHUB_EMAIL: "ney07214545@icloud.com"
+          GITHUB_PASSWORD: ${{ secrets.ACCESS_PASSWORD }}
+
+      - name: Kustomize edit set image tag
+        run: |
+          kustomize edit set image 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/todo-rest-service:$IMAGE_TAG
+        working-directory: api/todo-rest-service/overlays/production
+
+      - name: Commit and push and create pull request
+        run: |
+          git add -A
+          git commit -m "Update docker image tag for todo-rest-service to $IMAGE_TAG"
+          git push origin $RELEASE_BRANCH
+
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          PR_COMMENT="$COMMIT_HASH<br>Update docker image tag for todo-rest-service to \`$IMAGE_TAG\`"
+
+          gh pr create \
+          --base master \
+          --head $RELEASE_BRANCH \
+          --assignee $ASSIGNEES \
+          --title "Update docker image tag for api" \
+          --body "$PR_COMMENT" || \
+          gh pr review \
+          --comment \
+          --body "$PR_COMMENT"
+        env:
+          ASSIGNEES: ${{ github.actor }}
