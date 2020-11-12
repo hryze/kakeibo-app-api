@@ -18,7 +18,6 @@ jobs:
       ECR_REPOSITORY: todo-rest-service
       IMAGE_TAG: release.${{ github.sha }}
       GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-      RELEASE_BRANCH: $(uuidgen)
     steps:
       - name: Checkout paypay3/kakeibo-app-api code
         uses: actions/checkout@v2
@@ -67,19 +66,6 @@ jobs:
         with:
           repository: paypay3/kakeibo-app-kubernetes
 
-      - name: Setup git
-        run: |
-          git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | xargs -L1 git config --unset-all
-          git config --global user.name $GITHUB_USER
-          git config --global user.email $GITHUB_EMAIL
-          git remote set-url origin https://paypay3:$GITHUB_PASSWORD@github.com/paypay3/kakeibo-app-kubernetes.git
-          git checkout -b $RELEASE_BRANCH
-          git pull origin $RELEASE_BRANCH || true
-        env:
-          GITHUB_USER: "Yusuke Taira"
-          GITHUB_EMAIL: "ney07214545@icloud.com"
-          GITHUB_PASSWORD: ${{ secrets.ACCESS_PASSWORD }}
-
       - name: Kustomize edit set image tag
         run: |
           kustomize edit set image 048246832408.dkr.ecr.ap-northeast-1.amazonaws.com/todo-rest-service:$IMAGE_TAG
@@ -87,6 +73,14 @@ jobs:
 
       - name: Commit and push and create pull request
         run: |
+          RELEASE_BRANCH=$(uuidgen)
+
+          git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | xargs -L1 git config --unset-all
+          git config --global user.name $GITHUB_USER
+          git config --global user.email $GITHUB_EMAIL
+          git remote set-url origin https://paypay3:$GITHUB_PASSWORD@github.com/paypay3/kakeibo-app-kubernetes.git
+          git checkout -b $RELEASE_BRANCH
+
           git add -A
           git commit -m "Update docker image tag for todo-rest-service to $IMAGE_TAG"
           git push origin $RELEASE_BRANCH
@@ -104,4 +98,7 @@ jobs:
           --comment \
           --body "$PR_COMMENT"
         env:
+          GITHUB_USER: "Yusuke Taira"
+          GITHUB_EMAIL: "ney07214545@icloud.com"
+          GITHUB_PASSWORD: ${{ secrets.ACCESS_PASSWORD }}
           ASSIGNEES: ${{ github.actor }}
