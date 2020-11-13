@@ -32,6 +32,10 @@ type AuthenticationErrorMsg struct {
 	Message string `json:"message"`
 }
 
+type NotFoundErrorMsg struct {
+	Message string `json:"message"`
+}
+
 type ConflictErrorMsg struct {
 	Message string `json:"message"`
 }
@@ -69,6 +73,10 @@ func (e *BadRequestErrorMsg) Error() string {
 }
 
 func (e *AuthenticationErrorMsg) Error() string {
+	return e.Message
+}
+
+func (e *NotFoundErrorMsg) Error() string {
 	return e.Message
 }
 

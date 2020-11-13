@@ -319,7 +319,7 @@ func (h *DBHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	user, err := h.UserRepo.GetUser(userID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &BadRequestErrorMsg{"ユーザーが存在しません。"}))
+			errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"ユーザーが存在しません。"}))
 			return
 		} else if err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
