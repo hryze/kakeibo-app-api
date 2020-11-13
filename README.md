@@ -9,6 +9,7 @@
 | **POST**<br>&emsp;/signup | <pre>201 Created<br>400 Bad Request<br>409 Conflict<br>500 Internal Server Error</pre> | ユーザー新規登録 |
 | **POST**<br>&emsp;/login | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | ユーザーログイン |
 | **DELETE**<br>&emsp;/logout | <pre>200 OK<br>400 Bad Request<br>500 Internal Server Error</pre> | ユーザーログアウト |
+| **GET**<br>&emsp;/user | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | ユーザー情報取得 |
 | **GET**<br>&emsp;/groups | <pre>200 OK<br>401 Unauthorized<br>500 Internal Server Error</pre> | 承認グループ,<br>未承認グループ一覧取得 |
 | **POST**<br>&emsp;/groups | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ作成 |
 | **PUT**<br>&emsp;/groups/{group_id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ名更新 |
