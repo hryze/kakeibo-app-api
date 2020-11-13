@@ -21,6 +21,7 @@ type UserRepository interface {
 	CreateUser(user *model.SignUpUser) error
 	DeleteUser(signUpUser *model.SignUpUser) error
 	FindUser(user *model.LoginUser) (*model.LoginUser, error)
+	GetUser(userID string) (*model.LoginUser, error)
 	SetSessionID(sessionID string, loginUserID string, expiration int) error
 	DeleteSessionID(sessionID string) error
 }

@@ -39,6 +39,7 @@ func Run() error {
 	router.HandleFunc("/signup", h.SignUp).Methods("POST")
 	router.HandleFunc("/login", h.Login).Methods("POST")
 	router.HandleFunc("/logout", h.Logout).Methods("DELETE")
+	router.HandleFunc("/user", h.GetUser).Methods("GET")
 	router.HandleFunc("/groups", h.GetGroupList).Methods("GET")
 	router.HandleFunc("/groups", h.PostGroup).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}", h.PutGroup).Methods("PUT")

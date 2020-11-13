@@ -1,6 +1,8 @@
 package infrastructure
 
 import (
+	"fmt"
+
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 )
 
@@ -91,6 +93,26 @@ func (r *UserRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUser,
 	}
 
 	return loginUser, nil
+}
+
+func (r *UserRepository) GetUser(userID string) (*model.LoginUser, error) {
+	query := `
+        SELECT
+            user_id,
+            name,
+            email
+        FROM 
+            users
+        WHERE
+            user_id = ?`
+
+	var user model.LoginUser
+	if err := r.MySQLHandler.conn.QueryRowx(query, userID).StructScan(&user); err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func (r *UserRepository) SetSessionID(sessionID string, loginUserID string, expiration int) error {
