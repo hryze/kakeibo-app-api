@@ -57,7 +57,8 @@ type GroupCategoriesRepository interface {
 	PostGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory, groupID int) (sql.Result, error)
 	PutGroupCustomCategory(groupCustomCategory *model.GroupCustomCategory) error
 	FindGroupCustomCategoryID(groupCustomCategoryID int) error
-	DeleteGroupCustomCategory(groupCustomCategoryID int) error
+	GetBigCategoryID(groupCustomCategoryID int) (int, error)
+	DeleteGroupCustomCategory(previousGroupCustomCategoryID int, replaceMediumCategoryID int) error
 }
 
 type GroupTransactionsRepository interface {
