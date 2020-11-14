@@ -46,6 +46,10 @@ type AuthenticationErrorMsg struct {
 	Message string `json:"message"`
 }
 
+type NotFoundErrorMsg struct {
+	Message string `json:"message"`
+}
+
 type ConflictErrorMsg struct {
 	Message string `json:"message"`
 }
@@ -86,6 +90,10 @@ func (e *AuthenticationErrorMsg) Error() string {
 	return e.Message
 }
 
+func (e *NotFoundErrorMsg) Error() string {
+	return e.Message
+}
+
 func (e *ConflictErrorMsg) Error() string {
 	return e.Message
 }
@@ -106,6 +114,78 @@ func errorResponseByJSON(w http.ResponseWriter, err error) {
 	if err := json.NewEncoder(w).Encode(httpError); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
+}
+
+func replaceMediumCategoryID(bigCategoryID int) (int, error) {
+	if bigCategoryID == 1 {
+		return 5, nil
+	}
+
+	if bigCategoryID == 2 {
+		return 12, nil
+	}
+
+	if bigCategoryID == 3 {
+		return 18, nil
+	}
+
+	if bigCategoryID == 4 {
+		return 28, nil
+	}
+
+	if bigCategoryID == 5 {
+		return 32, nil
+	}
+
+	if bigCategoryID == 6 {
+		return 38, nil
+	}
+
+	if bigCategoryID == 7 {
+		return 45, nil
+	}
+
+	if bigCategoryID == 8 {
+		return 50, nil
+	}
+
+	if bigCategoryID == 9 {
+		return 58, nil
+	}
+
+	if bigCategoryID == 10 {
+		return 65, nil
+	}
+
+	if bigCategoryID == 11 {
+		return 69, nil
+	}
+
+	if bigCategoryID == 12 {
+		return 73, nil
+	}
+
+	if bigCategoryID == 13 {
+		return 79, nil
+	}
+
+	if bigCategoryID == 14 {
+		return 85, nil
+	}
+
+	if bigCategoryID == 15 {
+		return 90, nil
+	}
+
+	if bigCategoryID == 16 {
+		return 95, nil
+	}
+
+	if bigCategoryID == 17 {
+		return 98, nil
+	}
+
+	return 0, &NotFoundErrorMsg{"大カテゴリーに関連する中カテゴリーが見つかりませんでした。"}
 }
 
 func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (string, error) {

@@ -23,7 +23,8 @@ type CategoriesRepository interface {
 	FindCustomCategory(customCategory *model.CustomCategory, userID string) error
 	PostCustomCategory(customCategory *model.CustomCategory, userID string) (sql.Result, error)
 	PutCustomCategory(customCategory *model.CustomCategory) error
-	DeleteCustomCategory(customCategoryID int) error
+	GetBigCategoryID(customCategoryID int) (int, error)
+	DeleteCustomCategory(previousCustomCategoryID int, replaceMediumCategoryID int) error
 }
 
 type TransactionsRepository interface {
