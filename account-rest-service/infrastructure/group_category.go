@@ -173,15 +173,68 @@ func (r *GroupCategoriesRepository) FindGroupCustomCategoryID(groupCustomCategor
 	return err
 }
 
-func (r *GroupCategoriesRepository) DeleteGroupCustomCategory(groupCustomCategoryID int) error {
+func (r *GroupCategoriesRepository) GetBigCategoryID(groupCustomCategoryID int) (int, error) {
 	query := `
+        SELECT 
+            big_category_id 
+        FROM 
+            group_custom_categories 
+        WHERE 
+            id = ?`
+
+	var bigCategoryID int
+	if err := r.MySQLHandler.conn.QueryRowx(query, groupCustomCategoryID).Scan(&bigCategoryID); err != nil {
+		return bigCategoryID, err
+	}
+
+	return bigCategoryID, nil
+}
+
+func (r *GroupCategoriesRepository) DeleteGroupCustomCategory(previousGroupCustomCategoryID int, replaceMediumCategoryID int) error {
+	transactionQuery := `
+        UPDATE
+            group_transactions
+        SET 
+            medium_category_id = ?,
+            custom_category_id = ?
+        WHERE
+            custom_category_id = ?`
+
+	categoryQuery := `
         DELETE 
         FROM 
             group_custom_categories 
         WHERE 
             id = ?`
 
-	_, err := r.MySQLHandler.conn.Exec(query, groupCustomCategoryID)
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
 
-	return err
+	transactions := func(tx *sql.Tx) error {
+		if _, err := tx.Exec(transactionQuery, replaceMediumCategoryID, nil, previousGroupCustomCategoryID); err != nil {
+			return err
+		}
+
+		if _, err := tx.Exec(categoryQuery, previousGroupCustomCategoryID); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }

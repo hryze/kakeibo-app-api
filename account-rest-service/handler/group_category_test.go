@@ -169,7 +169,11 @@ func (m MockGroupCategoriesRepository) FindGroupCustomCategoryID(groupCustomCate
 	return nil
 }
 
-func (m MockGroupCategoriesRepository) DeleteGroupCustomCategory(groupCustomCategoryID int) error {
+func (m MockGroupCategoriesRepository) GetBigCategoryID(groupCustomCategoryID int) (int, error) {
+	return 2, nil
+}
+
+func (m MockGroupCategoriesRepository) DeleteGroupCustomCategory(previousGroupCustomCategoryID int, replaceMediumCategoryID int) error {
 	return nil
 }
 
