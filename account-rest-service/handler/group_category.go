@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -308,11 +309,33 @@ func (h *DBHandler) DeleteGroupCustomCategory(w http.ResponseWriter, r *http.Req
 	}
 
 	if err := h.GroupCategoriesRepo.FindGroupCustomCategoryID(groupCustomCategoryID); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"指定された中カテゴリーは既に削除されています。"}))
+		if errors.Is(err, sql.ErrNoRows) {
+			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"指定されたカスタムカテゴリーは既に削除されています。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	if err := h.GroupCategoriesRepo.DeleteGroupCustomCategory(groupCustomCategoryID); err != nil {
+	bigCategoryID, err := h.GroupCategoriesRepo.GetBigCategoryID(groupCustomCategoryID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"カスタムカテゴリーに関連する大カテゴリーが見つかりませんでした。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	mediumCategoryID, err := replaceMediumCategoryID(bigCategoryID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, err))
+		return
+	}
+
+	if err := h.GroupCategoriesRepo.DeleteGroupCustomCategory(groupCustomCategoryID, mediumCategoryID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}

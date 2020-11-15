@@ -166,7 +166,11 @@ func (m MockCategoriesRepository) PutCustomCategory(customCategory *model.Custom
 	return nil
 }
 
-func (m MockCategoriesRepository) DeleteCustomCategory(customCategoryID int) error {
+func (m MockCategoriesRepository) GetBigCategoryID(customCategoryID int) (int, error) {
+	return 2, nil
+}
+
+func (m MockCategoriesRepository) DeleteCustomCategory(previousCustomCategoryID int, replaceMediumCategoryID int) error {
 	return nil
 }
 

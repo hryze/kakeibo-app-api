@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -235,11 +236,28 @@ func (h *DBHandler) DeleteCustomCategory(w http.ResponseWriter, r *http.Request)
 
 	customCategoryID, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"custom category ID を正しく指定してください。"}))
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"カスタムカテゴリーID を正しく指定してください。"}))
 		return
 	}
 
-	if err := h.CategoriesRepo.DeleteCustomCategory(customCategoryID); err != nil {
+	bigCategoryID, err := h.CategoriesRepo.GetBigCategoryID(customCategoryID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"カスタムカテゴリーに関連する大カテゴリーが見つかりませんでした。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	mediumCategoryID, err := replaceMediumCategoryID(bigCategoryID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, err))
+		return
+	}
+
+	if err := h.CategoriesRepo.DeleteCustomCategory(customCategoryID, mediumCategoryID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}

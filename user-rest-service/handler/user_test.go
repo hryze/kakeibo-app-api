@@ -43,6 +43,14 @@ func (t MockUserRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUs
 	}, nil
 }
 
+func (t MockUserRepository) GetUser(userID string) (*model.LoginUser, error) {
+	return &model.LoginUser{
+		ID:    "testID",
+		Name:  "testName",
+		Email: "test@icloud.com",
+	}, nil
+}
+
 func (t MockUserRepository) SetSessionID(sessionID string, loginUserID string, expiration int) error {
 	return nil
 }
@@ -74,7 +82,7 @@ func TestDBHandler_SignUp(t *testing.T) {
 
 	h := DBHandler{UserRepo: MockUserRepository{}}
 
-	r := httptest.NewRequest("POST", "/TestDBHandler_SignUp", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest("POST", "/signup", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	h.SignUp(w, r)
@@ -89,7 +97,7 @@ func TestDBHandler_SignUp(t *testing.T) {
 func TestDBHandler_Login(t *testing.T) {
 	h := DBHandler{UserRepo: MockUserRepository{}}
 
-	r := httptest.NewRequest("POST", "/TestDBHandler_Login", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest("POST", "/login", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	h.Login(w, r)
@@ -105,7 +113,7 @@ func TestDBHandler_Login(t *testing.T) {
 func TestDBHandler_Logout(t *testing.T) {
 	h := DBHandler{UserRepo: MockUserRepository{}}
 
-	r := httptest.NewRequest("DELETE", "/TestDBHandler_Logout", nil)
+	r := httptest.NewRequest("DELETE", "/logout", nil)
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
@@ -123,4 +131,29 @@ func TestDBHandler_Logout(t *testing.T) {
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 	testutil.AssertDeleteResponseCookie(t, res)
+}
+
+func TestDBHandler_GetUser(t *testing.T) {
+	h := DBHandler{
+		AuthRepo: MockAuthRepository{},
+		UserRepo: MockUserRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/user", nil)
+	w := httptest.NewRecorder()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.GetUser(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.LoginUser{}, &model.LoginUser{})
 }
