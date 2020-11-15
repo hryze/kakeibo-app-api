@@ -117,72 +117,113 @@ func errorResponseByJSON(w http.ResponseWriter, err error) {
 }
 
 func replaceMediumCategoryID(bigCategoryID int) (int, error) {
-	if bigCategoryID == 1 {
-		return 5, nil
+	const (
+		_ = iota
+		income
+		foodExpenses
+		dailyNecessities
+		hobby
+		entertainment
+		transportation
+		clothes
+		health
+		data
+		education
+		housing
+		waterSupply
+		car
+		insurance
+		tax
+		cash
+		other
+	)
+
+	const (
+		otherIncome           = 5
+		otherFoodExpenses     = 12
+		otherDailyNecessities = 18
+		otherHobby            = 28
+		otherEntertainment    = 32
+		otherTransportation   = 38
+		otherClothes          = 45
+		otherHealth           = 50
+		otherData             = 58
+		otherEducation        = 65
+		otherHousing          = 69
+		otherWaterSupply      = 73
+		otherCar              = 79
+		otherInsurance        = 85
+		otherTax              = 90
+		otherCash             = 95
+		unclearMoney          = 98
+	)
+
+	if bigCategoryID == income {
+		return otherIncome, nil
 	}
 
-	if bigCategoryID == 2 {
-		return 12, nil
+	if bigCategoryID == foodExpenses {
+		return otherFoodExpenses, nil
 	}
 
-	if bigCategoryID == 3 {
-		return 18, nil
+	if bigCategoryID == dailyNecessities {
+		return otherDailyNecessities, nil
 	}
 
-	if bigCategoryID == 4 {
-		return 28, nil
+	if bigCategoryID == hobby {
+		return otherHobby, nil
 	}
 
-	if bigCategoryID == 5 {
-		return 32, nil
+	if bigCategoryID == entertainment {
+		return otherEntertainment, nil
 	}
 
-	if bigCategoryID == 6 {
-		return 38, nil
+	if bigCategoryID == transportation {
+		return otherTransportation, nil
 	}
 
-	if bigCategoryID == 7 {
-		return 45, nil
+	if bigCategoryID == clothes {
+		return otherClothes, nil
 	}
 
-	if bigCategoryID == 8 {
-		return 50, nil
+	if bigCategoryID == health {
+		return otherHealth, nil
 	}
 
-	if bigCategoryID == 9 {
-		return 58, nil
+	if bigCategoryID == data {
+		return otherData, nil
 	}
 
-	if bigCategoryID == 10 {
-		return 65, nil
+	if bigCategoryID == education {
+		return otherEducation, nil
 	}
 
-	if bigCategoryID == 11 {
-		return 69, nil
+	if bigCategoryID == housing {
+		return otherHousing, nil
 	}
 
-	if bigCategoryID == 12 {
-		return 73, nil
+	if bigCategoryID == waterSupply {
+		return otherWaterSupply, nil
 	}
 
-	if bigCategoryID == 13 {
-		return 79, nil
+	if bigCategoryID == car {
+		return otherCar, nil
 	}
 
-	if bigCategoryID == 14 {
-		return 85, nil
+	if bigCategoryID == insurance {
+		return otherInsurance, nil
 	}
 
-	if bigCategoryID == 15 {
-		return 90, nil
+	if bigCategoryID == tax {
+		return otherTax, nil
 	}
 
-	if bigCategoryID == 16 {
-		return 95, nil
+	if bigCategoryID == cash {
+		return otherCash, nil
 	}
 
-	if bigCategoryID == 17 {
-		return 98, nil
+	if bigCategoryID == other {
+		return unclearMoney, nil
 	}
 
 	return 0, &NotFoundErrorMsg{"大カテゴリーに関連する中カテゴリーが見つかりませんでした。"}
