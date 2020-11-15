@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gorilla/mux"
 
@@ -24,12 +25,20 @@ type NoContentMsg struct {
 	Message string `json:"message"`
 }
 
-type UserIDValidationErrorMsg struct {
-	Message string `json:"message"`
-}
+func validateGroupName(groupName string) error {
+	if strings.HasPrefix(groupName, " ") || strings.HasPrefix(groupName, "　") {
+		return &BadRequestErrorMsg{"文字列先頭に空白がないか確認してください。"}
+	}
 
-func (e *UserIDValidationErrorMsg) Error() string {
-	return e.Message
+	if strings.HasSuffix(groupName, " ") || strings.HasSuffix(groupName, "　") {
+		return &BadRequestErrorMsg{"文字列末尾に空白がないか確認してください。"}
+	}
+
+	if utf8.RuneCountInString(groupName) == 0 || utf8.RuneCountInString(groupName) > 20 {
+		return &BadRequestErrorMsg{"グループ名は1文字以上、20文字以内で入力してください。"}
+	}
+
+	return nil
 }
 
 func postInitGroupStandardBudgets(groupID int) error {
@@ -99,15 +108,15 @@ func checkForUniqueGroupUser(h *DBHandler, groupID int, userID string) error {
 
 func validateUserID(userID string) error {
 	if strings.HasPrefix(userID, " ") || strings.HasPrefix(userID, "　") {
-		return &UserIDValidationErrorMsg{"文字列先頭に空白がないか確認してください。"}
+		return &BadRequestErrorMsg{"文字列先頭に空白がないか確認してください。"}
 	}
 
 	if strings.HasSuffix(userID, " ") || strings.HasSuffix(userID, "　") {
-		return &UserIDValidationErrorMsg{"文字列末尾に空白がないか確認してください。"}
+		return &BadRequestErrorMsg{"文字列末尾に空白がないか確認してください。"}
 	}
 
 	if len(userID) == 0 || len(userID) > 10 {
-		return &UserIDValidationErrorMsg{"ユーザーIDは1文字以上、10文字以内で入力してください。"}
+		return &BadRequestErrorMsg{"ユーザーIDは1文字以上、10文字以内で入力してください。"}
 	}
 
 	return nil
@@ -233,6 +242,11 @@ func (h *DBHandler) PostGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := validateGroupName(group.GroupName); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		return
+	}
+
 	result, err := h.GroupRepo.PostGroupAndApprovedUser(&group, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -284,6 +298,11 @@ func (h *DBHandler) PutGroup(w http.ResponseWriter, r *http.Request) {
 	var group model.Group
 	if err := json.NewDecoder(r.Body).Decode(&group); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := validateGroupName(group.GroupName); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 
