@@ -87,6 +87,10 @@ func (m MockGroupTasksRepository) GetGroupTasksListAssignedToUser(groupID int) (
 	}, nil
 }
 
+func (m MockGroupTasksRepository) PutGroupTasksListAssignedToUser(groupTasksList []model.GroupTask, updateTaskIndexList []int) error {
+	return nil
+}
+
 func (m MockGroupTasksRepository) PostGroupTasksUsersList(groupTasksUsersList model.GroupTasksUsersListReceiver, groupID int) error {
 	return nil
 }
