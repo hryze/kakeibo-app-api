@@ -93,6 +93,49 @@ func (r *GroupTasksRepository) GetGroupTasksListAssignedToUser(groupID int) ([]m
 	return groupTasksListAssignedToUser, nil
 }
 
+func (r *GroupTasksRepository) PutGroupTasksListAssignedToUser(groupTasksList []model.GroupTask, updateTaskIndexList []int) error {
+	query := `
+        UPDATE
+            group_tasks
+        SET 
+            base_date = ?,
+            cycle_type = ?,
+            cycle = ?,
+            task_name = ?,
+            group_tasks_users_id = ?
+        WHERE
+            id = ?`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		for _, index := range updateTaskIndexList {
+			if _, err := r.MySQLHandler.conn.Exec(query, groupTasksList[index].BaseDate, groupTasksList[index].CycleType, groupTasksList[index].Cycle, groupTasksList[index].TaskName, groupTasksList[index].GroupTasksUserID, groupTasksList[index].ID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *GroupTasksRepository) PostGroupTasksUsersList(groupTasksUsersList model.GroupTasksUsersListReceiver, groupID int) error {
 	query := `
         INSERT INTO group_tasks_users

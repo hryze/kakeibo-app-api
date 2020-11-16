@@ -94,32 +94,29 @@ func validateGroupTaskName(groupTask *model.GroupTask) error {
 	return nil
 }
 
-func generateNextBaseDate(today time.Time, baseDate time.Time, cycleDate int) time.Time {
-	nextBaseDate := baseDate
+func generateNextBaseDate(today time.Time, baseDate time.Time, cycleDays int) (time.Time, int) {
+	diffDays := int(today.Sub(baseDate).Hours() / 24)
+	exceededDays := diffDays % cycleDays
 
-	for today.After(nextBaseDate) {
-		nextBaseDate = nextBaseDate.AddDate(0, 0, cycleDate)
-	}
+	nextBaseDate := time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, -exceededDays)
+	cycleCount := diffDays / cycleDays
 
-	nextBaseDate = nextBaseDate.AddDate(0, 0, -cycleDate)
-
-	return nextBaseDate
+	return nextBaseDate, cycleCount
 }
 
-func generateNextGroupTasksUserID(groupTaskAssignedToUser model.GroupTask, groupTasksUsersList []model.GroupTasksUser) int {
-	var nextGroupTasksUserID int
+func generateNextGroupTasksUserID(groupTaskAssignedToUser model.GroupTask, groupTasksUsersList []model.GroupTasksUser, cycleCount int) int {
+	var userIndex int
+	usersListLength := len(groupTasksUsersList)
 
 	for i, groupTasksUser := range groupTasksUsersList {
 		if groupTasksUser.ID == groupTaskAssignedToUser.GroupTasksUserID.Int {
-			if i+1 == len(groupTasksUsersList) {
-				nextGroupTasksUserID = groupTasksUsersList[0].ID
-				break
-			}
-
-			nextGroupTasksUserID = groupTasksUsersList[i+1].ID
+			userIndex = i
 			break
 		}
 	}
+
+	nextGroupTasksUserIdIndex := (cycleCount%usersListLength + userIndex) % usersListLength
+	nextGroupTasksUserID := groupTasksUsersList[nextGroupTasksUserIdIndex].ID
 
 	return nextGroupTasksUserID
 }
@@ -165,13 +162,14 @@ func (h *DBHandler) GetGroupTasksListForEachUser(w http.ResponseWriter, r *http.
 		return
 	}
 
+	var updateTaskIndexList []int
 	now := h.TimeManage.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, time.UTC)
 
 	for i := 0; i < len(groupTasksListAssignedToUser); i++ {
 		baseDate := groupTasksListAssignedToUser[i].BaseDate.Time
-		cycleDate := groupTasksListAssignedToUser[i].Cycle.Int
-		taskEndDate := baseDate.AddDate(0, 0, cycleDate).Add(-1 * time.Second)
+		cycleDays := groupTasksListAssignedToUser[i].Cycle.Int
+		taskEndDate := baseDate.AddDate(0, 0, cycleDays).Add(-1 * time.Second)
 
 		if !today.After(taskEndDate) {
 			continue
@@ -183,21 +181,22 @@ func (h *DBHandler) GetGroupTasksListForEachUser(w http.ResponseWriter, r *http.
 			groupTasksListAssignedToUser[i].Cycle.Valid = false
 			groupTasksListAssignedToUser[i].GroupTasksUserID.Valid = false
 
-			if _, err := h.GroupTasksRepo.PutGroupTask(&groupTasksListAssignedToUser[i], groupTasksListAssignedToUser[i].ID); err != nil {
-				errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-				return
-			}
+			updateTaskIndexList = append(updateTaskIndexList, i)
 
 			continue
 		}
 
-		nextBaseDate := generateNextBaseDate(today, baseDate, cycleDate)
-		nextGroupTasksUserID := generateNextGroupTasksUserID(groupTasksListAssignedToUser[i], groupTasksUsersList)
+		nextBaseDate, cycleCount := generateNextBaseDate(today, baseDate, cycleDays)
+		nextGroupTasksUserID := generateNextGroupTasksUserID(groupTasksListAssignedToUser[i], groupTasksUsersList, cycleCount)
 
 		groupTasksListAssignedToUser[i].BaseDate.Time = nextBaseDate
 		groupTasksListAssignedToUser[i].GroupTasksUserID.Int = nextGroupTasksUserID
 
-		if _, err := h.GroupTasksRepo.PutGroupTask(&groupTasksListAssignedToUser[i], groupTasksListAssignedToUser[i].ID); err != nil {
+		updateTaskIndexList = append(updateTaskIndexList, i)
+	}
+
+	if len(updateTaskIndexList) != 0 {
+		if err := h.GroupTasksRepo.PutGroupTasksListAssignedToUser(groupTasksListAssignedToUser, updateTaskIndexList); err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
