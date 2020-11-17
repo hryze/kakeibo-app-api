@@ -407,14 +407,12 @@ func (h *DBHandler) GetYearlyGroupBudgets(w http.ResponseWriter, r *http.Request
 	yearlyBudget := model.NewYearlyGroupBudget(year)
 
 	for i, j := 0, 0; i < len(yearlyBudget.GroupMonthlyBudgets); i++ {
-		if j < len(monthlyGroupCustomBudgets) {
-			if time.Month(i)+1 == monthlyGroupCustomBudgets[j].Month.Month() {
-				yearlyBudget.YearlyTotalBudget += monthlyGroupCustomBudgets[j].MonthlyTotalBudget
-				yearlyBudget.GroupMonthlyBudgets[i] = monthlyGroupCustomBudgets[j]
+		if j < len(monthlyGroupCustomBudgets) && time.Month(i)+1 == monthlyGroupCustomBudgets[j].Month.Month() {
+			yearlyBudget.YearlyTotalBudget += monthlyGroupCustomBudgets[j].MonthlyTotalBudget
+			yearlyBudget.GroupMonthlyBudgets[i] = monthlyGroupCustomBudgets[j]
 
-				j++
-				continue
-			}
+			j++
+			continue
 		}
 
 		monthlyGroupStandardBudget.Month.Time = year.AddDate(0, i, 0)
