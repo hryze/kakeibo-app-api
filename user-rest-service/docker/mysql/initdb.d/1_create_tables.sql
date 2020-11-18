@@ -12,9 +12,8 @@ CREATE TABLE users
 
 CREATE TABLE group_names
 (
-  id INT NOT NULL AUTO_INCREMENT,
-  group_name VARCHAR(20) NOT NULL,
-  PRIMARY KEY(id, group_name)
+  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  group_name VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE group_users
