@@ -529,3 +529,35 @@ func (r *GroupRepository) FindApprovedUsersList(groupID int, groupUsersList []st
 
 	return dbGroupUsersList, nil
 }
+
+func (r *GroupRepository) GetGroupUsersList(groupID int) ([]string, error) {
+	query := `
+        SELECT
+            user_id
+        FROM
+            group_users
+        WHERE
+            group_id = ?`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	groupUserIDList := make([]string, 0)
+	for rows.Next() {
+		var userID string
+		if err := rows.Scan(&userID); err != nil {
+			return nil, err
+		}
+
+		groupUserIDList = append(groupUserIDList, userID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return groupUserIDList, nil
+}

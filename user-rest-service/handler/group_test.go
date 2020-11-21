@@ -156,6 +156,10 @@ func (t MockGroupRepository) FindApprovedUsersList(groupID int, groupUsersList [
 	}, nil
 }
 
+func (t MockGroupRepository) GetGroupUsersList(groupID int) ([]string, error) {
+	return []string{"userID1", "userID4", "userID5", "userID3", "userID2"}, nil
+}
+
 func TestDBHandler_GetGroupList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:  MockAuthRepository{},
@@ -377,7 +381,7 @@ func TestDBHandler_VerifyGroupAffiliation(t *testing.T) {
 		GroupRepo: MockGroupRepository{},
 	}
 
-	r := httptest.NewRequest("GET", "/groups/2/users/userID1", nil)
+	r := httptest.NewRequest("GET", "/groups/2/users/userID1/verify", nil)
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
@@ -400,7 +404,7 @@ func TestDBHandler_VerifyGroupAffiliationOfUsersList(t *testing.T) {
 		GroupRepo: MockGroupRepository{},
 	}
 
-	r := httptest.NewRequest("GET", "/groups/2/users", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest("GET", "/groups/2/users/verify", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
@@ -415,4 +419,25 @@ func TestDBHandler_VerifyGroupAffiliationOfUsersList(t *testing.T) {
 	if diff := cmp.Diff(http.StatusOK, res.StatusCode); len(diff) != 0 {
 		t.Errorf("differs: (-want +got)\n%s", diff)
 	}
+}
+
+func TestDBHandler_GetGroupUserIDList(t *testing.T) {
+	h := DBHandler{
+		GroupRepo: MockGroupRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/2/users", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "2",
+	})
+
+	h.GetGroupUserIDList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &[]string{}, &[]string{})
 }

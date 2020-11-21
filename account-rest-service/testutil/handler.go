@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/gorilla/mux"
+
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -24,6 +26,20 @@ func SetUpMockServer() func() {
 		w.WriteHeader(http.StatusOK)
 	})
 
+	getGroupUserIDListHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userIDList := []string{"userID1", "userID4", "userID5", "userID3", "userID2"}
+
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&userIDList); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
+	router := mux.NewRouter()
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users/{user_id:[\\S]{1,10}}/verify", verifyGroupAffiliationHandler).Methods("GET")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users", getGroupUserIDListHandler).Methods("GET")
+
 	listener, err := net.Listen("tcp", "127.0.0.1:8080")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -32,8 +48,9 @@ func SetUpMockServer() func() {
 
 	ts := httptest.Server{
 		Listener: listener,
-		Config:   &http.Server{Handler: verifyGroupAffiliationHandler},
+		Config:   &http.Server{Handler: router},
 	}
+
 	ts.Start()
 
 	return func() {

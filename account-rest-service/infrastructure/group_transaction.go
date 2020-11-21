@@ -255,7 +255,7 @@ func (r *GroupTransactionsRepository) SearchGroupTransactionsList(query string) 
 	return groupTransactionsList, nil
 }
 
-func (r *GroupTransactionsRepository) GetUserPaymentAmountList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error) {
+func (r *GroupTransactionsRepository) GetUserPaymentAmountList(groupID int, groupUserIDList []string, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error) {
 	query := `
         SELECT
             payment_user_id user_id,
@@ -282,6 +282,28 @@ func (r *GroupTransactionsRepository) GetUserPaymentAmountList(groupID int, firs
 		var userPaymentAmount model.UserPaymentAmount
 		if err := rows.StructScan(&userPaymentAmount); err != nil {
 			return nil, err
+		}
+
+		userPaymentAmountList = append(userPaymentAmountList, userPaymentAmount)
+	}
+
+	for _, userID := range groupUserIDList {
+		var isExist bool
+
+		for _, userPaymentAmount := range userPaymentAmountList {
+			if userID == userPaymentAmount.UserID {
+				isExist = true
+				break
+			}
+		}
+
+		if isExist {
+			continue
+		}
+
+		userPaymentAmount := model.UserPaymentAmount{
+			UserID:             userID,
+			TotalPaymentAmount: 0,
 		}
 
 		userPaymentAmountList = append(userPaymentAmountList, userPaymentAmount)
@@ -337,12 +359,12 @@ func (r *GroupTransactionsRepository) GetGroupAccountsList(yearMonth time.Time, 
 	return groupAccountsList, nil
 }
 
-func (r *GroupTransactionsRepository) PostGroupAccountsList(groupAccountsList []model.GroupAccount, yearMonth time.Time, groupID int) error {
+func (r *GroupTransactionsRepository) PostGroupAccountsList(groupAccountsList []model.GroupAccount) error {
 	query := `
         INSERT INTO group_accounts
-            (years_months, payer_user_id, recipient_user_id, payment_amount, group_id)
+            (years_months, payer_user_id, recipient_user_id, payment_amount, payment_confirmation, receipt_confirmation, group_id)
         VALUES
-            (?,?,?,?,?)`
+            (?,?,?,?,?,?,?)`
 
 	tx, err := r.MySQLHandler.conn.Begin()
 	if err != nil {
@@ -351,7 +373,7 @@ func (r *GroupTransactionsRepository) PostGroupAccountsList(groupAccountsList []
 
 	transactions := func(tx *sql.Tx) error {
 		for _, groupAccount := range groupAccountsList {
-			if _, err := r.MySQLHandler.conn.Exec(query, yearMonth, groupAccount.Payer, groupAccount.Recipient, groupAccount.PaymentAmount, groupID); err != nil {
+			if _, err := r.MySQLHandler.conn.Exec(query, groupAccount.Month, groupAccount.Payer, groupAccount.Recipient, groupAccount.PaymentAmount, groupAccount.PaymentConfirmation, groupAccount.ReceiptConfirmation, groupAccount.GroupID); err != nil {
 				return err
 			}
 		}

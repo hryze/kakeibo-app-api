@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -323,7 +325,7 @@ func (m MockGroupTransactionsRepository) SearchGroupTransactionsList(query strin
 	}, nil
 }
 
-func (m MockGroupTransactionsRepository) GetUserPaymentAmountList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error) {
+func (m MockGroupTransactionsRepository) GetUserPaymentAmountList(groupID int, groupUserIDList []string, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error) {
 	return []model.UserPaymentAmount{
 		{UserID: "userID1", TotalPaymentAmount: 60000, PaymentAmountToUser: 0},
 		{UserID: "userID4", TotalPaymentAmount: 45000, PaymentAmountToUser: 0},
@@ -333,20 +335,114 @@ func (m MockGroupTransactionsRepository) GetUserPaymentAmountList(groupID int, f
 	}, nil
 }
 
+var (
+	counter int64
+	mu      sync.Mutex
+)
+
 func (m MockGroupTransactionsRepository) GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error) {
-	if groupID == 1 {
+	if groupID == 2 {
+		return []model.GroupAccount{
+			{
+				ID:                  1,
+				GroupID:             2,
+				Month:               time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC),
+				Payer:               model.NullString{NullString: sql.NullString{String: "userID2", Valid: true}},
+				Recipient:           model.NullString{NullString: sql.NullString{String: "userID1", Valid: true}},
+				PaymentAmount:       model.NullInt{Int: 23600, Valid: true},
+				PaymentConfirmation: false,
+				ReceiptConfirmation: false,
+			},
+			{
+				ID:                  2,
+				GroupID:             2,
+				Month:               time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC),
+				Payer:               model.NullString{NullString: sql.NullString{String: "userID3", Valid: true}},
+				Recipient:           model.NullString{NullString: sql.NullString{String: "userID1", Valid: true}},
+				PaymentAmount:       model.NullInt{Int: 6800, Valid: true},
+				PaymentConfirmation: false,
+				ReceiptConfirmation: false,
+			},
+			{
+				ID:                  3,
+				GroupID:             2,
+				Month:               time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC),
+				Payer:               model.NullString{NullString: sql.NullString{String: "userID3", Valid: true}},
+				Recipient:           model.NullString{NullString: sql.NullString{String: "userID4", Valid: true}},
+				PaymentAmount:       model.NullInt{Int: 15400, Valid: true},
+				PaymentConfirmation: false,
+				ReceiptConfirmation: false,
+			},
+			{
+				ID:                  4,
+				GroupID:             2,
+				Month:               time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC),
+				Payer:               model.NullString{NullString: sql.NullString{String: "userID3", Valid: true}},
+				Recipient:           model.NullString{NullString: sql.NullString{String: "userID5", Valid: true}},
+				PaymentAmount:       model.NullInt{Int: 400, Valid: true},
+				PaymentConfirmation: false,
+				ReceiptConfirmation: false,
+			},
+		}, nil
+	}
+
+	if groupID == 3 {
+		if counter == 1 {
+			atomic.AddInt64(&counter, -1)
+
+			return []model.GroupAccount{
+				{
+					ID:                  1,
+					GroupID:             3,
+					Month:               time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC),
+					Payer:               model.NullString{NullString: sql.NullString{String: "userID2", Valid: true}},
+					Recipient:           model.NullString{NullString: sql.NullString{String: "userID1", Valid: true}},
+					PaymentAmount:       model.NullInt{Int: 23600, Valid: true},
+					PaymentConfirmation: false,
+					ReceiptConfirmation: false,
+				},
+				{
+					ID:                  2,
+					GroupID:             3,
+					Month:               time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC),
+					Payer:               model.NullString{NullString: sql.NullString{String: "userID3", Valid: true}},
+					Recipient:           model.NullString{NullString: sql.NullString{String: "userID1", Valid: true}},
+					PaymentAmount:       model.NullInt{Int: 6800, Valid: true},
+					PaymentConfirmation: false,
+					ReceiptConfirmation: false,
+				},
+				{
+					ID:                  3,
+					GroupID:             3,
+					Month:               time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC),
+					Payer:               model.NullString{NullString: sql.NullString{String: "userID3", Valid: true}},
+					Recipient:           model.NullString{NullString: sql.NullString{String: "userID4", Valid: true}},
+					PaymentAmount:       model.NullInt{Int: 15400, Valid: true},
+					PaymentConfirmation: false,
+					ReceiptConfirmation: false,
+				},
+				{
+					ID:                  4,
+					GroupID:             3,
+					Month:               time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC),
+					Payer:               model.NullString{NullString: sql.NullString{String: "userID3", Valid: true}},
+					Recipient:           model.NullString{NullString: sql.NullString{String: "userID5", Valid: true}},
+					PaymentAmount:       model.NullInt{Int: 400, Valid: true},
+					PaymentConfirmation: false,
+					ReceiptConfirmation: false,
+				},
+			}, nil
+		}
+
+		atomic.AddInt64(&counter, 1)
+
 		return make([]model.GroupAccount, 0), nil
 	}
 
-	return []model.GroupAccount{
-		{ID: 1, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID2", Recipient: "userID1", PaymentAmount: 23600, PaymentConfirmation: false, ReceiptConfirmation: false},
-		{ID: 2, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID1", PaymentAmount: 6800, PaymentConfirmation: false, ReceiptConfirmation: false},
-		{ID: 3, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID4", PaymentAmount: 15400, PaymentConfirmation: false, ReceiptConfirmation: false},
-		{ID: 4, GroupID: 2, Month: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC), Payer: "userID3", Recipient: "userID5", PaymentAmount: 400, PaymentConfirmation: false, ReceiptConfirmation: false},
-	}, nil
+	return make([]model.GroupAccount, 0), nil
 }
 
-func (m MockGroupTransactionsRepository) PostGroupAccountsList(groupAccountsList []model.GroupAccount, yearMonth time.Time, groupID int) error {
+func (m MockGroupTransactionsRepository) PostGroupAccountsList(groupAccountsList []model.GroupAccount) error {
 	return nil
 }
 
@@ -591,7 +687,7 @@ func TestDBHandler_PostMonthlyGroupTransactionsAccount(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
-		"group_id":   "2",
+		"group_id":   "3",
 		"year_month": "2020-07",
 	})
 
@@ -601,6 +697,9 @@ func TestDBHandler_PostMonthlyGroupTransactionsAccount(t *testing.T) {
 	}
 
 	r.AddCookie(cookie)
+
+	mu.Lock()
+	defer mu.Unlock()
 
 	h.PostMonthlyGroupTransactionsAccount(w, r)
 

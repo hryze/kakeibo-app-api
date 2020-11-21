@@ -596,3 +596,29 @@ func (h *DBHandler) VerifyGroupAffiliationOfUsersList(w http.ResponseWriter, r *
 
 	w.WriteHeader(http.StatusOK)
 }
+
+func (h *DBHandler) GetGroupUserIDList(w http.ResponseWriter, r *http.Request) {
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	groupUserIDList, err := h.GroupRepo.GetGroupUsersList(groupID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if len(groupUserIDList) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&groupUserIDList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
