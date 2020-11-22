@@ -43,12 +43,13 @@ func Run() error {
 	router.HandleFunc("/groups", h.GetGroupList).Methods("GET")
 	router.HandleFunc("/groups", h.PostGroup).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}", h.PutGroup).Methods("PUT")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.GetGroupUserIDList).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.PostGroupUnapprovedUser).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.DeleteGroupApprovedUser).Methods("DELETE")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users/approved", h.PostGroupApprovedUser).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users/unapproved", h.DeleteGroupUnapprovedUser).Methods("DELETE")
-	router.HandleFunc("/groups/{group_id:[0-9]+}/users/{user_id:[\\S]{1,10}}", h.VerifyGroupAffiliation).Methods("GET")
-	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.VerifyGroupAffiliationOfUsersList).Methods("GET")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users/{user_id:[\\S]{1,10}}/verify", h.VerifyGroupAffiliation).Methods("GET")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users/verify", h.VerifyGroupAffiliationOfUsersList).Methods("GET")
 
 	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
 

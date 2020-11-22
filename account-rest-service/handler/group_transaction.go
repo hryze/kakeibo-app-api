@@ -5,9 +5,14 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
+	"io/ioutil"
 	"math"
+	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"text/template"
 	"time"
@@ -193,6 +198,136 @@ func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery)
 	}
 
 	return buffer.String(), nil
+}
+
+func getGroupUserIDList(groupID int) ([]string, error) {
+	userHost := os.Getenv("USER_HOST")
+	requestURL := fmt.Sprintf("http://%s:8080/groups/%d/users", userHost, groupID)
+
+	request, err := http.NewRequest(
+		"GET",
+		requestURL,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			MaxIdleConns:          500,
+			MaxIdleConnsPerHost:   100,
+			IdleConnTimeout:       90 * time.Second,
+			ResponseHeaderTimeout: 10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		},
+		Timeout: 60 * time.Second,
+	}
+
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_, _ = io.Copy(ioutil.Discard, response.Body)
+		response.Body.Close()
+	}()
+
+	var groupUserIDList []string
+	if err := json.NewDecoder(response.Body).Decode(&groupUserIDList); err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode == http.StatusBadRequest {
+		return nil, &BadRequestErrorMsg{"指定されたグループには、ユーザーは所属していません。"}
+	}
+
+	if response.StatusCode == http.StatusInternalServerError {
+		return nil, &InternalServerErrorMsg{"500 Internal Server Error"}
+	}
+
+	return groupUserIDList, nil
+}
+
+func paymentAmountSplitBill(groupAccountsList *model.GroupAccountsList, payerList model.PayerList, recipientList model.RecipientList, groupID int, month time.Time) {
+	for i, payer := range payerList.PayerList {
+		for j, recipient := range recipientList.RecipientList {
+			if payer.PaymentAmountToUser+recipient.PaymentAmountToUser == 0 && payer.PaymentAmountToUser != 0 && recipient.PaymentAmountToUser != 0 {
+				groupAccount := model.GroupAccount{
+					GroupID:       groupID,
+					Month:         month,
+					Recipient:     model.NullString{NullString: sql.NullString{String: recipient.UserID, Valid: true}},
+					Payer:         model.NullString{NullString: sql.NullString{String: payer.UserID, Valid: true}},
+					PaymentAmount: model.NullInt{Int: recipient.PaymentAmountToUser, Valid: true},
+				}
+
+				groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, groupAccount)
+
+				payerList.PayerList[i].PaymentAmountToUser = 0
+				recipientList.RecipientList[j].PaymentAmountToUser = 0
+			}
+		}
+	}
+
+	for i, j := 0, 0; i < len(recipientList.RecipientList) && j < len(payerList.PayerList); {
+		if recipientList.RecipientList[i].PaymentAmountToUser == 0 {
+			i++
+			j = 0
+			continue
+		}
+
+		if payerList.PayerList[j].PaymentAmountToUser == 0 {
+			j++
+			continue
+		}
+
+		groupAccount := model.GroupAccount{
+			GroupID:   groupID,
+			Month:     month,
+			Recipient: model.NullString{NullString: sql.NullString{String: recipientList.RecipientList[i].UserID, Valid: true}},
+			Payer:     model.NullString{NullString: sql.NullString{String: payerList.PayerList[j].UserID, Valid: true}},
+		}
+
+		remainingAmount := recipientList.RecipientList[i].PaymentAmountToUser + payerList.PayerList[j].PaymentAmountToUser
+
+		switch {
+		case remainingAmount == 0:
+			groupAccount.PaymentAmount.Int = recipientList.RecipientList[i].PaymentAmountToUser
+			groupAccount.PaymentAmount.Valid = true
+			groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, groupAccount)
+
+			recipientList.RecipientList[i].PaymentAmountToUser = 0
+			payerList.PayerList[j].PaymentAmountToUser = 0
+
+			i++
+			j++
+		case remainingAmount < 0:
+			groupAccount.PaymentAmount.Int = recipientList.RecipientList[i].PaymentAmountToUser
+			groupAccount.PaymentAmount.Valid = true
+			groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, groupAccount)
+
+			recipientList.RecipientList[i].PaymentAmountToUser = 0
+			payerList.PayerList[j].PaymentAmountToUser = remainingAmount
+
+			i++
+		case remainingAmount > 0:
+			groupAccount.PaymentAmount.Int = int(math.Abs(float64(payerList.PayerList[j].PaymentAmountToUser)))
+			groupAccount.PaymentAmount.Valid = true
+			groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, groupAccount)
+
+			recipientList.RecipientList[i].PaymentAmountToUser = remainingAmount
+			payerList.PayerList[j].PaymentAmountToUser = 0
+
+			j++
+		}
+	}
 }
 
 func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *http.Request) {
@@ -649,20 +784,34 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
-	userPaymentAmountList, err := h.GroupTransactionsRepo.GetUserPaymentAmountList(groupID, firstDay, lastDay)
+	groupUserIDList, err := getGroupUserIDList(groupID)
+	if err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	userPaymentAmountList, err := h.GroupTransactionsRepo.GetUserPaymentAmountList(groupID, groupUserIDList, firstDay, lastDay)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	if len(userPaymentAmountList) == 0 {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoContentMsg{"当月の取引履歴は見つかりませんでした。"}); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+	var isNotZero bool
+	for _, userPaymentAmount := range userPaymentAmountList {
+		if userPaymentAmount.TotalPaymentAmount > 0 {
+			isNotZero = true
+			break
 		}
+	}
 
+	if !isNotZero {
+		errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"当月の取引履歴が見つかりませんでした。"}))
 		return
 	}
 
@@ -679,13 +828,7 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 	}
 
 	if len(dbGroupAccountsList) == 0 {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
+		errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"当月は未会計です。"}))
 		return
 	}
 
@@ -736,9 +879,50 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
-	userPaymentAmountList, err := h.GroupTransactionsRepo.GetUserPaymentAmountList(groupID, firstDay, lastDay)
+	groupUserIDList, err := getGroupUserIDList(groupID)
+	if err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	if len(groupUserIDList) == 1 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"グループ人数が1人のため会計できません。"}))
+		return
+	}
+
+	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(firstDay, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(dbGroupAccountsList) >= 1 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"当月は会計済です。"}))
+		return
+	}
+
+	userPaymentAmountList, err := h.GroupTransactionsRepo.GetUserPaymentAmountList(groupID, groupUserIDList, firstDay, lastDay)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	var isNotZero bool
+	for _, userPaymentAmount := range userPaymentAmountList {
+		if userPaymentAmount.TotalPaymentAmount > 0 {
+			isNotZero = true
+			break
+		}
+	}
+
+	if !isNotZero {
+		errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"当月の取引履歴が見つかりませんでした。"}))
 		return
 	}
 
@@ -751,77 +935,23 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 	payerList := model.NewPayerList(userPaymentAmountList)
 	recipientList := model.NewRecipientList(userPaymentAmountList)
 
-	for i, payer := range payerList.PayerList {
-		for j, recipient := range recipientList.RecipientList {
-			if payer.PaymentAmountToUser+recipient.PaymentAmountToUser == 0 && payer.PaymentAmountToUser != 0 && recipient.PaymentAmountToUser != 0 {
-				groupAccount := model.GroupAccount{
-					Recipient:     recipient.UserID,
-					Payer:         payer.UserID,
-					PaymentAmount: recipient.PaymentAmountToUser,
-				}
-
-				groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, groupAccount)
-
-				payerList.PayerList[i].PaymentAmountToUser = 0
-				recipientList.RecipientList[j].PaymentAmountToUser = 0
-			}
-		}
+	if len(payerList.PayerList) == 0 && len(recipientList.RecipientList) == 0 {
+		groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, model.GroupAccount{
+			GroupID:             groupID,
+			Month:               firstDay,
+			PaymentConfirmation: true,
+			ReceiptConfirmation: true,
+		})
+	} else if len(payerList.PayerList) != 0 && len(recipientList.RecipientList) != 0 {
+		paymentAmountSplitBill(&groupAccountsList, payerList, recipientList, groupID, firstDay)
 	}
 
-	for i, j := 0, 0; i < len(recipientList.RecipientList) && j < len(payerList.PayerList); {
-		if recipientList.RecipientList[i].PaymentAmountToUser == 0 {
-			i++
-			j = 0
-			continue
-		}
-
-		if payerList.PayerList[j].PaymentAmountToUser == 0 {
-			j++
-			continue
-		}
-
-		groupAccount := model.GroupAccount{
-			Recipient: recipientList.RecipientList[i].UserID,
-			Payer:     payerList.PayerList[j].UserID,
-		}
-
-		remainingAmount := recipientList.RecipientList[i].PaymentAmountToUser + payerList.PayerList[j].PaymentAmountToUser
-
-		switch {
-		case remainingAmount == 0:
-			groupAccount.PaymentAmount = recipientList.RecipientList[i].PaymentAmountToUser
-			groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, groupAccount)
-
-			recipientList.RecipientList[i].PaymentAmountToUser = 0
-			payerList.PayerList[j].PaymentAmountToUser = 0
-
-			i++
-			j++
-		case remainingAmount < 0:
-			groupAccount.PaymentAmount = recipientList.RecipientList[i].PaymentAmountToUser
-			groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, groupAccount)
-
-			recipientList.RecipientList[i].PaymentAmountToUser = 0
-			payerList.PayerList[j].PaymentAmountToUser = remainingAmount
-
-			i++
-		case remainingAmount > 0:
-			groupAccount.PaymentAmount = int(math.Abs(float64(payerList.PayerList[j].PaymentAmountToUser)))
-			groupAccountsList.GroupAccountsList = append(groupAccountsList.GroupAccountsList, groupAccount)
-
-			recipientList.RecipientList[i].PaymentAmountToUser = remainingAmount
-			payerList.PayerList[j].PaymentAmountToUser = 0
-
-			j++
-		}
-	}
-
-	if err := h.GroupTransactionsRepo.PostGroupAccountsList(groupAccountsList.GroupAccountsList, firstDay, groupID); err != nil {
+	if err := h.GroupTransactionsRepo.PostGroupAccountsList(groupAccountsList.GroupAccountsList); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(firstDay, groupID)
+	dbGroupAccountsList, err = h.GroupTransactionsRepo.GetGroupAccountsList(firstDay, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -863,6 +993,23 @@ func (h *DBHandler) PutMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 		}
 
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	yearMonth, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		return
+	}
+
+	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(yearMonth, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(dbGroupAccountsList) == 0 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"当月は未会計です。"}))
 		return
 	}
 
@@ -927,13 +1074,7 @@ func (h *DBHandler) DeleteMonthlyGroupTransactionsAccount(w http.ResponseWriter,
 	}
 
 	if len(dbGroupAccountsList) == 0 {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
+		errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"当月は未会計です。"}))
 		return
 	}
 

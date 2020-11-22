@@ -69,9 +69,9 @@ type GroupTransactionsRepository interface {
 	PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int, updatedUserID string) error
 	DeleteGroupTransaction(groupTransactionID int) error
 	SearchGroupTransactionsList(query string) ([]model.GroupTransactionSender, error)
-	GetUserPaymentAmountList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error)
+	GetUserPaymentAmountList(groupID int, groupUserIDList []string, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error)
 	GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error)
-	PostGroupAccountsList(groupAccountsList []model.GroupAccount, yearMonth time.Time, groupID int) error
+	PostGroupAccountsList(groupAccountsList []model.GroupAccount) error
 	PutGroupAccountsList(groupAccountsList []model.GroupAccount) error
 	DeleteGroupAccountsList(yearMonth time.Time, groupID int) error
 }

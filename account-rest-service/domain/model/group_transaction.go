@@ -1,6 +1,7 @@
 package model
 
 import (
+	"bytes"
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
@@ -66,17 +67,22 @@ type GroupAccountsList struct {
 }
 
 type GroupAccount struct {
-	ID                  int       `json:"id"                   db:"id"`
-	GroupID             int       `json:"group_id"             db:"group_id"`
-	Month               time.Time `json:"month"                db:"years_months"`
-	Payer               string    `json:"payer_user_id"        db:"payer_user_id"`
-	Recipient           string    `json:"recipient_user_id"    db:"recipient_user_id"`
-	PaymentAmount       int       `json:"payment_amount"       db:"payment_amount"`
-	PaymentConfirmation BitBool   `json:"payment_confirmation" db:"payment_confirmation"`
-	ReceiptConfirmation BitBool   `json:"receipt_confirmation" db:"receipt_confirmation"`
+	ID                  int        `json:"id"                   db:"id"`
+	GroupID             int        `json:"group_id"             db:"group_id"`
+	Month               time.Time  `json:"month"                db:"years_months"`
+	Payer               NullString `json:"payer_user_id"        db:"payer_user_id"`
+	Recipient           NullString `json:"recipient_user_id"    db:"recipient_user_id"`
+	PaymentAmount       NullInt    `json:"payment_amount"       db:"payment_amount"`
+	PaymentConfirmation BitBool    `json:"payment_confirmation" db:"payment_confirmation"`
+	ReceiptConfirmation BitBool    `json:"receipt_confirmation" db:"receipt_confirmation"`
 }
 
 type BitBool bool
+
+type NullInt struct {
+	Int   int
+	Valid bool
+}
 
 func NewGroupTransactionsList(groupTransactionsList []GroupTransactionSender) GroupTransactionsList {
 	return GroupTransactionsList{GroupTransactionsList: groupTransactionsList}
@@ -156,4 +162,50 @@ func (b *BitBool) Scan(src interface{}) error {
 	*b = bitBool[0] == 1
 
 	return nil
+}
+
+func (ni *NullInt) MarshalJSON() ([]byte, error) {
+	if !ni.Valid {
+		return []byte("null"), nil
+	}
+
+	return json.Marshal(ni.Int)
+}
+
+func (ni *NullInt) UnmarshalJSON(b []byte) error {
+	if bytes.Equal(b, []byte("null")) {
+		return nil
+	}
+
+	if err := json.Unmarshal(b, &ni.Int); err != nil {
+		return err
+	}
+
+	ni.Valid = true
+
+	return nil
+}
+
+func (ni *NullInt) Scan(value interface{}) error {
+	if value == nil {
+		ni.Int, ni.Valid = 0, false
+		return nil
+	}
+
+	intValue, ok := value.(int64)
+	if !ok {
+		return errors.New("type assertion error")
+	}
+
+	ni.Int, ni.Valid = int(intValue), true
+
+	return nil
+}
+
+func (ni NullInt) Value() (driver.Value, error) {
+	if !ni.Valid {
+		return nil, nil
+	}
+
+	return int64(ni.Int), nil
 }

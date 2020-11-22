@@ -25,7 +25,7 @@ import (
 func verifyGroupAffiliationOfUsersList(groupID int, groupUsersList model.GroupTasksUsersListReceiver) error {
 	userHost := os.Getenv("USER_HOST")
 
-	requestURL := fmt.Sprintf("http://%s:8080/groups/%d/users", userHost, groupID)
+	requestURL := fmt.Sprintf("http://%s:8080/groups/%d/users/verify", userHost, groupID)
 	requestBody, err := json.Marshal(groupUsersList)
 	if err != nil {
 		return err

@@ -17,7 +17,10 @@
 | **DELETE**<br>&emsp;/groups/{group_id}/users | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ退会 |
 | **POST**<br>&emsp;/groups/{group_id}/users/approved | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ招待承認 |
 | **DELETE**<br>&emsp;/groups/{group_id}/users/unapproved | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ招待拒否 |
-| **GET**<br>&emsp;/groups/{group_id}/users/{user_id} | <pre>200 OK<br>400 Bad Request<br>500 Internal Server Error</pre> | グループ所属確認 |
+| **GET**<br>&emsp;/readyz | <pre>200 OK<br>503 Service Unavailable</pre> | Kubernetesヘルスチェック<br>※ Backend専用 |
+| **GET**<br>&emsp;/groups/{group_id}/users | <pre>200 OK<br>400 Bad Request<br>500 Internal Server Error</pre> | グループユーザーIDリスト取得<br>※ Backend専用 |
+| **GET**<br>&emsp;/groups/{group_id}/users/{user_id}}/verify | <pre>200 OK<br>400 Bad Request<br>500 Internal Server Error</pre> | グループ所属確認<br>※ Backend専用 |
+| **GET**<br>&emsp;/groups/{group_id}/users/verify | <pre>200 OK<br>400 Bad Request<br>500 Internal Server Error</pre> | ユーザーリストのグループ所属確認<br>※ Backend専用 |
 
 ### account-rest-service
 
@@ -33,7 +36,6 @@
 | **PUT**<br>&emsp;/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿トランザクション更新 |
 | **DELETE**<br>&emsp;/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿トランザクション削除 |
 | **GET**<br>&emsp;/transactions/search | <pre>200 OK<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿トランザクション検索 |
-| **POST**<br>&emsp;/standard-budgets | <pre>201 Created<br>500 Internal Server Error</pre> | 家計簿標準予算初期値追加 |
 | **GET**<br>&emsp;/standard-budgets | <pre>200 OK<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿標準予算取得 |
 | **PUT**<br>&emsp;/standard-budgets | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿標準予算更新 |
 | **GET**<br>&emsp;/custom-budgets/{year_month} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 月別家計簿カスタム予算取得 |
@@ -51,11 +53,10 @@
 | **PUT**<br>&emsp;/groups/{group_id}/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション更新 |
 | **DELETE**<br>&emsp;/groups/{group_id}/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション削除 |
 | **GET**<br>&emsp;/groups/{group_id}/transactions/search | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション検索 |
-| **GET**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ取得 |
-| **POST**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ追加 |
-| **PUT**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ更新 |
-| **DELETE**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ削除 |
-| **POST**<br>&emsp;/groups/{group_id}/standard-budgets | <pre>201 Created<br>400 Bad Request<br>500 Internal Server Error</pre> | グループ家計簿標準予算初期値追加 |
+| **GET**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ取得 |
+| **POST**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ追加 |
+| **PUT**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ更新 |
+| **DELETE**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ削除 |
 | **GET**<br>&emsp;/groups/{group_id}/standard-budgets | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿標準予算取得 |
 | **PUT**<br>&emsp;/groups/{group_id}/standard-budgets | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿標準予算更新 |
 | **GET**<br>&emsp;/groups/{group_id}/custom-budgets/{year_month} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ月別家計簿カスタム予算取得 |
@@ -63,6 +64,9 @@
 | **PUT**<br>&emsp;/groups/{group_id}/custom-budgets/{year_month} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ月別家計簿カスタム予算更新 |
 | **DELETE**<br>&emsp;/groups/{group_id}/custom-budgets/{year_month} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ月別家計簿カスタム予算削除 |
 | **GET**<br>&emsp;/groups/{group_id}/budgets/{year} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ年別家計簿予算一覧取得 |
+| **GET**<br>&emsp;/readyz | <pre>200 OK<br>503 Service Unavailable</pre> | Kubernetesヘルスチェック<br>※ Backend専用 |
+| **POST**<br>&emsp;/standard-budgets | <pre>201 Created<br>500 Internal Server Error</pre> | 家計簿標準予算初期値追加<br>※ Backend専用 |
+| **POST**<br>&emsp;/groups/{group_id}/standard-budgets | <pre>201 Created<br>400 Bad Request<br>500 Internal Server Error</pre> | グループ家計簿標準予算初期値追加<br>※ Backend専用 |
 
 ### todo-rest-service
 
@@ -89,3 +93,4 @@
 | **POST**<br>&emsp;/groups/{group_id}/tasks | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループタスク追加 |
 | **PUT**<br>&emsp;/groups/{group_id}/tasks/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループタスク更新 |
 | **DELETE**<br>&emsp;/groups/{group_id}/tasks/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループタスク削除 |
+| **GET**<br>&emsp;/readyz | <pre>200 OK<br>503 Service Unavailable</pre> | Kubernetesヘルスチェック<br>※ Backend専用 |

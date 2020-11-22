@@ -246,7 +246,7 @@ func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (stri
 
 func verifyGroupAffiliation(groupID int, userID string) error {
 	userHost := os.Getenv("USER_HOST")
-	requestURL := fmt.Sprintf("http://%s:8080/groups/%d/users/%s", userHost, groupID, userID)
+	requestURL := fmt.Sprintf("http://%s:8080/groups/%d/users/%s/verify", userHost, groupID, userID)
 
 	request, err := http.NewRequest(
 		"GET",

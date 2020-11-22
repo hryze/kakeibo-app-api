@@ -240,7 +240,10 @@ VALUES
   ("expense", "2020-07-17", "コストコ", "牛肉購入", 30000, 5, "ito", NULL, "ito", 2, 6, NULL),
   ("expense", "2020-07-25", "コストコ", "牛肉購入", 8000, 5, "furusawa", NULL, "furusawa", 2, 6, NULL),
   ("expense", "2020-07-29", "コストコ", "牛肉購入", 7000, 5, "test4", NULL, "test4", 2, 6, NULL),
-  ("expense", "2020-07-30", "コストコ", "牛肉購入", 6000, 5, "test5", NULL, "test5", 2, 6, NULL);
+  ("expense", "2020-07-30", "コストコ", "牛肉購入", 6000, 5, "test5", NULL, "test5", 2, 6, NULL),
+  ("expense", "2020-08-01", "コストコ", "牛肉購入", 1000, 1, "taira", NULL, "taira", 2, 6, NULL),
+  ("expense", "2020-08-01", "コストコ", "牛肉購入", 1000, 1, "tati1", NULL, "tati1", 2, 6, NULL),
+  ("expense", "2020-08-01", "コストコ", "牛肉購入", 1000, 1, "test4", NULL, "test4", 2, 6, NULL);
 
 -- group_standard_budgets table test data
 INSERT INTO group_standard_budgets
