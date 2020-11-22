@@ -16,6 +16,11 @@ import (
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/testutil"
 )
 
+var (
+	counter int64
+	mu      sync.Mutex
+)
+
 type MockGroupTransactionsRepository struct{}
 
 func (m MockGroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionSender, error) {
@@ -334,11 +339,6 @@ func (m MockGroupTransactionsRepository) GetUserPaymentAmountList(groupID int, g
 		{UserID: "userID2", TotalPaymentAmount: 6000, PaymentAmountToUser: 0},
 	}, nil
 }
-
-var (
-	counter int64
-	mu      sync.Mutex
-)
 
 func (m MockGroupTransactionsRepository) GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error) {
 	if groupID == 2 {
@@ -720,7 +720,7 @@ func TestDBHandler_PutMonthlyGroupTransactionsAccount(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
-		"group_id":   "3",
+		"group_id":   "2",
 		"year_month": "2020-07",
 	})
 

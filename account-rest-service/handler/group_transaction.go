@@ -996,6 +996,23 @@ func (h *DBHandler) PutMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 		return
 	}
 
+	yearMonth, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		return
+	}
+
+	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(yearMonth, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(dbGroupAccountsList) == 0 {
+		errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"当月は未会計です。"}))
+		return
+	}
+
 	var groupAccountsList model.GroupAccountsList
 	if err := json.NewDecoder(r.Body).Decode(&groupAccountsList); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -1057,13 +1074,7 @@ func (h *DBHandler) DeleteMonthlyGroupTransactionsAccount(w http.ResponseWriter,
 	}
 
 	if len(dbGroupAccountsList) == 0 {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(&NoContentMsg{"当月の会計データは見つかりませんでした。"}); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
+		errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"当月は未会計です。"}))
 		return
 	}
 
