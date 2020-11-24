@@ -57,14 +57,14 @@ func (t MockGroupRepository) GetUnApprovedGroupList(userID string) ([]model.Unap
 
 func (t MockGroupRepository) GetApprovedUsersList(approvedGroupIDList []interface{}) ([]model.ApprovedUser, error) {
 	return []model.ApprovedUser{
-		{GroupID: 1, UserID: "userID1", UserName: "userName1"},
-		{GroupID: 1, UserID: "userID2", UserName: "userName2"},
-		{GroupID: 2, UserID: "userID1", UserName: "userName1"},
-		{GroupID: 3, UserID: "userID1", UserName: "userName1"},
-		{GroupID: 3, UserID: "userID2", UserName: "userName2"},
-		{GroupID: 4, UserID: "userID2", UserName: "userName2"},
-		{GroupID: 4, UserID: "userID4", UserName: "userName4"},
-		{GroupID: 5, UserID: "userID4", UserName: "userName4"},
+		{GroupID: 1, UserID: "userID1", UserName: "userName1", ColorCode: "#FF0000"},
+		{GroupID: 1, UserID: "userID2", UserName: "userName2", ColorCode: "#00FFFF"},
+		{GroupID: 2, UserID: "userID1", UserName: "userName1", ColorCode: "#FF0000"},
+		{GroupID: 3, UserID: "userID1", UserName: "userName1", ColorCode: "#FF0000"},
+		{GroupID: 3, UserID: "userID2", UserName: "userName2", ColorCode: "#00FFFF"},
+		{GroupID: 4, UserID: "userID2", UserName: "userName2", ColorCode: "#FF0000"},
+		{GroupID: 4, UserID: "userID4", UserName: "userName4", ColorCode: "#00FFFF"},
+		{GroupID: 5, UserID: "userID4", UserName: "userName4", ColorCode: "#FF0000"},
 	}, nil
 }
 
@@ -126,15 +126,16 @@ func (t MockGroupRepository) FindUnapprovedUser(groupID int, userID string) erro
 	return nil
 }
 
-func (t MockGroupRepository) PostGroupApprovedUserAndDeleteGroupUnapprovedUser(groupID int, userID string) (sql.Result, error) {
+func (t MockGroupRepository) PostGroupApprovedUserAndDeleteGroupUnapprovedUser(groupID int, userID string, colorCode string) (sql.Result, error) {
 	return MockSqlResult{}, nil
 }
 
 func (t MockGroupRepository) GetApprovedUser(approvedUsersID int) (*model.ApprovedUser, error) {
 	return &model.ApprovedUser{
-		GroupID:  2,
-		UserID:   "userID1",
-		UserName: "userName1",
+		GroupID:   2,
+		UserID:    "userID1",
+		UserName:  "userName1",
+		ColorCode: "#FF0000",
 	}, nil
 }
 

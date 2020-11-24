@@ -7,12 +7,14 @@
         {
           "group_id": 1,
           "user_id": "userID1",
-          "user_name": "userName1"
+          "user_name": "userName1",
+          "color_code": "#FF0000"
         },
         {
           "group_id": 1,
           "user_id": "userID2",
-          "user_name": "userName2"
+          "user_name": "userName2",
+          "color_code": "#00FFFF"
         }
       ],
       "unapproved_users_list": [
@@ -30,7 +32,8 @@
         {
           "group_id": 2,
           "user_id": "userID1",
-          "user_name": "userName1"
+          "user_name": "userName1",
+          "color_code": "#FF0000"
         }
       ],
       "unapproved_users_list": [
@@ -53,12 +56,14 @@
         {
           "group_id": 3,
           "user_id": "userID1",
-          "user_name": "userName1"
+          "user_name": "userName1",
+          "color_code": "#FF0000"
         },
         {
           "group_id": 3,
           "user_id": "userID2",
-          "user_name": "userName2"
+          "user_name": "userName2",
+          "color_code": "#00FFFF"
         }
       ],
       "unapproved_users_list": []
@@ -72,12 +77,14 @@
         {
           "group_id": 4,
           "user_id": "userID2",
-          "user_name": "userName2"
+          "user_name": "userName2",
+          "color_code": "#FF0000"
         },
         {
           "group_id": 4,
           "user_id": "userID4",
-          "user_name": "userName4"
+          "user_name": "userName4",
+          "color_code": "#00FFFF"
         }
       ],
       "unapproved_users_list": [
@@ -100,7 +107,8 @@
         {
           "group_id": 5,
           "user_id": "userID4",
-          "user_name": "userName4"
+          "user_name": "userName4",
+          "color_code": "#FF0000"
         }
       ],
       "unapproved_users_list": [

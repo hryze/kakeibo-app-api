@@ -20,9 +20,10 @@ type UnapprovedGroup struct {
 }
 
 type ApprovedUser struct {
-	GroupID  int    `json:"group_id"  db:"group_id"`
-	UserID   string `json:"user_id"   db:"user_id"`
-	UserName string `json:"user_name" db:"user_name"`
+	GroupID   int    `json:"group_id"   db:"group_id"`
+	UserID    string `json:"user_id"    db:"user_id"`
+	UserName  string `json:"user_name"  db:"user_name"`
+	ColorCode string `json:"color_code" db:"color_code"`
 }
 
 type UnapprovedUser struct {
