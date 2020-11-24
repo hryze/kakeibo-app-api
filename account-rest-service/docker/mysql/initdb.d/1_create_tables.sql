@@ -59,7 +59,8 @@ CREATE TABLE transactions
     ON DELETE RESTRICT ON UPDATE CASCADE,
   FOREIGN KEY fk_custom_category_id(custom_category_id)
     REFERENCES custom_categories(id)
-    ON DELETE SET NULL ON UPDATE CASCADE
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  INDEX idx_user_id(user_id)
 );
 
 CREATE TABLE standard_budgets
@@ -125,7 +126,8 @@ CREATE TABLE group_transactions
     ON DELETE RESTRICT ON UPDATE CASCADE,
   FOREIGN KEY fk_custom_category_id(custom_category_id)
     REFERENCES group_custom_categories(id)
-    ON DELETE SET NULL ON UPDATE CASCADE
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  INDEX idx_group_id(group_id)
 );
 
 CREATE TABLE group_standard_budgets
@@ -162,5 +164,6 @@ CREATE TABLE group_accounts
   receipt_confirmation bit(1) NOT NULL DEFAULT b'0',
   group_id INT NOT NULL,
   PRIMARY KEY(id),
-  UNIQUE uq_group_accounts(years_months, payer_user_id, recipient_user_id, group_id)
+  UNIQUE uq_group_accounts(years_months, payer_user_id, recipient_user_id, group_id),
+  INDEX idx_group_id(group_id)
 );
