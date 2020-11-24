@@ -292,7 +292,7 @@ func (r *GroupTasksRepository) GetGroupTasksList(groupID int) ([]model.GroupTask
 	}
 	defer rows.Close()
 
-	var groupTasksList []model.GroupTask
+	groupTasksList := make([]model.GroupTask, 0)
 	for rows.Next() {
 		var groupTask model.GroupTask
 		if err := rows.StructScan(&groupTask); err != nil {
