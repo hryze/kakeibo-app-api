@@ -21,34 +21,36 @@ VALUES
   ('平家家計簿1'),
   ('平家家計簿2'),
   ('平家家計簿3'),
-  ('源家家計簿');
+  ('源家家計簿'),
+  ('安楽家家計簿');
 
 -- group_users table test data
 INSERT INTO group_users
-  (group_id, user_id)
+  (group_id, user_id, color_code)
 VALUES
-  (1, 'taira'),
-  (1, 'tati1'),
-  (1, 'test4'),
-  (2, 'taira'),
-  (2, 'go2'),
-  (2, 'test5'),
-  (2, 'saigo3'),
-  (3, 'taira'),
-  (3, 'test6'),
-  (4, 'taira'),
-  (4, 'anraku'),
-  (4, 'ito'),
-  (4, 'furusawa'),
-  (4, 'test4'),
-  (4, 'test5'),
-  (4, 'test6'),
-  (5, 'taira'),
-  (5, 'anraku'),
-  (5, 'ito'),
-  (5, 'furusawa'),
-  (5, 'test4'),
-  (5, 'test5');
+  (1, 'taira', '#FF0000'),
+  (1, 'tati1', '#00FFFF'),
+  (1, 'test4', '#80FF00'),
+  (2, 'taira', '#FF0000'),
+  (2, 'go2', '#00FFFF'),
+  (2, 'test5', '#80FF00'),
+  (2, 'saigo3', '#8000FF'),
+  (3, 'taira', '#FF0000'),
+  (3, 'test6', '#00FFFF'),
+  (4, 'taira', '#FF0000'),
+  (4, 'anraku', '#00FFFF'),
+  (4, 'ito', '#80FF00'),
+  (4, 'furusawa', '#8000FF'),
+  (4, 'test4', '#FF8000'),
+  (4, 'test5', '#0080FF'),
+  (4, 'test6', '#00FF80'),
+  (5, 'taira', '#FF0000'),
+  (5, 'anraku', '#00FFFF'),
+  (5, 'ito', '#80FF00'),
+  (5, 'furusawa', '#8000FF'),
+  (5, 'test4', '#FF8000'),
+  (5, 'test5', '#0080FF'),
+  (6, 'anraku', '#FF0000');
 
 -- group_unapproved_users table test data
 INSERT INTO group_unapproved_users
@@ -63,4 +65,5 @@ VALUES
   (2, 'anraku'),
   (3, 'anraku'),
   (4, 'tati1'),
-  (5, 'tati1');
+  (5, 'tati1'),
+  (6, 'taira');

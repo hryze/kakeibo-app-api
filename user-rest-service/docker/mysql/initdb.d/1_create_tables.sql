@@ -21,6 +21,7 @@ CREATE TABLE group_users
   id INT NOT NULL AUTO_INCREMENT,
   group_id INT NOT NULL,
   user_id VARCHAR(10) NOT NULL,
+  color_code VARCHAR(7) NOT NULL,
   PRIMARY KEY(id),
   UNIQUE uq_group_users(group_id, user_id),
   FOREIGN KEY fk_group_id(group_id)

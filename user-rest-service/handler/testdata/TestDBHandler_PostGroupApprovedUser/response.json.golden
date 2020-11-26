@@ -1,5 +1,6 @@
 {
   "group_id": 2,
   "user_id": "userID1",
-  "user_name": "userName1"
+  "user_name": "userName1",
+  "color_code": "#FF0000"
 }

@@ -102,7 +102,8 @@ func (r *GroupRepository) GetApprovedUsersList(groupIDList []interface{}) ([]mod
             SELECT
                 group_users.group_id group_id,
                 group_users.user_id user_id,
-                users.name user_name
+                users.name user_name,
+                group_users.color_code color_code
             FROM
                 group_users
             LEFT JOIN
@@ -222,9 +223,9 @@ func (r *GroupRepository) PostGroupAndApprovedUser(group *model.Group, userID st
 
 	approvedUserQuery := `
         INSERT INTO group_users
-            (group_id, user_id)
+            (group_id, user_id, color_code)
         VALUES
-            (?,?)`
+            (?,?,"#FF0000")`
 
 	tx, err := r.MySQLHandler.conn.Begin()
 	if err != nil {
@@ -383,12 +384,12 @@ func (r *GroupRepository) FindUnapprovedUser(groupID int, userID string) error {
 	return err
 }
 
-func (r *GroupRepository) PostGroupApprovedUserAndDeleteGroupUnapprovedUser(groupID int, userID string) (sql.Result, error) {
+func (r *GroupRepository) PostGroupApprovedUserAndDeleteGroupUnapprovedUser(groupID int, userID string, colorCode string) (sql.Result, error) {
 	insertApprovedUserQuery := `
         INSERT INTO group_users
-            (group_id, user_id)
+            (group_id, user_id, color_code)
         VALUES
-            (?,?)`
+            (?,?,?)`
 
 	deleteUnapprovedUserQuery := `
         DELETE
@@ -405,7 +406,7 @@ func (r *GroupRepository) PostGroupApprovedUserAndDeleteGroupUnapprovedUser(grou
 	}
 
 	transactions := func(tx *sql.Tx) (sql.Result, error) {
-		result, err := tx.Exec(insertApprovedUserQuery, groupID, userID)
+		result, err := tx.Exec(insertApprovedUserQuery, groupID, userID, colorCode)
 		if err != nil {
 			return nil, err
 		}
@@ -438,7 +439,8 @@ func (r *GroupRepository) GetApprovedUser(approvedUsersID int) (*model.ApprovedU
         SELECT
             group_users.group_id group_id,
             group_users.user_id user_id,
-            users.name user_name
+            users.name user_name,
+            group_users.color_code color_code
         FROM
             group_users
         LEFT JOIN

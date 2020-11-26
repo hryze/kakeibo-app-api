@@ -136,6 +136,68 @@ func generateGroupIDList(approvedGroupList []model.ApprovedGroup, unapprovedGrou
 	return groupIDList
 }
 
+func assignColorCodeToUser(groupUserIDList []string) string {
+	const (
+		red                  = "#FF0000"
+		cyan                 = "#00FFFF"
+		chartreuseGreen      = "#80FF00"
+		violet               = "#8000FF"
+		orange               = "#FF8000"
+		azure                = "#0080FF"
+		emeraldGreen         = "#00FF80"
+		rubyRed              = "#FF0080"
+		yellow               = "#FFFF00"
+		blue                 = "#0000FF"
+		green                = "#00FF00"
+		magenta              = "#FF00FF"
+		goldenYellow         = "#FFBF00"
+		cobaltBlue           = "#0040FF"
+		brightYellowishGreen = "#BFFF00"
+		hyacinth             = "#4000FF"
+		cobaltGreen          = "#00FF40"
+		reddishPurple        = "#FF00BF"
+		leafGreen            = "#40FF00"
+		purple               = "#BF00FF"
+		vermilion            = "#FF4000"
+		ceruleanBlue         = "#00BFFF"
+		turquoiseGreen       = "#00FFBF"
+		carmine              = "#FF0040"
+	)
+
+	colorCodeList := [24]string{
+		red,
+		cyan,
+		chartreuseGreen,
+		violet,
+		orange,
+		azure,
+		emeraldGreen,
+		rubyRed,
+		yellow,
+		blue,
+		green,
+		magenta,
+		goldenYellow,
+		cobaltBlue,
+		brightYellowishGreen,
+		hyacinth,
+		cobaltGreen,
+		reddishPurple,
+		leafGreen,
+		purple,
+		vermilion,
+		ceruleanBlue,
+		turquoiseGreen,
+		carmine,
+	}
+
+	idx := len(groupUserIDList) % len(colorCodeList)
+
+	colorCode := colorCodeList[idx]
+
+	return colorCode
+}
+
 func (h *DBHandler) GetGroupList(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
@@ -481,7 +543,15 @@ func (h *DBHandler) PostGroupApprovedUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	result, err := h.GroupRepo.PostGroupApprovedUserAndDeleteGroupUnapprovedUser(groupID, userID)
+	groupUserIDList, err := h.GroupRepo.GetGroupUsersList(groupID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	colorCode := assignColorCodeToUser(groupUserIDList)
+
+	result, err := h.GroupRepo.PostGroupApprovedUserAndDeleteGroupUnapprovedUser(groupID, userID, colorCode)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
