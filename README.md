@@ -1,5 +1,8 @@
 # kakeibo-app-api
 
+## ER図
+![kakeibo-er](https://user-images.githubusercontent.com/59386359/100313750-9dc10680-2ff8-11eb-8c88-74e38e433d17.png)
+
 ## Documentation for API Endpoints
 
 ### user-rest-service
