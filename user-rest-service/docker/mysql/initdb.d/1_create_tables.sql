@@ -4,10 +4,12 @@ USE test_db;
 
 CREATE TABLE users
 (
-  user_id VARCHAR(10) NOT NULL PRIMARY KEY,
+  user_id VARCHAR(10) NOT NULL,
   name VARCHAR(50) NOT NULL,
   email VARCHAR(50) NOT NULL,
-  password TEXT NOT NULL
+  password VARCHAR(60) NOT NULL,
+  PRIMARY KEY(user_id),
+  UNIQUE uq_users(email)
 );
 
 CREATE TABLE group_names
