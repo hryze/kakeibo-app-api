@@ -1,5 +1,93 @@
 # kakeibo-app-api
 
+## 開発形態
+**【 開発者 】**  
+平 侑祐  
+安樂 亮佑（共同開発者）  
+古澤 宏弥（共同開発者）
+
+**【 制作物 / 担当 】**  
+- API / 平 侑祐  
+https://github.com/paypay3/kakeibo-app-api
+
+- Terraform / 平 侑祐  
+https://github.com/paypay3/kakeibo-app-terraform
+
+- Kubernetes / 平 侑祐  
+https://github.com/paypay3/kakeibo-app-kubernetes
+
+- Frontend / 安樂 亮佑（共同開発者）, 古澤 宏弥（共同開発者）  
+https://github.com/ryo-wens/kakeibo-front
+
+**【 開発手法 】**  
+アジャイル開発（スクラム）
+
+**【 コミュニケーションツール 】**  
+- Slack
+- Trello
+- Googleスプレッドシート
+
+## 使用技術
+### <ins>_Frontend_</ins>
+**【 Language 】**
+- TypeScript v4.1.2
+- Sass
+
+**【 Library/Framework 】**
+- React v17.0.1
+- Redux v4.0.5
+
+### <ins>_Backend_</ins>
+**【 Language 】**
+- Go v1.15.5
+
+### <ins>_Infrastructure_</ins>
+**【 Cloud Service 】**
+- AWS
+
+**【 Infrastructure as Code 】**
+- Terraform v0.13.5
+    - VPC
+    - Subnet
+    - Route Table
+    - Internet Gateway
+    - NAT Gateway
+    - Security Group
+    - EKS
+    - ECR
+    - S3
+    - CloudFront
+    - ELB
+    - EC2
+    - Route53
+    - ACM
+    - RDS(MySQL v8.0.20)
+    - ElastiCache(Redis v5.0.6)
+    - Secrets Manager
+    - IAM
+
+**【 Container 】**
+- docker v19.03.13
+- docker-compose v1.27.4（開発環境Database用）
+
+**【 Container Orchestration 】**
+- Kubernetes v1.18
+    - api × 3
+    - argocd
+    - aws-load-balancer-controller
+    - cert-manager
+    - cluster-autoscaler
+    - external-dns
+    - external-secrets
+    - initialize-rds-job
+    - metrics-server
+- Kustomize v3.8.7
+
+
+**【 CI/CD 】**
+- GitHub Actions
+- ArgoCD
+
 ## ER図
 ![kakeibo-er](https://user-images.githubusercontent.com/59386359/100313750-9dc10680-2ff8-11eb-8c88-74e38e433d17.png)
 
@@ -22,7 +110,7 @@
 | **DELETE**<br>&emsp;/groups/{group_id}/users/unapproved | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ招待拒否 |
 | **GET**<br>&emsp;/readyz | <pre>200 OK<br>503 Service Unavailable</pre> | Kubernetesヘルスチェック<br>※ Backend専用 |
 | **GET**<br>&emsp;/groups/{group_id}/users | <pre>200 OK<br>400 Bad Request<br>500 Internal Server Error</pre> | グループユーザーIDリスト取得<br>※ Backend専用 |
-| **GET**<br>&emsp;/groups/{group_id}/users/{user_id}}/verify | <pre>200 OK<br>400 Bad Request<br>500 Internal Server Error</pre> | グループ所属確認<br>※ Backend専用 |
+| **GET**<br>&emsp;/groups/{group_id}/users/{user_id}/verify | <pre>200 OK<br>400 Bad Request<br>500 Internal Server Error</pre> | グループ所属確認<br>※ Backend専用 |
 | **GET**<br>&emsp;/groups/{group_id}/users/verify | <pre>200 OK<br>400 Bad Request<br>500 Internal Server Error</pre> | ユーザーリストのグループ所属確認<br>※ Backend専用 |
 
 ### account-rest-service
