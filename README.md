@@ -88,6 +88,9 @@ https://github.com/ryo-wens/kakeibo-front
 - GitHub Actions
 - ArgoCD
 
+## インフラ構成図
+![infra](https://user-images.githubusercontent.com/59386359/101023134-ad6ebb00-35b5-11eb-8fb8-58bc6e64eb5d.png)
+
 ## ER図
 ![kakeibo-er](https://user-images.githubusercontent.com/59386359/100313750-9dc10680-2ff8-11eb-8c88-74e38e433d17.png)
 
