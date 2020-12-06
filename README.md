@@ -1,12 +1,12 @@
 # kakeibo-app-api
 
 ## 開発形態
-**【 開発者 】**  
+**<ins>開発者</ins>**
 - 平 侑祐  
 - 安樂 亮佑（共同開発者）  
 - 古澤 宏弥（共同開発者）
 
-**【 制作物 / 担当 】**  
+**<ins>制作物 / 担当</ins>**
 - API / 平 侑祐  
 https://github.com/paypay3/kakeibo-app-api
 
@@ -19,10 +19,10 @@ https://github.com/paypay3/kakeibo-app-kubernetes
 - Frontend / 安樂 亮佑（共同開発者）, 古澤 宏弥（共同開発者）  
 https://github.com/ryo-wens/kakeibo-front
 
-**【 開発手法 】**  
+**<ins>開発手法</ins>**
 - アジャイル開発（スクラム）
 
-**【 コミュニケーションツール 】**  
+**<ins>コミュニケーションツール</ins>**
 - Slack
 - Trello
 - Googleスプレッドシート
@@ -33,19 +33,19 @@ https://github.com/ryo-wens/kakeibo-front
 - TypeScript v4.1.2
 - Sass
 
-**【 Library/Framework 】**
+**<ins>Library/Framework</ins>**
 - React v17.0.1
 - Redux v4.0.5
 
 ### 【 _Backend_ 】
-**【 Language 】**
+**<ins>Language</ins>**
 - Go v1.15.5
 
 ### 【 _Infrastructure_ 】
-**【 Cloud Service 】**
+**<ins>Cloud Service</ins>**
 - AWS
 
-**【 Infrastructure as Code 】**
+**<ins>Infrastructure as Code</ins>**
 - Terraform v0.13.5
     - VPC
     - Subnet
@@ -66,11 +66,11 @@ https://github.com/ryo-wens/kakeibo-front
     - Secrets Manager
     - IAM
 
-**【 Container 】**
+**<ins>Container</ins>**
 - docker v19.03.13
 - docker-compose v1.27.4（開発環境Database用）
 
-**【 Container Orchestration 】**
+**<ins>Container Orchestration</ins>**
 - Kubernetes v1.18
     - api × 3
     - argocd
@@ -83,8 +83,7 @@ https://github.com/ryo-wens/kakeibo-front
     - metrics-server
 - Kustomize v3.8.7
 
-
-**【 CI/CD 】**
+**<ins>CI/CD</ins>**
 - GitHub Actions
 - ArgoCD
 
