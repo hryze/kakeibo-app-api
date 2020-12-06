@@ -28,8 +28,8 @@ https://github.com/ryo-wens/kakeibo-front
 - Googleスプレッドシート
 
 ## 使用技術
-### <ins>_Frontend_</ins>
-**【 Language 】**
+### 【 _Frontend_ 】
+**<ins>Language</ins>**
 - TypeScript v4.1.2
 - Sass
 
@@ -37,11 +37,11 @@ https://github.com/ryo-wens/kakeibo-front
 - React v17.0.1
 - Redux v4.0.5
 
-### <ins>_Backend_</ins>
+### 【 _Backend_ 】
 **【 Language 】**
 - Go v1.15.5
 
-### <ins>_Infrastructure_</ins>
+### 【 _Infrastructure_ 】
 **【 Cloud Service 】**
 - AWS
 
