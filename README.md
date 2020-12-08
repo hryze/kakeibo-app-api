@@ -1,4 +1,4 @@
-# kakeibo-app-api
+# Tukecholl
 
 ## 開発形態
 **<ins>開発者</ins>**
@@ -96,6 +96,100 @@ https://github.com/ryo-wens/kakeibo-front
 ## ER図
 ![kakeibo-er](https://user-images.githubusercontent.com/59386359/100313750-9dc10680-2ff8-11eb-8c88-74e38e433d17.png)
 
+## 機能一覧
+### 個人利用機能
+**<ins>ユーザー機能</ins>**
+- ユーザー新規登録
+- ユーザーログイン
+- ユーザーログアウト
+
+**<ins>家計簿機能</ins>**
+- 月別家計簿取引一覧取得
+- 家計簿取引最終更新10件取得
+- 家計簿取引追加
+- 家計簿取引更新
+- 家計簿取引削除
+- 家計簿取引検索
+
+**<ins>家計簿予算機能</ins>**
+- 標準予算取得
+- 標準予算更新
+- 月別カスタム予算取得
+- 月別カスタム予算追加
+- 月別カスタム予算更新
+- 月別カスタム予算削除
+- 年別予算一覧取得
+
+**<ins>カテゴリー機能</ins>**
+- カテゴリー一覧取得
+- カスタムカテゴリー追加
+- カスタムカテゴリー更新
+- カスタムカテゴリー削除
+
+**<ins>todo機能</ins>**
+- 日別実施予定todo, 締切予定todo一覧取得
+- 月別実施予定todo, 締切予定todo一覧取得
+- 期限切れtodo一覧取得
+- todo追加
+- todo更新
+- todo削除
+- todo検索
+
+### グループ利用機能
+**<ins>グループ機能</ins>**
+- 承認グループ, 未承認グループ一覧取得
+- グループ作成
+- グループ名更新
+- グループ招待
+- グループ招待承認
+- グループ招待拒否
+- グループ退会
+
+**<ins>グループ家計簿機能</ins>**
+- 月別家計簿取引一覧取得
+- 家計簿取引最終更新10件取得
+- 家計簿取引追加
+- 家計簿取引更新
+- 家計簿取引削除
+- 家計簿取引検索
+- 月別家計簿取引自動会計
+- 月別家計簿取引会計データ取得
+- 月別家計簿取引会計データ更新
+- 月別家計簿取引会計データ削除
+
+**<ins>グループ予算機能</ins>**
+- 標準予算取得
+- 標準予算更新
+- 月別カスタム予算取得
+- 月別カスタム予算追加
+- 月別カスタム予算更新
+- 月別カスタム予算削除
+- 年別予算一覧取得
+
+**<ins>グループカテゴリー機能</ins>**
+- カテゴリー一覧取得
+- カスタムカテゴリー追加
+- カスタムカテゴリー更新
+- カスタムカテゴリー削除
+
+**<ins>グループtodo機能</ins>**
+- 日別実施予定todo, 締切予定todo一覧取得
+- 月別実施予定todo, 締切予定todo一覧取得
+- 期限切れtodo一覧取得
+- todo追加
+- todo更新
+- todo削除
+- todo検索
+
+**<ins>グループシフト管理機能</ins>**
+- ユーザー別シフト一覧取得
+- シフト機能用ユーザー追加
+- シフト機能用ユーザー削除
+- シフト機能用タスク一覧取得
+- シフト機能用タスク追加
+- シフト機能用タスク更新
+- シフト機能用タスク削除
+
 ## Documentation for API Endpoints
 
 ### user-rest-service
@@ -127,7 +221,7 @@ https://github.com/ryo-wens/kakeibo-front
 | **PUT**<br>&emsp;/categories/custom-categories/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>409 Conflict<br>500 Internal Server Error</pre> | カスタムカテゴリー更新 |
 | **DELETE**<br>&emsp;/categories/custom-categories/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | カスタムカテゴリー削除 |
 | **GET**<br>&emsp;/transactions/{year_month} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 月別家計簿トランザクション一覧取得 |
-| **GET**<br>&emsp;/transactions/latest | <pre>200 OK<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿トランザクション最新更新10件取得 |
+| **GET**<br>&emsp;/transactions/latest | <pre>200 OK<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿トランザクション最終更新10件取得 |
 | **POST**<br>&emsp;/transactions | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿トランザクション追加 |
 | **PUT**<br>&emsp;/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿トランザクション更新 |
 | **DELETE**<br>&emsp;/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 家計簿トランザクション削除 |
@@ -144,7 +238,7 @@ https://github.com/ryo-wens/kakeibo-front
 | **PUT**<br>&emsp;/groups/{group_id}/categories/custom-categories/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>409 Conflict<br>500 Internal Server Error</pre> | グループカスタムカテゴリー更新 |
 | **DELETE**<br>&emsp;/groups/{group_id}/categories/custom-categories/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | グループカスタムカテゴリー削除 |
 | **GET**<br>&emsp;/groups/{group_id}/transactions/{year_month} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション一覧取得 |
-| **GET**<br>&emsp;/groups/{group_id}/transactions/latest | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション最新更新10件取得 |
+| **GET**<br>&emsp;/groups/{group_id}/transactions/latest | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション最終更新10件取得 |
 | **POST**<br>&emsp;/groups/{group_id}/transactions | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション追加 |
 | **PUT**<br>&emsp;/groups/{group_id}/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション更新 |
 | **DELETE**<br>&emsp;/groups/{group_id}/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション削除 |
