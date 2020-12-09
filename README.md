@@ -1,4 +1,6 @@
 # Tukecholl
+自身の転職活動用ポートフォリオとして制作した家計簿アプリです。  
+Go, React, Kubernetesを用いたマイクロサービスアーキテクチャとなっております。
 
 ## 開発形態
 **<ins>開発者</ins>**
@@ -97,7 +99,7 @@ https://github.com/ryo-wens/kakeibo-front
 ![kakeibo-er](https://user-images.githubusercontent.com/59386359/100313750-9dc10680-2ff8-11eb-8c88-74e38e433d17.png)
 
 ## 機能一覧
-### 個人利用機能
+### 【 個人利用機能 】
 **<ins>ユーザー機能</ins>**
 - ユーザー新規登録
 - ユーザーログイン
@@ -135,7 +137,7 @@ https://github.com/ryo-wens/kakeibo-front
 - todo削除
 - todo検索
 
-### グループ利用機能
+### 【 グループ利用機能 】
 **<ins>グループ機能</ins>**
 - 承認グループ, 未承認グループ一覧取得
 - グループ作成
@@ -190,6 +192,10 @@ https://github.com/ryo-wens/kakeibo-front
 - シフト機能用タスク更新
 - シフト機能用タスク削除
 
+## 課題と今後実装したい機能
+- コードの品質保証ができていない。
+    - バリデーション処理や複雑な処理をしている部分等を優先にテストを充実させていく。
+    
 ## Documentation for API Endpoints
 
 ### user-rest-service
