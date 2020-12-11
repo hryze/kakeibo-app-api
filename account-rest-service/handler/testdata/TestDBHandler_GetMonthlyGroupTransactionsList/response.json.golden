@@ -12,8 +12,11 @@
       "posted_user_id": "userID1",
       "updated_user_id": null,
       "payment_user_id": "userID1",
+      "big_category_id": 2,
       "big_category_name": "食費",
+      "medium_category_id": null,
       "medium_category_name": null,
+      "custom_category_id": 1,
       "custom_category_name": "米"
     },
     {
@@ -28,8 +31,11 @@
       "posted_user_id": "userID2",
       "updated_user_id": null,
       "payment_user_id": "userID2",
+      "big_category_id": 1,
       "big_category_name": "収入",
+      "medium_category_id": 2,
       "medium_category_name": "賞与",
+      "custom_category_id": null,
       "custom_category_name": null
     },
     {
@@ -44,8 +50,11 @@
       "posted_user_id": "userID1",
       "updated_user_id": null,
       "payment_user_id": "userID1",
+      "big_category_id": 3,
       "big_category_name": "日用品",
+      "medium_category_id": 16,
       "medium_category_name": "家具",
+      "custom_category_id": null,
       "custom_category_name": null
     }
   ]

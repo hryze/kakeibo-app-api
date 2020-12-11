@@ -29,8 +29,11 @@ func (r *GroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID in
             group_transactions.posted_user_id posted_user_id,
             group_transactions.updated_user_id updated_user_id,
             group_transactions.payment_user_id payment_user_id,
+            group_transactions.big_category_id big_category_id,
             big_categories.category_name big_category_name,
+            group_transactions.medium_category_id medium_category_id,
             medium_categories.category_name medium_category_name,
+            group_transactions.custom_category_id custom_category_id,
             group_custom_categories.category_name custom_category_name
         FROM
             group_transactions
@@ -92,8 +95,11 @@ func (r *GroupTransactionsRepository) Get10LatestGroupTransactionsList(groupID i
             group_transactions.posted_user_id posted_user_id,
             group_transactions.updated_user_id updated_user_id,
             group_transactions.payment_user_id payment_user_id,
+            group_transactions.big_category_id big_category_id,
             big_categories.category_name big_category_name,
+            group_transactions.medium_category_id medium_category_id,
             medium_categories.category_name medium_category_name,
+            group_transactions.custom_category_id custom_category_id,
             group_custom_categories.category_name custom_category_name
         FROM
             group_transactions
@@ -155,8 +161,11 @@ func (r *GroupTransactionsRepository) GetGroupTransaction(groupTransactionID int
             group_transactions.posted_user_id posted_user_id,
             group_transactions.updated_user_id updated_user_id,
             group_transactions.payment_user_id payment_user_id,
+            group_transactions.big_category_id big_category_id,
             big_categories.category_name big_category_name,
+            group_transactions.medium_category_id medium_category_id,
             medium_categories.category_name medium_category_name,
+            group_transactions.custom_category_id custom_category_id,
             group_custom_categories.category_name custom_category_name
         FROM
             group_transactions
