@@ -255,8 +255,11 @@ func generateTransactionsSqlQuery(searchQuery TransactionsSearchQuery) (string, 
             transactions.shop shop,
             transactions.memo memo,
             transactions.amount amount,
+            transactions.big_category_id big_category_id,
             big_categories.category_name big_category_name,
+            transactions.medium_category_id medium_category_id,
             medium_categories.category_name medium_category_name,
+            transactions.custom_category_id custom_category_id,
             custom_categories.category_name custom_category_name
         FROM
             transactions
