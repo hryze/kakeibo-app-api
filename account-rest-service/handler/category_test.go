@@ -174,6 +174,14 @@ func (m MockCategoriesRepository) DeleteCustomCategory(previousCustomCategoryID 
 	return nil
 }
 
+func (m MockCategoriesRepository) GetCategoriesName(categoriesID model.CategoriesID) (*model.CategoriesName, error) {
+	return &model.CategoriesName{
+		BigCategoryName:    model.NullString{NullString: sql.NullString{String: "食費", Valid: true}},
+		MediumCategoryName: model.NullString{NullString: sql.NullString{String: "食料品", Valid: true}},
+		CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+	}, nil
+}
+
 func TestDBHandler_GetCategoriesList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
@@ -280,4 +288,29 @@ func TestDBHandler_DeleteCustomCategory(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
+}
+
+func TestDBHandler_GetCategoriesName(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:       MockAuthRepository{},
+		CategoriesRepo: MockCategoriesRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/categories/names", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.GetCategoriesName(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.CategoriesName{}, &model.CategoriesName{})
 }

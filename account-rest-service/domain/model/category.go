@@ -43,6 +43,17 @@ type CustomCategory struct {
 	BigCategoryID int    `json:"big_category_id" db:"big_category_id"`
 }
 
+type CategoriesID struct {
+	MediumCategoryID NullInt64 `json:"medium_category_id"`
+	CustomCategoryID NullInt64 `json:"custom_category_id"`
+}
+
+type CategoriesName struct {
+	BigCategoryName    NullString `json:"big_category_name"    db:"big_category_name"`
+	MediumCategoryName NullString `json:"medium_category_name" db:"medium_category_name"`
+	CustomCategoryName NullString `json:"custom_category_name" db:"custom_category_name"`
+}
+
 func NewIncomeBigCategory(bigCategory *BigCategory) IncomeBigCategory {
 	return IncomeBigCategory{
 		CategoryType:             "IncomeBigCategory",

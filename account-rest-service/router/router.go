@@ -40,6 +40,7 @@ func Run() error {
 	router.HandleFunc("/categories/custom-categories", h.PostCustomCategory).Methods("POST")
 	router.HandleFunc("/categories/custom-categories/{id:[0-9]+}", h.PutCustomCategory).Methods("PUT")
 	router.HandleFunc("/categories/custom-categories/{id:[0-9]+}", h.DeleteCustomCategory).Methods("DELETE")
+	router.HandleFunc("/categories/names", h.GetCategoriesName).Methods("GET")
 	router.HandleFunc("/transactions/{year_month:[0-9]{4}-[0-9]{2}}", h.GetMonthlyTransactionsList).Methods("GET")
 	router.HandleFunc("/transactions/latest", h.Get10LatestTransactionsList).Methods("GET")
 	router.HandleFunc("/transactions", h.PostTransaction).Methods("POST")
