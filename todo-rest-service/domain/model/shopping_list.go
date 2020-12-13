@@ -13,7 +13,6 @@ type ShoppingItem struct {
 	PostedDate             time.Time        `json:"posted_date"              db:"posted_date"`
 	UpdatedDate            time.Time        `json:"updated_date"             db:"updated_date"`
 	ExpectedPurchaseDate   Date             `json:"expected_purchase_date"   db:"expected_purchase_date"`
-	CompleteDate           NullTime         `json:"complete_date"            db:"complete_date"`
 	CompleteFlag           BitBool          `json:"complete_flag"            db:"complete_flag"`
 	Purchase               string           `json:"purchase"                 db:"purchase"`
 	Shop                   NullString       `json:"shop"                     db:"shop"`
