@@ -27,14 +27,6 @@ type MockCategoriesName struct {
 
 type MockShoppingListRepository struct{}
 
-func (m MockShoppingListRepository) PostShoppingItem(shoppingItem *model.ShoppingItem, userID string) (sql.Result, error) {
-	return MockSqlResult{}, nil
-}
-
-func (m MockShoppingListRepository) PutShoppingItem(shoppingItem *model.ShoppingItem) (sql.Result, error) {
-	return MockSqlResult{}, nil
-}
-
 func (m MockShoppingListRepository) GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error) {
 	if shoppingItemID == 2 {
 		return model.ShoppingItem{
@@ -79,6 +71,18 @@ func (m MockShoppingListRepository) GetShoppingItem(shoppingItemID int) (model.S
 		TransactionAutoAdd:     true,
 		RelatedTransactionData: nil,
 	}, nil
+}
+
+func (m MockShoppingListRepository) PostShoppingItem(shoppingItem *model.ShoppingItem, userID string) (sql.Result, error) {
+	return MockSqlResult{}, nil
+}
+
+func (m MockShoppingListRepository) PutShoppingItem(shoppingItem *model.ShoppingItem) (sql.Result, error) {
+	return MockSqlResult{}, nil
+}
+
+func (m MockShoppingListRepository) DeleteShoppingItem(shoppingItemID int) error {
+	return nil
 }
 
 func TestDBHandler_PostShoppingItem(t *testing.T) {
@@ -225,4 +229,33 @@ func TestDBHandler_PutShoppingItem(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.ShoppingItem{}, &model.ShoppingItem{})
+}
+
+func TestDBHandler_DeleteShoppingItem(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		ShoppingListRepo: MockShoppingListRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/shopping-list/1", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteShoppingItem(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }

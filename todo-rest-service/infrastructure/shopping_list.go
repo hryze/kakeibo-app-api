@@ -14,6 +14,36 @@ func NewShoppingListRepository(mysqlHandler *MySQLHandler) *ShoppingListReposito
 	return &ShoppingListRepository{mysqlHandler}
 }
 
+func (r *ShoppingListRepository) GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            updated_date,
+            expected_purchase_date,
+            complete_flag,
+            purchase,
+            shop,
+            amount,
+            big_category_id,
+            medium_category_id,
+            custom_category_id,
+            regular_shopping_list_id,
+            transaction_auto_add,
+            transaction_id
+        FROM
+            shopping_list
+        WHERE
+            id = ?`
+
+	var shoppingItem model.ShoppingItem
+	if err := r.MySQLHandler.conn.QueryRowx(query, shoppingItemID).StructScan(&shoppingItem); err != nil {
+		return shoppingItem, err
+	}
+
+	return shoppingItem, nil
+}
+
 func (r *ShoppingListRepository) PostShoppingItem(shoppingItem *model.ShoppingItem, userID string) (sql.Result, error) {
 	query := `
         INSERT INTO shopping_list
@@ -71,31 +101,15 @@ func (r *ShoppingListRepository) PutShoppingItem(shoppingItem *model.ShoppingIte
 	return result, err
 }
 
-func (r *ShoppingListRepository) GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error) {
+func (r *ShoppingListRepository) DeleteShoppingItem(shoppingItemID int) error {
 	query := `
-        SELECT
-            id,
-            posted_date,
-            updated_date,
-            expected_purchase_date,
-            complete_flag,
-            purchase,
-            shop,
-            amount,
-            big_category_id,
-            medium_category_id,
-            custom_category_id,
-            regular_shopping_list_id,
-            transaction_auto_add,
-            transaction_id
+        DELETE
         FROM
             shopping_list
         WHERE
             id = ?`
 
-	var shoppingItem model.ShoppingItem
-	if err := r.MySQLHandler.conn.QueryRowx(query, shoppingItemID).StructScan(&shoppingItem); err != nil {
-		return shoppingItem, err
-	}
-	return shoppingItem, nil
+	_, err := r.MySQLHandler.conn.Exec(query, shoppingItemID)
+
+	return err
 }

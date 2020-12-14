@@ -334,3 +334,34 @@ func (h *DBHandler) PutShoppingItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (h *DBHandler) DeleteShoppingItem(w http.ResponseWriter, r *http.Request) {
+	_, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	shoppingItemID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"ショッピングアイテムIDを正しく指定してください。"}))
+		return
+	}
+
+	if err := h.ShoppingListRepo.DeleteShoppingItem(shoppingItemID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"ショッピングアイテムを削除しました。"}); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
