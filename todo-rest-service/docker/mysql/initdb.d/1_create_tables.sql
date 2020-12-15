@@ -30,8 +30,8 @@ CREATE TABLE regular_shopping_list
   big_category_id INT NOT NULL,
   medium_category_id INT DEFAULT NULL,
   custom_category_id INT DEFAULT NULL,
-  transaction_auto_add bit(1) NOT NULL DEFAULT b'0',
   user_id VARCHAR(10) NOT NULL,
+  transaction_auto_add bit(1) NOT NULL DEFAULT b'0',
   PRIMARY KEY(id)
 );
 

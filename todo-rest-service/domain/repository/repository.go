@@ -30,6 +30,9 @@ type TodoRepository interface {
 }
 
 type ShoppingListRepository interface {
+	GetRegularShoppingItem(regularShoppingItemID int64) (model.RegularShoppingItem, error)
+	GetShoppingListRelatedToRegularShoppingItemID(regularShoppingItemID int64) (model.ShoppingList, error)
+	PostRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, userID string, today time.Time) (sql.Result, error)
 	GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error)
 	PostShoppingItem(shoppingItem *model.ShoppingItem, userID string) (sql.Result, error)
 	PutShoppingItem(shoppingItem *model.ShoppingItem) (sql.Result, error)

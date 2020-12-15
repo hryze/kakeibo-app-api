@@ -18,7 +18,7 @@ import (
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 )
 
-type ShoppingItemCategoryID struct {
+type ShoppingItemCategoriesID struct {
 	MediumCategoryID model.NullInt64 `json:"medium_category_id"`
 	CustomCategoryID model.NullInt64 `json:"custom_category_id"`
 }
@@ -34,18 +34,13 @@ type RelatedTransaction struct {
 	CustomCategoryID model.NullInt64  `json:"custom_category_id"`
 }
 
-func getShoppingItemCategoryName(shoppingItem model.ShoppingItem) (model.ShoppingItem, error) {
+func getShoppingItemCategoriesName(shoppingItemCategoriesID ShoppingItemCategoriesID) ([]byte, error) {
 	accountHost := os.Getenv("ACCOUNT_HOST")
 	requestURL := fmt.Sprintf("http://%s:8081/categories/names", accountHost)
 
-	shoppingItemCategoryID := ShoppingItemCategoryID{
-		MediumCategoryID: shoppingItem.MediumCategoryID,
-		CustomCategoryID: shoppingItem.CustomCategoryID,
-	}
-
-	requestBody, err := json.Marshal(&shoppingItemCategoryID)
+	requestBody, err := json.Marshal(&shoppingItemCategoriesID)
 	if err != nil {
-		return shoppingItem, err
+		return nil, err
 	}
 
 	request, err := http.NewRequest(
@@ -54,7 +49,7 @@ func getShoppingItemCategoryName(shoppingItem model.ShoppingItem) (model.Shoppin
 		bytes.NewBuffer(requestBody),
 	)
 	if err != nil {
-		return shoppingItem, err
+		return nil, err
 	}
 
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
@@ -76,7 +71,7 @@ func getShoppingItemCategoryName(shoppingItem model.ShoppingItem) (model.Shoppin
 
 	response, err := client.Do(request)
 	if err != nil {
-		return shoppingItem, err
+		return nil, err
 	}
 
 	defer func() {
@@ -84,15 +79,16 @@ func getShoppingItemCategoryName(shoppingItem model.ShoppingItem) (model.Shoppin
 		response.Body.Close()
 	}()
 
-	if err := json.NewDecoder(response.Body).Decode(&shoppingItem); err != nil {
-		return shoppingItem, err
-	}
-
 	if response.StatusCode == http.StatusInternalServerError {
-		return shoppingItem, &InternalServerErrorMsg{"500 Internal Server Error"}
+		return nil, &InternalServerErrorMsg{"500 Internal Server Error"}
 	}
 
-	return shoppingItem, nil
+	categoriesNameBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return categoriesNameBytes, nil
 }
 
 func postRelatedTransaction(shoppingItem model.ShoppingItem, cookie *http.Cookie) (model.ShoppingItem, error) {
@@ -213,6 +209,90 @@ func deleteRelatedTransaction(shoppingItem model.ShoppingItem, cookie *http.Cook
 	return shoppingItem, nil
 }
 
+func (h *DBHandler) PostRegularShoppingItem(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	var regularShoppingItem model.RegularShoppingItem
+	if err := json.NewDecoder(r.Body).Decode(&regularShoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	now := h.TimeManage.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, time.UTC)
+
+	result, err := h.ShoppingListRepo.PostRegularShoppingItem(&regularShoppingItem, userID, today)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	lastInsertId, err := result.LastInsertId()
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	regularShoppingItem, err = h.ShoppingListRepo.GetRegularShoppingItem(lastInsertId)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	shoppingList, err := h.ShoppingListRepo.GetShoppingListRelatedToRegularShoppingItemID(lastInsertId)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	shoppingItemCategoriesID := ShoppingItemCategoriesID{
+		MediumCategoryID: regularShoppingItem.MediumCategoryID,
+		CustomCategoryID: regularShoppingItem.CustomCategoryID,
+	}
+
+	categoriesNameBytes, err := getShoppingItemCategoriesName(shoppingItemCategoriesID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := json.Unmarshal(categoriesNameBytes, &regularShoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for i := 0; i < len(shoppingList.ShoppingList); i++ {
+		if err := json.Unmarshal(categoriesNameBytes, &shoppingList.ShoppingList[i]); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	shoppingData := struct {
+		RegularShoppingItem model.RegularShoppingItem `json:"regular_shopping_item"`
+		model.ShoppingList
+	}{
+		RegularShoppingItem: regularShoppingItem,
+		ShoppingList:        shoppingList,
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(&shoppingData); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
 func (h *DBHandler) PostShoppingItem(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
@@ -249,8 +329,18 @@ func (h *DBHandler) PostShoppingItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shoppingItem, err = getShoppingItemCategoryName(shoppingItem)
+	shoppingItemCategoriesID := ShoppingItemCategoriesID{
+		MediumCategoryID: shoppingItem.MediumCategoryID,
+		CustomCategoryID: shoppingItem.CustomCategoryID,
+	}
+
+	categoriesNameBytes, err := getShoppingItemCategoriesName(shoppingItemCategoriesID)
 	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := json.Unmarshal(categoriesNameBytes, &shoppingItem); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
