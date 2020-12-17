@@ -441,9 +441,25 @@ func TestDBHandler_PutShoppingItem(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
+	mockGetCategoriesName := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockCategoriesName := MockCategoriesName{
+			BigCategoryName:    model.NullString{NullString: sql.NullString{String: "食費", Valid: true}},
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "食料品", Valid: true}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&mockCategoriesName); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
 	router := mux.NewRouter()
 	router.HandleFunc("/transactions", mockPostTransaction).Methods("POST")
 	router.HandleFunc("/transactions/{id:[0-9]+}", mockDeleteTransaction).Methods("DELETE")
+	router.HandleFunc("/categories/names", mockGetCategoriesName).Methods("GET")
 
 	listener, err := net.Listen("tcp", accountHostURL)
 	if err != nil {

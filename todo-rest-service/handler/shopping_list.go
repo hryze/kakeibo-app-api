@@ -562,6 +562,22 @@ func (h *DBHandler) PutShoppingItem(w http.ResponseWriter, r *http.Request) {
 	shoppingItem.PostedDate = dbShoppingItem.PostedDate
 	shoppingItem.UpdatedDate = dbShoppingItem.UpdatedDate
 
+	shoppingItemCategoriesID := ShoppingItemCategoriesID{
+		MediumCategoryID: shoppingItem.MediumCategoryID,
+		CustomCategoryID: shoppingItem.CustomCategoryID,
+	}
+
+	categoriesNameBytes, err := getShoppingItemCategoriesName(shoppingItemCategoriesID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := json.Unmarshal(categoriesNameBytes, &shoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&shoppingItem); err != nil {
