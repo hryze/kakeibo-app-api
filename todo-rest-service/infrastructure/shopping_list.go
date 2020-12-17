@@ -401,6 +401,55 @@ func (r *ShoppingListRepository) PutRegularShoppingItem(regularShoppingItem *mod
 	return todayShoppingItemResult, laterThanTodayShoppingItemResult, nil
 }
 
+func (r *ShoppingListRepository) DeleteRegularShoppingItem(regularShoppingItemID int) error {
+	deleteShoppingItemQuery := `
+        DELETE
+        FROM
+            shopping_list
+        WHERE
+            regular_shopping_list_id = ?
+        AND
+            complete_flag = false`
+
+	deleteRegularShoppingItemQuery := `
+        DELETE
+        FROM
+            regular_shopping_list
+        WHERE
+            id = ?`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		if _, err := tx.Exec(deleteShoppingItemQuery, regularShoppingItemID); err != nil {
+			return err
+		}
+
+		if _, err := tx.Exec(deleteRegularShoppingItemQuery, regularShoppingItemID); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *ShoppingListRepository) GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error) {
 	query := `
         SELECT

@@ -34,6 +34,7 @@ type ShoppingListRepository interface {
 	GetShoppingListRelatedToRegularShoppingItem(todayShoppingItemID int, laterThanTodayShoppingItemID int) (model.ShoppingList, error)
 	PostRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, userID string, today time.Time) (sql.Result, sql.Result, sql.Result, error)
 	PutRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, regularShoppingItemID int, userID string, today time.Time) (sql.Result, sql.Result, error)
+	DeleteRegularShoppingItem(regularShoppingItemID int) error
 	GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error)
 	PostShoppingItem(shoppingItem *model.ShoppingItem, userID string) (sql.Result, error)
 	PutShoppingItem(shoppingItem *model.ShoppingItem) (sql.Result, error)

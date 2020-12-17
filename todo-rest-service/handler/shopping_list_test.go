@@ -101,6 +101,10 @@ func (m MockShoppingListRepository) PutRegularShoppingItem(regularShoppingItem *
 	return MockSqlResult{}, MockSqlResult{}, nil
 }
 
+func (m MockShoppingListRepository) DeleteRegularShoppingItem(regularShoppingItemID int) error {
+	return nil
+}
+
 func (m MockShoppingListRepository) GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error) {
 	if shoppingItemID == 2 {
 		return model.ShoppingItem{
@@ -305,6 +309,35 @@ func TestDBHandler_PutRegularShoppingItem(t *testing.T) {
 			RegularShoppingItem model.RegularShoppingItem `json:"regular_shopping_item"`
 			model.ShoppingList
 		}{})
+}
+
+func TestDBHandler_DeleteRegularShoppingItem(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		ShoppingListRepo: MockShoppingListRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/shopping-list/regular/1", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteRegularShoppingItem(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }
 
 func TestDBHandler_PostShoppingItem(t *testing.T) {
