@@ -27,7 +27,7 @@ type MockCategoriesName struct {
 
 type MockShoppingListRepository struct{}
 
-func (m MockShoppingListRepository) GetRegularShoppingItem(regularShoppingItemID int64) (model.RegularShoppingItem, error) {
+func (m MockShoppingListRepository) GetRegularShoppingItem(regularShoppingItemID int) (model.RegularShoppingItem, error) {
 	return model.RegularShoppingItem{
 		ID:                   1,
 		PostedDate:           time.Date(2020, 9, 6, 14, 4, 52, 0, time.UTC),
@@ -48,7 +48,7 @@ func (m MockShoppingListRepository) GetRegularShoppingItem(regularShoppingItemID
 	}, nil
 }
 
-func (m MockShoppingListRepository) GetShoppingListRelatedToRegularShoppingItemID(regularShoppingItemID int64) (model.ShoppingList, error) {
+func (m MockShoppingListRepository) GetShoppingListRelatedToRegularShoppingItem(todayShoppingItemID int, laterThanTodayShoppingItemID int) (model.ShoppingList, error) {
 	return model.ShoppingList{
 		ShoppingList: []model.ShoppingItem{
 			{
@@ -93,8 +93,12 @@ func (m MockShoppingListRepository) GetShoppingListRelatedToRegularShoppingItemI
 	}, nil
 }
 
-func (m MockShoppingListRepository) PostRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, userID string, today time.Time) (sql.Result, error) {
-	return MockSqlResult{}, nil
+func (m MockShoppingListRepository) PostRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, userID string, today time.Time) (sql.Result, sql.Result, sql.Result, error) {
+	return MockSqlResult{}, MockSqlResult{}, MockSqlResult{}, nil
+}
+
+func (m MockShoppingListRepository) PutRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, regularShoppingItemID int, userID string, today time.Time) (sql.Result, sql.Result, error) {
+	return MockSqlResult{}, MockSqlResult{}, nil
 }
 
 func (m MockShoppingListRepository) GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error) {
@@ -216,6 +220,82 @@ func TestDBHandler_PostRegularShoppingItem(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res,
+		&struct {
+			RegularShoppingItem model.RegularShoppingItem `json:"regular_shopping_item"`
+			model.ShoppingList
+		}{},
+		&struct {
+			RegularShoppingItem model.RegularShoppingItem `json:"regular_shopping_item"`
+			model.ShoppingList
+		}{})
+}
+
+func TestDBHandler_PutRegularShoppingItem(t *testing.T) {
+	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
+		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
+	}
+
+	accountHost := os.Getenv("ACCOUNT_HOST")
+	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+
+	mockGetCategoriesName := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockCategoriesName := MockCategoriesName{
+			BigCategoryName:    model.NullString{NullString: sql.NullString{String: "日用品", Valid: true}},
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "消耗品", Valid: true}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&mockCategoriesName); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
+	router := mux.NewRouter()
+	router.HandleFunc("/categories/names", mockGetCategoriesName).Methods("GET")
+
+	listener, err := net.Listen("tcp", accountHostURL)
+	if err != nil {
+		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
+	}
+
+	ts := httptest.Server{
+		Listener: listener,
+		Config:   &http.Server{Handler: router},
+	}
+
+	ts.Start()
+	defer ts.Close()
+
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		ShoppingListRepo: MockShoppingListRepository{},
+		TimeManage:       MockTime{},
+	}
+
+	r := httptest.NewRequest("PUT", "/shopping-list/regular/1", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PutRegularShoppingItem(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res,
 		&struct {
 			RegularShoppingItem model.RegularShoppingItem `json:"regular_shopping_item"`

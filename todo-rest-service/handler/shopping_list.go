@@ -228,27 +228,42 @@ func (h *DBHandler) PostRegularShoppingItem(w http.ResponseWriter, r *http.Reque
 	}
 
 	now := h.TimeManage.Now()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, time.UTC)
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 
-	result, err := h.ShoppingListRepo.PostRegularShoppingItem(&regularShoppingItem, userID, today)
+	regularShoppingItemResult, todayShoppingItemResult, laterThanTodayShoppingItemResult, err := h.ShoppingListRepo.PostRegularShoppingItem(&regularShoppingItem, userID, today)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	lastInsertId, err := result.LastInsertId()
+	regularShoppingItemId, err := regularShoppingItemResult.LastInsertId()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	regularShoppingItem, err = h.ShoppingListRepo.GetRegularShoppingItem(lastInsertId)
+	var todayShoppingItemID int64
+	if todayShoppingItemResult != nil {
+		todayShoppingItemID, err = todayShoppingItemResult.LastInsertId()
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	laterThanTodayShoppingItemID, err := laterThanTodayShoppingItemResult.LastInsertId()
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	shoppingList, err := h.ShoppingListRepo.GetShoppingListRelatedToRegularShoppingItemID(lastInsertId)
+	regularShoppingItem, err = h.ShoppingListRepo.GetRegularShoppingItem(int(regularShoppingItemId))
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	shoppingList, err := h.ShoppingListRepo.GetShoppingListRelatedToRegularShoppingItem(int(todayShoppingItemID), int(laterThanTodayShoppingItemID))
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -287,6 +302,105 @@ func (h *DBHandler) PostRegularShoppingItem(w http.ResponseWriter, r *http.Reque
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(&shoppingData); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) PutRegularShoppingItem(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	var regularShoppingItem model.RegularShoppingItem
+	if err := json.NewDecoder(r.Body).Decode(&regularShoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	regularShoppingItemID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"定期ショッピングアイテムIDを正しく指定してください。"}))
+		return
+	}
+
+	now := h.TimeManage.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+
+	todayShoppingItemResult, laterThanTodayShoppingItemResult, err := h.ShoppingListRepo.PutRegularShoppingItem(&regularShoppingItem, regularShoppingItemID, userID, today)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	var todayShoppingItemID int64
+	if todayShoppingItemResult != nil {
+		todayShoppingItemID, err = todayShoppingItemResult.LastInsertId()
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	laterThanTodayShoppingItemID, err := laterThanTodayShoppingItemResult.LastInsertId()
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	regularShoppingItem, err = h.ShoppingListRepo.GetRegularShoppingItem(regularShoppingItemID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	shoppingList, err := h.ShoppingListRepo.GetShoppingListRelatedToRegularShoppingItem(int(todayShoppingItemID), int(laterThanTodayShoppingItemID))
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	shoppingItemCategoriesID := ShoppingItemCategoriesID{
+		MediumCategoryID: regularShoppingItem.MediumCategoryID,
+		CustomCategoryID: regularShoppingItem.CustomCategoryID,
+	}
+
+	categoriesNameBytes, err := getShoppingItemCategoriesName(shoppingItemCategoriesID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := json.Unmarshal(categoriesNameBytes, &regularShoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for i := 0; i < len(shoppingList.ShoppingList); i++ {
+		if err := json.Unmarshal(categoriesNameBytes, &shoppingList.ShoppingList[i]); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	shoppingData := struct {
+		RegularShoppingItem model.RegularShoppingItem `json:"regular_shopping_item"`
+		model.ShoppingList
+	}{
+		RegularShoppingItem: regularShoppingItem,
+		ShoppingList:        shoppingList,
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&shoppingData); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
