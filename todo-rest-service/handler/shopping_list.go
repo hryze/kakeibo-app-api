@@ -18,7 +18,7 @@ import (
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 )
 
-type ShoppingItemCategoriesID struct {
+type CategoriesID struct {
 	MediumCategoryID model.NullInt64 `json:"medium_category_id"`
 	CustomCategoryID model.NullInt64 `json:"custom_category_id"`
 }
@@ -34,11 +34,68 @@ type RelatedTransaction struct {
 	CustomCategoryID model.NullInt64  `json:"custom_category_id"`
 }
 
-func getShoppingItemCategoriesName(shoppingItemCategoriesID ShoppingItemCategoriesID) ([]byte, error) {
+func getShoppingItemCategoriesName(categoriesID CategoriesID) ([]byte, error) {
+	accountHost := os.Getenv("ACCOUNT_HOST")
+	requestURL := fmt.Sprintf("http://%s:8081/categories/name", accountHost)
+
+	requestBody, err := json.Marshal(&categoriesID)
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest(
+		"GET",
+		requestURL,
+		bytes.NewBuffer(requestBody),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			MaxIdleConns:          500,
+			MaxIdleConnsPerHost:   100,
+			IdleConnTimeout:       90 * time.Second,
+			ResponseHeaderTimeout: 10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		},
+		Timeout: 60 * time.Second,
+	}
+
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_, _ = io.Copy(ioutil.Discard, response.Body)
+		response.Body.Close()
+	}()
+
+	if response.StatusCode == http.StatusInternalServerError {
+		return nil, &InternalServerErrorMsg{"500 Internal Server Error"}
+	}
+
+	categoriesNameBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return categoriesNameBytes, nil
+}
+
+func getShoppingItemCategoriesNameList(categoriesIdList []CategoriesID) ([]byte, error) {
 	accountHost := os.Getenv("ACCOUNT_HOST")
 	requestURL := fmt.Sprintf("http://%s:8081/categories/names", accountHost)
 
-	requestBody, err := json.Marshal(&shoppingItemCategoriesID)
+	requestBody, err := json.Marshal(&categoriesIdList)
 	if err != nil {
 		return nil, err
 	}
@@ -209,6 +266,109 @@ func deleteRelatedTransaction(shoppingItem model.ShoppingItem, cookie *http.Cook
 	return shoppingItem, nil
 }
 
+func (h *DBHandler) GetShoppingDataByMonth(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	regularShoppingList, err := h.ShoppingListRepo.GetRegularShoppingList(userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(regularShoppingList.RegularShoppingList) != 0 {
+		now := h.TimeManage.Now()
+		today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+
+		if err = h.ShoppingListRepo.PutRegularShoppingList(regularShoppingList, userID, today); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		regularShoppingList, err = h.ShoppingListRepo.GetRegularShoppingList(userID)
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		categoriesIdList := make([]CategoriesID, len(regularShoppingList.RegularShoppingList))
+
+		for i, regularShoppingItem := range regularShoppingList.RegularShoppingList {
+			categoriesIdList[i] = CategoriesID{
+				MediumCategoryID: regularShoppingItem.MediumCategoryID,
+				CustomCategoryID: regularShoppingItem.CustomCategoryID,
+			}
+		}
+
+		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		if err := json.Unmarshal(categoriesNameListBytes, &regularShoppingList.RegularShoppingList); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	firstDay, err := time.Parse("2006-01", mux.Vars(r)["year_month"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		return
+	}
+
+	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
+
+	shoppingList, err := h.ShoppingListRepo.GetMonthlyShoppingList(firstDay, lastDay, userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		return
+	}
+
+	if len(shoppingList.ShoppingList) != 0 {
+		categoriesIdList := make([]CategoriesID, len(shoppingList.ShoppingList))
+
+		for i, shoppingItem := range shoppingList.ShoppingList {
+			categoriesIdList[i] = CategoriesID{
+				MediumCategoryID: shoppingItem.MediumCategoryID,
+				CustomCategoryID: shoppingItem.CustomCategoryID,
+			}
+		}
+
+		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		if err := json.Unmarshal(categoriesNameListBytes, &shoppingList.ShoppingList); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	shoppingData := model.ShoppingData{
+		RegularShoppingList: regularShoppingList,
+		ShoppingList:        shoppingList,
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&shoppingData); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
 func (h *DBHandler) PostRegularShoppingItem(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
@@ -269,12 +429,12 @@ func (h *DBHandler) PostRegularShoppingItem(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	shoppingItemCategoriesID := ShoppingItemCategoriesID{
+	categoriesID := CategoriesID{
 		MediumCategoryID: regularShoppingItem.MediumCategoryID,
 		CustomCategoryID: regularShoppingItem.CustomCategoryID,
 	}
 
-	categoriesNameBytes, err := getShoppingItemCategoriesName(shoppingItemCategoriesID)
+	categoriesNameBytes, err := getShoppingItemCategoriesName(categoriesID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -368,12 +528,12 @@ func (h *DBHandler) PutRegularShoppingItem(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	shoppingItemCategoriesID := ShoppingItemCategoriesID{
+	categoriesID := CategoriesID{
 		MediumCategoryID: regularShoppingItem.MediumCategoryID,
 		CustomCategoryID: regularShoppingItem.CustomCategoryID,
 	}
 
-	categoriesNameBytes, err := getShoppingItemCategoriesName(shoppingItemCategoriesID)
+	categoriesNameBytes, err := getShoppingItemCategoriesName(categoriesID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -474,12 +634,12 @@ func (h *DBHandler) PostShoppingItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shoppingItemCategoriesID := ShoppingItemCategoriesID{
+	categoriesID := CategoriesID{
 		MediumCategoryID: shoppingItem.MediumCategoryID,
 		CustomCategoryID: shoppingItem.CustomCategoryID,
 	}
 
-	categoriesNameBytes, err := getShoppingItemCategoriesName(shoppingItemCategoriesID)
+	categoriesNameBytes, err := getShoppingItemCategoriesName(categoriesID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -562,12 +722,12 @@ func (h *DBHandler) PutShoppingItem(w http.ResponseWriter, r *http.Request) {
 	shoppingItem.PostedDate = dbShoppingItem.PostedDate
 	shoppingItem.UpdatedDate = dbShoppingItem.UpdatedDate
 
-	shoppingItemCategoriesID := ShoppingItemCategoriesID{
+	categoriesID := CategoriesID{
 		MediumCategoryID: shoppingItem.MediumCategoryID,
 		CustomCategoryID: shoppingItem.CustomCategoryID,
 	}
 
-	categoriesNameBytes, err := getShoppingItemCategoriesName(shoppingItemCategoriesID)
+	categoriesNameBytes, err := getShoppingItemCategoriesName(categoriesID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return

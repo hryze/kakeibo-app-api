@@ -1,0 +1,12 @@
+[
+  {
+    "big_category_name": "食費",
+    "medium_category_name": null,
+    "custom_category_name": "米"
+  },
+  {
+    "big_category_name": "日用品",
+    "medium_category_name": "消耗品",
+    "custom_category_name": null
+  }
+]

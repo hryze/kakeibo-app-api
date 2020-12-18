@@ -26,6 +26,7 @@ type CategoriesRepository interface {
 	GetBigCategoryID(customCategoryID int) (int, error)
 	DeleteCustomCategory(previousCustomCategoryID int, replaceMediumCategoryID int) error
 	GetCategoriesName(categoriesID model.CategoriesID) (*model.CategoriesName, error)
+	GetCategoriesNameList(categoriesIDList []model.CategoriesID) ([]model.CategoriesName, error)
 }
 
 type TransactionsRepository interface {

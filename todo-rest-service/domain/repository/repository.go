@@ -30,11 +30,14 @@ type TodoRepository interface {
 }
 
 type ShoppingListRepository interface {
+	GetRegularShoppingList(userID string) (model.RegularShoppingList, error)
 	GetRegularShoppingItem(regularShoppingItemID int) (model.RegularShoppingItem, error)
 	GetShoppingListRelatedToRegularShoppingItem(todayShoppingItemID int, laterThanTodayShoppingItemID int) (model.ShoppingList, error)
 	PostRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, userID string, today time.Time) (sql.Result, sql.Result, sql.Result, error)
 	PutRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, regularShoppingItemID int, userID string, today time.Time) (sql.Result, sql.Result, error)
+	PutRegularShoppingList(regularShoppingList model.RegularShoppingList, userID string, today time.Time) error
 	DeleteRegularShoppingItem(regularShoppingItemID int) error
+	GetMonthlyShoppingList(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error)
 	GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error)
 	PostShoppingItem(shoppingItem *model.ShoppingItem, userID string) (sql.Result, error)
 	PutShoppingItem(shoppingItem *model.ShoppingItem) (sql.Result, error)

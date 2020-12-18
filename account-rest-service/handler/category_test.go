@@ -182,6 +182,21 @@ func (m MockCategoriesRepository) GetCategoriesName(categoriesID model.Categorie
 	}, nil
 }
 
+func (m MockCategoriesRepository) GetCategoriesNameList(categoriesIDList []model.CategoriesID) ([]model.CategoriesName, error) {
+	return []model.CategoriesName{
+		{
+			BigCategoryName:    model.NullString{NullString: sql.NullString{String: "食費", Valid: true}},
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+		},
+		{
+			BigCategoryName:    model.NullString{NullString: sql.NullString{String: "日用品", Valid: true}},
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "消耗品", Valid: true}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+		},
+	}, nil
+}
+
 func TestDBHandler_GetCategoriesList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:       MockAuthRepository{},
@@ -296,7 +311,7 @@ func TestDBHandler_GetCategoriesName(t *testing.T) {
 		CategoriesRepo: MockCategoriesRepository{},
 	}
 
-	r := httptest.NewRequest("GET", "/categories/names", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest("GET", "/categories/name", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
@@ -313,4 +328,29 @@ func TestDBHandler_GetCategoriesName(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.CategoriesName{}, &model.CategoriesName{})
+}
+
+func TestDBHandler_GetCategoriesNameList(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:       MockAuthRepository{},
+		CategoriesRepo: MockCategoriesRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/categories/names", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.GetCategoriesNameList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &[]model.CategoriesName{}, &[]model.CategoriesName{})
 }

@@ -8,6 +8,15 @@ import (
 	"time"
 )
 
+type ShoppingData struct {
+	RegularShoppingList
+	ShoppingList
+}
+
+type RegularShoppingList struct {
+	RegularShoppingList []RegularShoppingItem `json:"regular_shopping_list"`
+}
+
 type RegularShoppingItem struct {
 	ID                   int        `json:"id"                     db:"id"`
 	PostedDate           time.Time  `json:"posted_date"            db:"posted_date"`
