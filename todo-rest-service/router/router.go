@@ -44,6 +44,7 @@ func Run() error {
 	router.HandleFunc("/todo-list/{id:[0-9]+}", h.DeleteTodo).Methods("DELETE")
 	router.HandleFunc("/todo-list/search", h.SearchTodoList).Methods("GET")
 	router.HandleFunc("/shopping-list/{year_month:[0-9]{4}-[0-9]{2}}/monthly", h.GetShoppingDataByMonth).Methods("GET")
+	router.HandleFunc("/shopping-list/{year_month:[0-9]{4}-[0-9]{2}}/categories", h.GetShoppingDataByCategories).Methods("GET")
 	router.HandleFunc("/shopping-list", h.PostShoppingItem).Methods("POST")
 	router.HandleFunc("/shopping-list/{id:[0-9]+}", h.PutShoppingItem).Methods("PUT")
 	router.HandleFunc("/shopping-list/{id:[0-9]+}", h.DeleteShoppingItem).Methods("DELETE")

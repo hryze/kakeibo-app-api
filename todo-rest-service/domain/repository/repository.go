@@ -37,7 +37,8 @@ type ShoppingListRepository interface {
 	PutRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, regularShoppingItemID int, userID string, today time.Time) (sql.Result, sql.Result, error)
 	PutRegularShoppingList(regularShoppingList model.RegularShoppingList, userID string, today time.Time) error
 	DeleteRegularShoppingItem(regularShoppingItemID int) error
-	GetMonthlyShoppingList(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error)
+	GetShoppingListByMonth(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error)
+	GetShoppingListByCategories(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error)
 	GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error)
 	PostShoppingItem(shoppingItem *model.ShoppingItem, userID string) (sql.Result, error)
 	PutShoppingItem(shoppingItem *model.ShoppingItem) (sql.Result, error)
