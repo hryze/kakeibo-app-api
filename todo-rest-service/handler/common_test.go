@@ -1,6 +1,17 @@
 package handler
 
-import "time"
+import (
+	"sync"
+	"time"
+)
+
+var (
+	dbCounter int64
+	dbMu      sync.Mutex
+
+	serverCounter int64
+	serverMu      sync.Mutex
+)
 
 type MockAuthRepository struct{}
 

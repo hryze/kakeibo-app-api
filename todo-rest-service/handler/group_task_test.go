@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -15,11 +14,6 @@ import (
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
-)
-
-var (
-	counter int64
-	mu      sync.Mutex
 )
 
 type MockGroupTasksRepository struct{}
@@ -33,8 +27,8 @@ func (m MockGroupTasksRepository) GetGroupTasksUsersList(groupID int) ([]model.G
 		}, nil
 	}
 
-	if counter == 1 {
-		atomic.AddInt64(&counter, -1)
+	if dbCounter == 1 {
+		atomic.AddInt64(&dbCounter, -1)
 
 		return []model.GroupTasksUser{
 			{ID: 1, UserID: "userID1", GroupID: 2, TasksList: make([]model.GroupTask, 0)},
@@ -46,7 +40,7 @@ func (m MockGroupTasksRepository) GetGroupTasksUsersList(groupID int) ([]model.G
 		}, nil
 	}
 
-	atomic.AddInt64(&counter, 1)
+	atomic.AddInt64(&dbCounter, 1)
 
 	return []model.GroupTasksUser{
 		{ID: 1, UserID: "userID1", GroupID: 2, TasksList: make([]model.GroupTask, 0)},
@@ -239,8 +233,8 @@ func TestDBHandler_PostGroupTasksUsersList(t *testing.T) {
 
 	r.AddCookie(cookie)
 
-	mu.Lock()
-	defer mu.Unlock()
+	dbMu.Lock()
+	defer dbMu.Unlock()
 
 	h.PostGroupTasksUsersList(w, r)
 
