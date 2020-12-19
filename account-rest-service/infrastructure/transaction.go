@@ -26,8 +26,11 @@ func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string, first
             transactions.shop shop,
             transactions.memo memo,
             transactions.amount amount,
+            transactions.big_category_id big_category_id,
             big_categories.category_name big_category_name,
+            transactions.medium_category_id medium_category_id,
             medium_categories.category_name medium_category_name,
+            transactions.custom_category_id custom_category_id,
             custom_categories.category_name custom_category_name
         FROM
             transactions
@@ -50,7 +53,7 @@ func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string, first
         AND
             transactions.transaction_date <= ?
         ORDER BY
-            transactions.transaction_date DESC, transactions.updated_date DESC`
+            transactions.transaction_date, transactions.updated_date DESC`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, firstDay, lastDay)
 	if err != nil {
@@ -86,8 +89,11 @@ func (r *TransactionsRepository) Get10LatestTransactionsList(userID string) (*mo
             transactions.shop shop,
             transactions.memo memo,
             transactions.amount amount,
+            transactions.big_category_id big_category_id,
             big_categories.category_name big_category_name,
+            transactions.medium_category_id medium_category_id,
             medium_categories.category_name medium_category_name,
+            transactions.custom_category_id custom_category_id,
             custom_categories.category_name custom_category_name
         FROM
             transactions
@@ -146,8 +152,11 @@ func (r *TransactionsRepository) GetTransaction(transactionSender *model.Transac
             transactions.shop shop,
             transactions.memo memo,
             transactions.amount amount,
+            transactions.big_category_id big_category_id,
             big_categories.category_name big_category_name,
+            transactions.medium_category_id medium_category_id,
             medium_categories.category_name medium_category_name,
+            transactions.custom_category_id custom_category_id,
             custom_categories.category_name custom_category_name
         FROM
             transactions

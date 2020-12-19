@@ -1,20 +1,23 @@
 {
   "transactions_list": [
     {
-      "id": 3,
+      "id": 1,
       "transaction_type": "expense",
-      "posted_date": "2020-07-15T16:00:00Z",
-      "updated_date": "2020-07-15T16:00:00Z",
-      "transaction_date": "2020/07/15(水)",
-      "shop": null,
-      "memo": null,
-      "amount": 1300,
+      "posted_date": "2020-07-01T16:00:00Z",
+      "updated_date": "2020-07-01T16:00:00Z",
+      "transaction_date": "2020/07/01(水)",
+      "shop": "ニトリ",
+      "memo": "ベッド購入",
+      "amount": 15000,
       "posted_user_id": "userID1",
       "updated_user_id": null,
       "payment_user_id": "userID1",
-      "big_category_name": "食費",
-      "medium_category_name": null,
-      "custom_category_name": "米"
+      "big_category_id": 3,
+      "big_category_name": "日用品",
+      "medium_category_id": 16,
+      "medium_category_name": "家具",
+      "custom_category_id": null,
+      "custom_category_name": null
     },
     {
       "id": 2,
@@ -28,25 +31,31 @@
       "posted_user_id": "userID2",
       "updated_user_id": null,
       "payment_user_id": "userID2",
+      "big_category_id": 1,
       "big_category_name": "収入",
+      "medium_category_id": 2,
       "medium_category_name": "賞与",
+      "custom_category_id": null,
       "custom_category_name": null
     },
     {
-      "id": 1,
+      "id": 3,
       "transaction_type": "expense",
-      "posted_date": "2020-07-01T16:00:00Z",
-      "updated_date": "2020-07-01T16:00:00Z",
-      "transaction_date": "2020/07/01(水)",
-      "shop": "ニトリ",
-      "memo": "ベッド購入",
-      "amount": 15000,
+      "posted_date": "2020-07-15T16:00:00Z",
+      "updated_date": "2020-07-15T16:00:00Z",
+      "transaction_date": "2020/07/15(水)",
+      "shop": null,
+      "memo": null,
+      "amount": 1300,
       "posted_user_id": "userID1",
       "updated_user_id": null,
       "payment_user_id": "userID1",
-      "big_category_name": "日用品",
-      "medium_category_name": "家具",
-      "custom_category_name": null
+      "big_category_id": 2,
+      "big_category_name": "食費",
+      "medium_category_id": null,
+      "medium_category_name": null,
+      "custom_category_id": 1,
+      "custom_category_name": "米"
     }
   ]
 }

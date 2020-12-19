@@ -26,8 +26,11 @@ type GroupTransactionSender struct {
 	PostedUserID       string     `json:"posted_user_id"       db:"posted_user_id"`
 	UpdatedUserID      NullString `json:"updated_user_id"      db:"updated_user_id"`
 	PaymentUserID      string     `json:"payment_user_id"      db:"payment_user_id"`
+	BigCategoryID      int        `json:"big_category_id"      db:"big_category_id"`
 	BigCategoryName    string     `json:"big_category_name"    db:"big_category_name"`
+	MediumCategoryID   NullInt64  `json:"medium_category_id"   db:"medium_category_id"`
 	MediumCategoryName NullString `json:"medium_category_name" db:"medium_category_name"`
+	CustomCategoryID   NullInt64  `json:"custom_category_id"   db:"custom_category_id"`
 	CustomCategoryName NullString `json:"custom_category_name" db:"custom_category_name"`
 }
 

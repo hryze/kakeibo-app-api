@@ -23,8 +23,11 @@ type TransactionSender struct {
 	Shop               NullString `json:"shop"                 db:"shop"`
 	Memo               NullString `json:"memo"                 db:"memo"`
 	Amount             int        `json:"amount"               db:"amount"`
+	BigCategoryID      int        `json:"big_category_id"      db:"big_category_id"`
 	BigCategoryName    string     `json:"big_category_name"    db:"big_category_name"`
+	MediumCategoryID   NullInt64  `json:"medium_category_id"   db:"medium_category_id"`
 	MediumCategoryName NullString `json:"medium_category_name" db:"medium_category_name"`
+	CustomCategoryID   NullInt64  `json:"custom_category_id"   db:"custom_category_id"`
 	CustomCategoryName NullString `json:"custom_category_name" db:"custom_category_name"`
 }
 
@@ -141,6 +144,14 @@ func (ns *NullString) UnmarshalJSON(b []byte) error {
 	}
 
 	return err
+}
+
+func (ni *NullInt64) MarshalJSON() ([]byte, error) {
+	if !ni.Valid {
+		return []byte("null"), nil
+	}
+
+	return json.Marshal(ni.Int64)
 }
 
 func (ni *NullInt64) UnmarshalJSON(b []byte) error {
