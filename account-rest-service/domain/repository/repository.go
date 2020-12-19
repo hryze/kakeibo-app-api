@@ -25,6 +25,7 @@ type CategoriesRepository interface {
 	PutCustomCategory(customCategory *model.CustomCategory) error
 	GetBigCategoryID(customCategoryID int) (int, error)
 	DeleteCustomCategory(previousCustomCategoryID int, replaceMediumCategoryID int) error
+	GetCategoriesName(categoriesID model.CategoriesID) (*model.CategoriesName, error)
 }
 
 type TransactionsRepository interface {

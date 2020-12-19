@@ -29,6 +29,13 @@ type TodoRepository interface {
 	SearchTodoList(todoSqlQuery string) ([]model.Todo, error)
 }
 
+type ShoppingListRepository interface {
+	GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error)
+	PostShoppingItem(shoppingItem *model.ShoppingItem, userID string) (sql.Result, error)
+	PutShoppingItem(shoppingItem *model.ShoppingItem) (sql.Result, error)
+	DeleteShoppingItem(shoppingItemID int) error
+}
+
 type GroupTodoRepository interface {
 	GetDailyImplementationGroupTodoList(date time.Time, groupID int) ([]model.GroupTodo, error)
 	GetDailyDueGroupTodoList(date time.Time, groupID int) ([]model.GroupTodo, error)

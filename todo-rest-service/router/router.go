@@ -28,7 +28,7 @@ func Run() error {
 		}
 	}
 
-	if len(os.Getenv("ALLOWED_ORIGIN")) == 0 || len(os.Getenv("USER_HOST")) == 0 || len(os.Getenv("MYSQL_DSN")) == 0 || len(os.Getenv("REDIS_DSN")) == 0 {
+	if len(os.Getenv("ALLOWED_ORIGIN")) == 0 || len(os.Getenv("USER_HOST")) == 0 || len(os.Getenv("ACCOUNT_HOST")) == 0 || len(os.Getenv("MYSQL_DSN")) == 0 || len(os.Getenv("REDIS_DSN")) == 0 {
 		return errors.New("environment variable not defined")
 	}
 
@@ -43,6 +43,9 @@ func Run() error {
 	router.HandleFunc("/todo-list/{id:[0-9]+}", h.PutTodo).Methods("PUT")
 	router.HandleFunc("/todo-list/{id:[0-9]+}", h.DeleteTodo).Methods("DELETE")
 	router.HandleFunc("/todo-list/search", h.SearchTodoList).Methods("GET")
+	router.HandleFunc("/shopping-list", h.PostShoppingItem).Methods("POST")
+	router.HandleFunc("/shopping-list/{id:[0-9]+}", h.PutShoppingItem).Methods("PUT")
+	router.HandleFunc("/shopping-list/{id:[0-9]+}", h.DeleteShoppingItem).Methods("DELETE")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/todo-list/{date:[0-9]{4}-[0-9]{2}-[0-9]{2}}", h.GetDailyGroupTodoList).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/todo-list/{year_month:[0-9]{4}-[0-9]{2}}", h.GetMonthlyGroupTodoList).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/todo-list/expired", h.GetExpiredGroupTodoList).Methods("GET")

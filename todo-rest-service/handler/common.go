@@ -15,12 +15,13 @@ import (
 )
 
 type DBHandler struct {
-	HealthRepo     repository.HealthRepository
-	AuthRepo       repository.AuthRepository
-	TodoRepo       repository.TodoRepository
-	GroupTodoRepo  repository.GroupTodoRepository
-	GroupTasksRepo repository.GroupTasksRepository
-	TimeManage     TimeManager
+	HealthRepo       repository.HealthRepository
+	AuthRepo         repository.AuthRepository
+	TodoRepo         repository.TodoRepository
+	ShoppingListRepo repository.ShoppingListRepository
+	GroupTodoRepo    repository.GroupTodoRepository
+	GroupTasksRepo   repository.GroupTasksRepository
+	TimeManage       TimeManager
 }
 
 type TimeManager interface {

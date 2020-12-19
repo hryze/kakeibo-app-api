@@ -1,0 +1,16 @@
+{
+  "expected_purchase_date": "2020-12-15T15:30:54.7772",
+  "complete_flag": true,
+  "purchase": "鶏肉3kg",
+  "shop": "コストコ",
+  "amount": 1000,
+  "big_category_id": 2,
+  "big_category_name": "食費",
+  "medium_category_id": 6,
+  "medium_category_name": "食料品",
+  "custom_category_id": null,
+  "custom_category_name": null,
+  "regular_shopping_list_id": null,
+  "transaction_auto_add": true,
+  "related_transaction_data": null
+}
