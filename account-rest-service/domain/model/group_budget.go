@@ -7,9 +7,10 @@ type GroupStandardBudgets struct {
 }
 
 type GroupStandardBudgetByCategory struct {
-	BigCategoryID   int    `json:"big_category_id"   db:"big_category_id"`
-	BigCategoryName string `json:"big_category_name" db:"big_category_name"`
-	Budget          int    `json:"budget"            db:"budget"`
+	BigCategoryID     int    `json:"big_category_id"      db:"big_category_id"`
+	BigCategoryName   string `json:"big_category_name"    db:"big_category_name"`
+	Budget            int    `json:"budget"               db:"budget"`
+	LastMonthExpenses int    `json:"last_month_expenses"`
 }
 
 type GroupCustomBudgets struct {
@@ -17,9 +18,10 @@ type GroupCustomBudgets struct {
 }
 
 type GroupCustomBudgetByCategory struct {
-	BigCategoryID   int    `json:"big_category_id"   db:"big_category_id"`
-	BigCategoryName string `json:"big_category_name" db:"big_category_name"`
-	Budget          int    `json:"budget"            db:"budget"`
+	BigCategoryID     int    `json:"big_category_id"      db:"big_category_id"`
+	BigCategoryName   string `json:"big_category_name"    db:"big_category_name"`
+	Budget            int    `json:"budget"               db:"budget"`
+	LastMonthExpenses int    `json:"last_month_expenses"`
 }
 
 type YearlyGroupBudget struct {

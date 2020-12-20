@@ -63,6 +63,26 @@ func (h *DBHandler) GetGroupStandardBudgets(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	now := h.TimeManage.Now()
+	firstDayOfLastMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -1, 0)
+	lastDayOfLastMonth := firstDayOfLastMonth.AddDate(0, 1, 0).Add(-1 * time.Second)
+
+	groupTransactionTotalAmountByBigCategoryList, err := h.GroupTransactionsRepo.GetMonthlyGroupTransactionTotalAmountByBigCategory(groupID, firstDayOfLastMonth, lastDayOfLastMonth)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for _, groupTransactionTotalAmountByBigCategory := range groupTransactionTotalAmountByBigCategoryList {
+		for i, groupStandardBudgetByCategory := range groupStandardBudgets.GroupStandardBudgets {
+			if groupTransactionTotalAmountByBigCategory.BigCategoryID == groupStandardBudgetByCategory.BigCategoryID {
+				groupStandardBudgets.GroupStandardBudgets[i].LastMonthExpenses = groupTransactionTotalAmountByBigCategory.TotalAmount
+
+				break
+			}
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&groupStandardBudgets); err != nil {
@@ -122,6 +142,26 @@ func (h *DBHandler) PutGroupStandardBudgets(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	now := h.TimeManage.Now()
+	firstDayOfLastMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -1, 0)
+	lastDayOfLastMonth := firstDayOfLastMonth.AddDate(0, 1, 0).Add(-1 * time.Second)
+
+	groupTransactionTotalAmountByBigCategoryList, err := h.GroupTransactionsRepo.GetMonthlyGroupTransactionTotalAmountByBigCategory(groupID, firstDayOfLastMonth, lastDayOfLastMonth)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for _, groupTransactionTotalAmountByBigCategory := range groupTransactionTotalAmountByBigCategoryList {
+		for i, groupStandardBudgetByCategory := range dbGroupStandardBudgets.GroupStandardBudgets {
+			if groupTransactionTotalAmountByBigCategory.BigCategoryID == groupStandardBudgetByCategory.BigCategoryID {
+				dbGroupStandardBudgets.GroupStandardBudgets[i].LastMonthExpenses = groupTransactionTotalAmountByBigCategory.TotalAmount
+
+				break
+			}
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&dbGroupStandardBudgets); err != nil {
@@ -169,6 +209,26 @@ func (h *DBHandler) GetGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
+	}
+
+	now := h.TimeManage.Now()
+	firstDayOfLastMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -1, 0)
+	lastDayOfLastMonth := firstDayOfLastMonth.AddDate(0, 1, 0).Add(-1 * time.Second)
+
+	groupTransactionTotalAmountByBigCategoryList, err := h.GroupTransactionsRepo.GetMonthlyGroupTransactionTotalAmountByBigCategory(groupID, firstDayOfLastMonth, lastDayOfLastMonth)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for _, groupTransactionTotalAmountByBigCategory := range groupTransactionTotalAmountByBigCategoryList {
+		for i, groupStandardBudgetByCategory := range dbGroupCustomBudgets.GroupCustomBudgets {
+			if groupTransactionTotalAmountByBigCategory.BigCategoryID == groupStandardBudgetByCategory.BigCategoryID {
+				dbGroupCustomBudgets.GroupCustomBudgets[i].LastMonthExpenses = groupTransactionTotalAmountByBigCategory.TotalAmount
+
+				break
+			}
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -236,6 +296,26 @@ func (h *DBHandler) PostGroupCustomBudgets(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	now := h.TimeManage.Now()
+	firstDayOfLastMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -1, 0)
+	lastDayOfLastMonth := firstDayOfLastMonth.AddDate(0, 1, 0).Add(-1 * time.Second)
+
+	groupTransactionTotalAmountByBigCategoryList, err := h.GroupTransactionsRepo.GetMonthlyGroupTransactionTotalAmountByBigCategory(groupID, firstDayOfLastMonth, lastDayOfLastMonth)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for _, groupTransactionTotalAmountByBigCategory := range groupTransactionTotalAmountByBigCategoryList {
+		for i, groupStandardBudgetByCategory := range dbGroupCustomBudgets.GroupCustomBudgets {
+			if groupTransactionTotalAmountByBigCategory.BigCategoryID == groupStandardBudgetByCategory.BigCategoryID {
+				dbGroupCustomBudgets.GroupCustomBudgets[i].LastMonthExpenses = groupTransactionTotalAmountByBigCategory.TotalAmount
+
+				break
+			}
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&dbGroupCustomBudgets); err != nil {
@@ -299,6 +379,26 @@ func (h *DBHandler) PutGroupCustomBudgets(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
+	}
+
+	now := h.TimeManage.Now()
+	firstDayOfLastMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -1, 0)
+	lastDayOfLastMonth := firstDayOfLastMonth.AddDate(0, 1, 0).Add(-1 * time.Second)
+
+	groupTransactionTotalAmountByBigCategoryList, err := h.GroupTransactionsRepo.GetMonthlyGroupTransactionTotalAmountByBigCategory(groupID, firstDayOfLastMonth, lastDayOfLastMonth)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for _, groupTransactionTotalAmountByBigCategory := range groupTransactionTotalAmountByBigCategoryList {
+		for i, groupStandardBudgetByCategory := range dbGroupCustomBudgets.GroupCustomBudgets {
+			if groupTransactionTotalAmountByBigCategory.BigCategoryID == groupStandardBudgetByCategory.BigCategoryID {
+				dbGroupCustomBudgets.GroupCustomBudgets[i].LastMonthExpenses = groupTransactionTotalAmountByBigCategory.TotalAmount
+
+				break
+			}
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

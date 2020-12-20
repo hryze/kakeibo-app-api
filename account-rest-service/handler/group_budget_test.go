@@ -124,8 +124,10 @@ func TestDBHandler_PostInitGroupStandardBudgets(t *testing.T) {
 
 func TestDBHandler_GetGroupStandardBudgets(t *testing.T) {
 	h := DBHandler{
-		AuthRepo:         MockAuthRepository{},
-		GroupBudgetsRepo: MockGroupBudgetsRepository{},
+		AuthRepo:              MockAuthRepository{},
+		GroupBudgetsRepo:      MockGroupBudgetsRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+		TimeManage:            MockTime{},
 	}
 
 	r := httptest.NewRequest("GET", "/groups/1/standard-budgets", nil)
@@ -153,8 +155,10 @@ func TestDBHandler_GetGroupStandardBudgets(t *testing.T) {
 
 func TestDBHandler_PutGroupStandardBudgets(t *testing.T) {
 	h := DBHandler{
-		AuthRepo:         MockAuthRepository{},
-		GroupBudgetsRepo: MockGroupBudgetsRepository{},
+		AuthRepo:              MockAuthRepository{},
+		GroupBudgetsRepo:      MockGroupBudgetsRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+		TimeManage:            MockTime{},
 	}
 
 	r := httptest.NewRequest("PUT", "/groups/1/standard-budgets", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
@@ -182,8 +186,10 @@ func TestDBHandler_PutGroupStandardBudgets(t *testing.T) {
 
 func TestDBHandler_GetGroupCustomBudgets(t *testing.T) {
 	h := DBHandler{
-		AuthRepo:         MockAuthRepository{},
-		GroupBudgetsRepo: MockGroupBudgetsRepository{},
+		AuthRepo:              MockAuthRepository{},
+		GroupBudgetsRepo:      MockGroupBudgetsRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+		TimeManage:            MockTime{},
 	}
 
 	r := httptest.NewRequest("GET", "/groups/1/custom-budgets/2020-07", nil)
@@ -212,8 +218,10 @@ func TestDBHandler_GetGroupCustomBudgets(t *testing.T) {
 
 func TestDBHandler_PostGroupCustomBudgets(t *testing.T) {
 	h := DBHandler{
-		AuthRepo:         MockAuthRepository{},
-		GroupBudgetsRepo: MockGroupBudgetsRepository{},
+		AuthRepo:              MockAuthRepository{},
+		GroupBudgetsRepo:      MockGroupBudgetsRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+		TimeManage:            MockTime{},
 	}
 
 	r := httptest.NewRequest("POST", "/groups/1/custom-budgets/2020-07", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
@@ -242,8 +250,10 @@ func TestDBHandler_PostGroupCustomBudgets(t *testing.T) {
 
 func TestDBHandler_PutGroupCustomBudgets(t *testing.T) {
 	h := DBHandler{
-		AuthRepo:         MockAuthRepository{},
-		GroupBudgetsRepo: MockGroupBudgetsRepository{},
+		AuthRepo:              MockAuthRepository{},
+		GroupBudgetsRepo:      MockGroupBudgetsRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+		TimeManage:            MockTime{},
 	}
 
 	r := httptest.NewRequest("PUT", "/groups/1/custom-budgets/2020-07", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
