@@ -23,7 +23,14 @@ type DBHandler struct {
 	GroupTransactionsRepo repository.GroupTransactionsRepository
 	GroupCategoriesRepo   repository.GroupCategoriesRepository
 	GroupBudgetsRepo      repository.GroupBudgetsRepository
+	TimeManage            TimeManager
 }
+
+type TimeManager interface {
+	Now() time.Time
+}
+
+type RealTime struct{}
 
 type NoContentMsg struct {
 	Message string `json:"message"`
@@ -56,6 +63,14 @@ type ConflictErrorMsg struct {
 
 type InternalServerErrorMsg struct {
 	Message string `json:"message"`
+}
+
+func NewRealTime() *RealTime {
+	return &RealTime{}
+}
+
+func (r *RealTime) Now() time.Time {
+	return time.Now()
 }
 
 func NewHTTPError(status int, err error) error {

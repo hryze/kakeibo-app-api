@@ -305,6 +305,31 @@ func (t MockTransactionsRepository) SearchTransactionsList(query string) ([]mode
 	}, nil
 }
 
+func (t MockTransactionsRepository) GetMonthlyTransactionTotalAmountByBigCategory(userID string, firstDay time.Time, lastDay time.Time) ([]model.TransactionTotalAmountByBigCategory, error) {
+	return []model.TransactionTotalAmountByBigCategory{
+		{
+			BigCategoryID: 2,
+			TotalAmount:   55000,
+		},
+		{
+			BigCategoryID: 3,
+			TotalAmount:   5000,
+		},
+		{
+			BigCategoryID: 9,
+			TotalAmount:   7000,
+		},
+		{
+			BigCategoryID: 12,
+			TotalAmount:   13000,
+		},
+		{
+			BigCategoryID: 15,
+			TotalAmount:   12000,
+		},
+	}, nil
+}
+
 func TestDBHandler_GetMonthlyTransactionsList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},

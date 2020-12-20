@@ -251,3 +251,44 @@ func (r *TransactionsRepository) SearchTransactionsList(query string) ([]model.T
 
 	return transactionsList, nil
 }
+
+func (r *TransactionsRepository) GetMonthlyTransactionTotalAmountByBigCategory(userID string, firstDay time.Time, lastDay time.Time) ([]model.TransactionTotalAmountByBigCategory, error) {
+	query := `
+        SELECT
+            big_category_id,
+            SUM(amount) total_amount
+        FROM
+            transactions
+        WHERE
+            user_id = ?
+        AND
+            transaction_type = "expense"
+        AND
+            transaction_date >= ?
+        AND
+            transaction_date <= ?
+        GROUP BY
+            big_category_id`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, userID, firstDay, lastDay)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	transactionTotalAmountByBigCategoryList := make([]model.TransactionTotalAmountByBigCategory, 0)
+	for rows.Next() {
+		var transactionTotalAmountByBigCategory model.TransactionTotalAmountByBigCategory
+		if err := rows.StructScan(&transactionTotalAmountByBigCategory); err != nil {
+			return nil, err
+		}
+
+		transactionTotalAmountByBigCategoryList = append(transactionTotalAmountByBigCategoryList, transactionTotalAmountByBigCategory)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return transactionTotalAmountByBigCategoryList, nil
+}

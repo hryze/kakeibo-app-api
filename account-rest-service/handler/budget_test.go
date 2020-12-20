@@ -120,8 +120,10 @@ func TestDBHandler_PostInitStandardBudgets(t *testing.T) {
 
 func TestDBHandler_GetStandardBudgets(t *testing.T) {
 	h := DBHandler{
-		AuthRepo:    MockAuthRepository{},
-		BudgetsRepo: MockBudgetsRepository{},
+		AuthRepo:         MockAuthRepository{},
+		BudgetsRepo:      MockBudgetsRepository{},
+		TransactionsRepo: MockTransactionsRepository{},
+		TimeManage:       MockTime{},
 	}
 
 	r := httptest.NewRequest("GET", "/standard-budgets", nil)
@@ -145,8 +147,10 @@ func TestDBHandler_GetStandardBudgets(t *testing.T) {
 
 func TestDBHandler_PutStandardBudgets(t *testing.T) {
 	h := DBHandler{
-		AuthRepo:    MockAuthRepository{},
-		BudgetsRepo: MockBudgetsRepository{},
+		AuthRepo:         MockAuthRepository{},
+		BudgetsRepo:      MockBudgetsRepository{},
+		TransactionsRepo: MockTransactionsRepository{},
+		TimeManage:       MockTime{},
 	}
 
 	r := httptest.NewRequest("PUT", "/standard-budgets", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
@@ -170,8 +174,10 @@ func TestDBHandler_PutStandardBudgets(t *testing.T) {
 
 func TestDBHandler_GetCustomBudgets(t *testing.T) {
 	h := DBHandler{
-		AuthRepo:    MockAuthRepository{},
-		BudgetsRepo: MockBudgetsRepository{},
+		AuthRepo:         MockAuthRepository{},
+		BudgetsRepo:      MockBudgetsRepository{},
+		TransactionsRepo: MockTransactionsRepository{},
+		TimeManage:       MockTime{},
 	}
 
 	r := httptest.NewRequest("GET", "/custom-budgets/2020-07", nil)
@@ -199,8 +205,10 @@ func TestDBHandler_GetCustomBudgets(t *testing.T) {
 
 func TestDBHandler_PostCustomBudgets(t *testing.T) {
 	h := DBHandler{
-		AuthRepo:    MockAuthRepository{},
-		BudgetsRepo: MockBudgetsRepository{},
+		AuthRepo:         MockAuthRepository{},
+		BudgetsRepo:      MockBudgetsRepository{},
+		TransactionsRepo: MockTransactionsRepository{},
+		TimeManage:       MockTime{},
 	}
 
 	r := httptest.NewRequest("POST", "/custom-budgets/2020-07", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
@@ -228,8 +236,10 @@ func TestDBHandler_PostCustomBudgets(t *testing.T) {
 
 func TestDBHandler_PutCustomBudgets(t *testing.T) {
 	h := DBHandler{
-		AuthRepo:    MockAuthRepository{},
-		BudgetsRepo: MockBudgetsRepository{},
+		AuthRepo:         MockAuthRepository{},
+		BudgetsRepo:      MockBudgetsRepository{},
+		TransactionsRepo: MockTransactionsRepository{},
+		TimeManage:       MockTime{},
 	}
 
 	r := httptest.NewRequest("PUT", "/custom-budgets/2020-07", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))

@@ -73,6 +73,26 @@ func (h *DBHandler) GetStandardBudgets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	now := h.TimeManage.Now()
+	firstDayOfLastMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -1, 0)
+	lastDayOfLastMonth := firstDayOfLastMonth.AddDate(0, 1, 0).Add(-1 * time.Second)
+
+	transactionTotalAmountByBigCategoryList, err := h.TransactionsRepo.GetMonthlyTransactionTotalAmountByBigCategory(userID, firstDayOfLastMonth, lastDayOfLastMonth)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for _, transactionTotalAmountByBigCategory := range transactionTotalAmountByBigCategoryList {
+		for i, standardBudgetByCategory := range standardBudgets.StandardBudgets {
+			if transactionTotalAmountByBigCategory.BigCategoryID == standardBudgetByCategory.BigCategoryID {
+				standardBudgets.StandardBudgets[i].LastMonthExpenses = transactionTotalAmountByBigCategory.TotalAmount
+
+				break
+			}
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&standardBudgets); err != nil {
@@ -115,6 +135,26 @@ func (h *DBHandler) PutStandardBudgets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	now := h.TimeManage.Now()
+	firstDayOfLastMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -1, 0)
+	lastDayOfLastMonth := firstDayOfLastMonth.AddDate(0, 1, 0).Add(-1 * time.Second)
+
+	transactionTotalAmountByBigCategoryList, err := h.TransactionsRepo.GetMonthlyTransactionTotalAmountByBigCategory(userID, firstDayOfLastMonth, lastDayOfLastMonth)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for _, transactionTotalAmountByBigCategory := range transactionTotalAmountByBigCategoryList {
+		for i, standardBudgetByCategory := range dbStandardBudgets.StandardBudgets {
+			if transactionTotalAmountByBigCategory.BigCategoryID == standardBudgetByCategory.BigCategoryID {
+				dbStandardBudgets.StandardBudgets[i].LastMonthExpenses = transactionTotalAmountByBigCategory.TotalAmount
+
+				break
+			}
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&dbStandardBudgets); err != nil {
@@ -145,6 +185,26 @@ func (h *DBHandler) GetCustomBudgets(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
+	}
+
+	now := h.TimeManage.Now()
+	firstDayOfLastMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -1, 0)
+	lastDayOfLastMonth := firstDayOfLastMonth.AddDate(0, 1, 0).Add(-1 * time.Second)
+
+	transactionTotalAmountByBigCategoryList, err := h.TransactionsRepo.GetMonthlyTransactionTotalAmountByBigCategory(userID, firstDayOfLastMonth, lastDayOfLastMonth)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for _, transactionTotalAmountByBigCategory := range transactionTotalAmountByBigCategoryList {
+		for i, standardBudgetByCategory := range dbCustomBudgets.CustomBudgets {
+			if transactionTotalAmountByBigCategory.BigCategoryID == standardBudgetByCategory.BigCategoryID {
+				dbCustomBudgets.CustomBudgets[i].LastMonthExpenses = transactionTotalAmountByBigCategory.TotalAmount
+
+				break
+			}
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -195,6 +255,26 @@ func (h *DBHandler) PostCustomBudgets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	now := h.TimeManage.Now()
+	firstDayOfLastMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -1, 0)
+	lastDayOfLastMonth := firstDayOfLastMonth.AddDate(0, 1, 0).Add(-1 * time.Second)
+
+	transactionTotalAmountByBigCategoryList, err := h.TransactionsRepo.GetMonthlyTransactionTotalAmountByBigCategory(userID, firstDayOfLastMonth, lastDayOfLastMonth)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for _, transactionTotalAmountByBigCategory := range transactionTotalAmountByBigCategoryList {
+		for i, standardBudgetByCategory := range dbCustomBudgets.CustomBudgets {
+			if transactionTotalAmountByBigCategory.BigCategoryID == standardBudgetByCategory.BigCategoryID {
+				dbCustomBudgets.CustomBudgets[i].LastMonthExpenses = transactionTotalAmountByBigCategory.TotalAmount
+
+				break
+			}
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(&dbCustomBudgets); err != nil {
@@ -241,6 +321,26 @@ func (h *DBHandler) PutCustomBudgets(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
+	}
+
+	now := h.TimeManage.Now()
+	firstDayOfLastMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -1, 0)
+	lastDayOfLastMonth := firstDayOfLastMonth.AddDate(0, 1, 0).Add(-1 * time.Second)
+
+	transactionTotalAmountByBigCategoryList, err := h.TransactionsRepo.GetMonthlyTransactionTotalAmountByBigCategory(userID, firstDayOfLastMonth, lastDayOfLastMonth)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for _, transactionTotalAmountByBigCategory := range transactionTotalAmountByBigCategoryList {
+		for i, standardBudgetByCategory := range dbCustomBudgets.CustomBudgets {
+			if transactionTotalAmountByBigCategory.BigCategoryID == standardBudgetByCategory.BigCategoryID {
+				dbCustomBudgets.CustomBudgets[i].LastMonthExpenses = transactionTotalAmountByBigCategory.TotalAmount
+
+				break
+			}
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
