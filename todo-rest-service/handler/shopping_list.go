@@ -459,7 +459,7 @@ func (h *DBHandler) GetShoppingDataByCategories(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	var shoppingListByCategories []model.ShoppingListByCategory
+	shoppingListByCategories := make([]model.ShoppingListByCategory, 0)
 
 	for i, j := 0, 0; i < len(shoppingList.ShoppingList); i++ {
 		firstIndexBigCategoryID := shoppingList.ShoppingList[j].BigCategoryID
@@ -474,13 +474,24 @@ func (h *DBHandler) GetShoppingDataByCategories(w http.ResponseWriter, r *http.R
 			shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
 
 			j = i
-		} else if i == len(shoppingList.ShoppingList)-1 {
-			shoppingListByCategory := model.ShoppingListByCategory{
-				BigCategoryName: shoppingList.ShoppingList[j].BigCategoryName,
-				ShoppingList:    append(make([]model.ShoppingItem, 0, i-j), shoppingList.ShoppingList[j:]...),
-			}
+		}
 
-			shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
+		if i == len(shoppingList.ShoppingList)-1 {
+			if firstIndexBigCategoryID == currentIndexBigCategoryID {
+				shoppingListByCategory := model.ShoppingListByCategory{
+					BigCategoryName: shoppingList.ShoppingList[j].BigCategoryName,
+					ShoppingList:    append(make([]model.ShoppingItem, 0, i-j), shoppingList.ShoppingList[j:]...),
+				}
+
+				shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
+			} else if i == j {
+				shoppingListByCategory := model.ShoppingListByCategory{
+					BigCategoryName: shoppingList.ShoppingList[i].BigCategoryName,
+					ShoppingList:    []model.ShoppingItem{shoppingList.ShoppingList[i]},
+				}
+
+				shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
+			}
 		}
 	}
 
