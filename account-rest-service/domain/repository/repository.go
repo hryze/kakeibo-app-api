@@ -37,6 +37,7 @@ type TransactionsRepository interface {
 	PutTransaction(transaction *model.TransactionReceiver, transactionID int) error
 	DeleteTransaction(transactionID int) error
 	SearchTransactionsList(query string) ([]model.TransactionSender, error)
+	GetMonthlyTransactionTotalAmountByBigCategory(userID string, firstDay time.Time, lastDay time.Time) ([]model.TransactionTotalAmountByBigCategory, error)
 }
 
 type BudgetsRepository interface {
@@ -76,6 +77,7 @@ type GroupTransactionsRepository interface {
 	PostGroupAccountsList(groupAccountsList []model.GroupAccount) error
 	PutGroupAccountsList(groupAccountsList []model.GroupAccount) error
 	DeleteGroupAccountsList(yearMonth time.Time, groupID int) error
+	GetMonthlyGroupTransactionTotalAmountByBigCategory(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionTotalAmountByBigCategory, error)
 }
 
 type GroupBudgetsRepository interface {

@@ -39,5 +39,6 @@ func InjectDBHandler() *handler.DBHandler {
 		GroupTransactionsRepo: infrastructure.NewGroupTransactionsRepository(InjectMySQL()),
 		GroupCategoriesRepo:   infrastructure.NewGroupCategoriesRepository(InjectMySQL()),
 		GroupBudgetsRepo:      infrastructure.NewGroupBudgetsRepository(InjectMySQL()),
+		TimeManage:            handler.NewRealTime(),
 	}
 }

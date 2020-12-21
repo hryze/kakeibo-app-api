@@ -46,6 +46,11 @@ type GroupTransactionReceiver struct {
 	CustomCategoryID NullInt64    `json:"custom_category_id" db:"custom_category_id" validate:"omitempty,min=1"`
 }
 
+type GroupTransactionTotalAmountByBigCategory struct {
+	BigCategoryID int `db:"big_category_id"`
+	TotalAmount   int `db:"total_amount"`
+}
+
 type PayerList struct {
 	PayerList []UserPaymentAmount
 }

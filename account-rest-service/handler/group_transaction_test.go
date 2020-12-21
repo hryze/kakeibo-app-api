@@ -505,6 +505,31 @@ func (m MockGroupTransactionsRepository) DeleteGroupAccountsList(yearMonth time.
 	return nil
 }
 
+func (t MockGroupTransactionsRepository) GetMonthlyGroupTransactionTotalAmountByBigCategory(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionTotalAmountByBigCategory, error) {
+	return []model.GroupTransactionTotalAmountByBigCategory{
+		{
+			BigCategoryID: 2,
+			TotalAmount:   55000,
+		},
+		{
+			BigCategoryID: 3,
+			TotalAmount:   5000,
+		},
+		{
+			BigCategoryID: 9,
+			TotalAmount:   7000,
+		},
+		{
+			BigCategoryID: 12,
+			TotalAmount:   13000,
+		},
+		{
+			BigCategoryID: 15,
+			TotalAmount:   12000,
+		},
+	}, nil
+}
+
 func TestDBHandler_GetMonthlyGroupTransactionsList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:              MockAuthRepository{},

@@ -459,3 +459,44 @@ func (r *GroupTransactionsRepository) DeleteGroupAccountsList(yearMonth time.Tim
 
 	return err
 }
+
+func (r *GroupTransactionsRepository) GetMonthlyGroupTransactionTotalAmountByBigCategory(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionTotalAmountByBigCategory, error) {
+	query := `
+        SELECT
+            big_category_id,
+            SUM(amount) total_amount
+        FROM
+            group_transactions
+        WHERE
+            group_id = ?
+        AND
+            transaction_type = "expense"
+        AND
+            transaction_date >= ?
+        AND
+            transaction_date <= ?
+        GROUP BY
+            big_category_id`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, firstDay, lastDay)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	groupTransactionTotalAmountByBigCategoryList := make([]model.GroupTransactionTotalAmountByBigCategory, 0)
+	for rows.Next() {
+		var groupTransactionTotalAmountByBigCategory model.GroupTransactionTotalAmountByBigCategory
+		if err := rows.StructScan(&groupTransactionTotalAmountByBigCategory); err != nil {
+			return nil, err
+		}
+
+		groupTransactionTotalAmountByBigCategoryList = append(groupTransactionTotalAmountByBigCategoryList, groupTransactionTotalAmountByBigCategory)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return groupTransactionTotalAmountByBigCategoryList, nil
+}
