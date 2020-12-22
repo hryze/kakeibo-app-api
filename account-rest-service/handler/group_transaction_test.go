@@ -1,14 +1,20 @@
 package handler
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -505,7 +511,7 @@ func (m MockGroupTransactionsRepository) DeleteGroupAccountsList(yearMonth time.
 	return nil
 }
 
-func (t MockGroupTransactionsRepository) GetMonthlyGroupTransactionTotalAmountByBigCategory(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionTotalAmountByBigCategory, error) {
+func (m MockGroupTransactionsRepository) GetMonthlyGroupTransactionTotalAmountByBigCategory(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionTotalAmountByBigCategory, error) {
 	return []model.GroupTransactionTotalAmountByBigCategory{
 		{
 			BigCategoryID: 2,
@@ -526,6 +532,64 @@ func (t MockGroupTransactionsRepository) GetMonthlyGroupTransactionTotalAmountBy
 		{
 			BigCategoryID: 15,
 			TotalAmount:   12000,
+		},
+	}, nil
+}
+
+func (m MockGroupTransactionsRepository) YearlyGroupTransactionExistenceConfirmation(firstDayOfYear time.Time, groupID int) ([]time.Time, error) {
+	return []time.Time{
+		time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2020, 4, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2020, 8, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2020, 10, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2020, 11, 1, 0, 0, 0, 0, time.UTC),
+	}, nil
+}
+
+func (m MockGroupTransactionsRepository) GetYearlyGroupAccountsList(firstDayOfYear time.Time, groupID int) ([]model.GroupAccount, error) {
+	return []model.GroupAccount{
+		{
+			Month:               time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
+			Payer:               model.NullString{NullString: sql.NullString{String: "userID2", Valid: true}},
+			Recipient:           model.NullString{NullString: sql.NullString{String: "userID1", Valid: true}},
+			PaymentConfirmation: false,
+			ReceiptConfirmation: false,
+		},
+		{
+			Month:               time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC),
+			Payer:               model.NullString{NullString: sql.NullString{String: "userID3", Valid: true}},
+			Recipient:           model.NullString{NullString: sql.NullString{String: "userID1", Valid: true}},
+			PaymentConfirmation: true,
+			ReceiptConfirmation: false,
+		},
+		{
+			Month:               time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC),
+			Payer:               model.NullString{NullString: sql.NullString{String: "userID1", Valid: true}},
+			Recipient:           model.NullString{NullString: sql.NullString{String: "userID2", Valid: true}},
+			PaymentConfirmation: true,
+			ReceiptConfirmation: false,
+		},
+		{
+			Month:               time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC),
+			Payer:               model.NullString{NullString: sql.NullString{String: "userID1", Valid: true}},
+			Recipient:           model.NullString{NullString: sql.NullString{String: "userID3", Valid: true}},
+			PaymentConfirmation: true,
+			ReceiptConfirmation: true,
+		},
+		{
+			Month:               time.Date(2020, 11, 1, 0, 0, 0, 0, time.UTC),
+			Payer:               model.NullString{NullString: sql.NullString{String: "userID3", Valid: true}},
+			Recipient:           model.NullString{NullString: sql.NullString{String: "userID2", Valid: true}},
+			PaymentConfirmation: true,
+			ReceiptConfirmation: false,
+		},
+		{
+			Month:               time.Date(2020, 11, 1, 0, 0, 0, 0, time.UTC),
+			Payer:               model.NullString{NullString: sql.NullString{String: "userID3", Valid: true}},
+			Recipient:           model.NullString{NullString: sql.NullString{String: "userID4", Valid: true}},
+			PaymentConfirmation: false,
+			ReceiptConfirmation: false,
 		},
 	}, nil
 }
@@ -721,6 +785,57 @@ func TestDBHandler_SearchGroupTransactionsList(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupTransactionsList{}, &model.GroupTransactionsList{})
+}
+
+func TestDBHandler_GetYearlyAccountingStatus(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:              MockAuthRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/1/transactions/2020/account", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+		"year":     "2020",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.GetYearlyAccountingStatus(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+
+	goldenFilePath := filepath.Join("testdata", t.Name(), "response.json.golden")
+
+	wantData, err := ioutil.ReadFile(goldenFilePath)
+	if err != nil {
+		t.Fatalf("unexpected error by ioutil.ReadFile '%#v'", err)
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatalf("unexpected error by ioutil.ReadAll() '%#v'", err)
+	}
+
+	var gotData bytes.Buffer
+	err = json.Indent(&gotData, body, "", "  ")
+	if err != nil {
+		t.Fatalf("unexpected error by json.Indent '%#v'", err)
+	}
+
+	if diff := cmp.Diff(string(wantData), gotData.String()); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
 }
 
 func TestDBHandler_GetMonthlyGroupTransactionsAccount(t *testing.T) {

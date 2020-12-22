@@ -500,3 +500,88 @@ func (r *GroupTransactionsRepository) GetMonthlyGroupTransactionTotalAmountByBig
 
 	return groupTransactionTotalAmountByBigCategoryList, nil
 }
+
+func (r *GroupTransactionsRepository) YearlyGroupTransactionExistenceConfirmation(firstDayOfYear time.Time, groupID int) ([]time.Time, error) {
+	query := `
+        SELECT
+            DATE_FORMAT(transaction_date, "%Y-%m") as transaction_date
+        FROM
+            group_transactions
+        WHERE
+            group_id = ? 
+        AND
+            transaction_type = "expense"
+        AND
+            transaction_date >= ?
+        AND
+            transaction_date < ?
+        GROUP BY
+            DATE_FORMAT(transaction_date , "%Y-%m")`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, firstDayOfYear, firstDayOfYear.AddDate(1, 0, 0))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var transactionExistenceByMonths []time.Time
+	for rows.Next() {
+		var strExistenceMonth string
+		if err := rows.Scan(&strExistenceMonth); err != nil {
+			return nil, err
+		}
+
+		existenceMonth, err := time.Parse("2006-01", strExistenceMonth)
+		if err != nil {
+			return nil, err
+		}
+
+		transactionExistenceByMonths = append(transactionExistenceByMonths, existenceMonth)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return transactionExistenceByMonths, nil
+}
+
+func (r *GroupTransactionsRepository) GetYearlyGroupAccountsList(firstDayOfYear time.Time, groupID int) ([]model.GroupAccount, error) {
+	query := `
+        SELECT
+            years_months,
+            payer_user_id,
+            recipient_user_id,
+            payment_confirmation,
+            receipt_confirmation
+        FROM
+            group_accounts
+        WHERE
+            group_id = ?
+        AND
+            years_months >= ?
+        AND
+            years_months < ?`
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, firstDayOfYear, firstDayOfYear.AddDate(1, 0, 0))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var yearlyGroupAccountsList []model.GroupAccount
+	for rows.Next() {
+		var groupAccount model.GroupAccount
+		if err := rows.StructScan(&groupAccount); err != nil {
+			return nil, err
+		}
+
+		yearlyGroupAccountsList = append(yearlyGroupAccountsList, groupAccount)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return yearlyGroupAccountsList, nil
+}

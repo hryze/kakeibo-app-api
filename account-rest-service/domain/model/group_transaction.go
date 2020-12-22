@@ -5,8 +5,10 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -51,18 +53,28 @@ type GroupTransactionTotalAmountByBigCategory struct {
 	TotalAmount   int `db:"total_amount"`
 }
 
-type PayerList struct {
-	PayerList []UserPaymentAmount
+type YearlyAccountingStatus struct {
+	Year                   string
+	YearlyAccountingStatus [12]MonthlyAccountingStatus `json:"yearly_accounting_status"`
 }
 
-type RecipientList struct {
-	RecipientList []UserPaymentAmount
+type MonthlyAccountingStatus struct {
+	Month             string        `json:"month"`
+	CalculationStatus string        `json:"calculation_status"`
+	PaymentStatus     PaymentStatus `json:"payment_status"`
+	ReceiptStatus     ReceiptStatus `json:"receipt_status"`
 }
 
-type UserPaymentAmount struct {
-	UserID              string `db:"user_id"`
-	TotalPaymentAmount  int    `db:"total_payment_amount"`
-	PaymentAmountToUser int
+type PaymentStatus struct {
+	IncompleteCount     int
+	WaitingReceiptCount int
+	CompleteCount       int
+}
+
+type ReceiptStatus struct {
+	WaitingPaymentCount int
+	IncompleteCount     int
+	CompleteCount       int
 }
 
 type GroupAccountsList struct {
@@ -83,6 +95,20 @@ type GroupAccount struct {
 	PaymentAmount       NullInt    `json:"payment_amount"       db:"payment_amount"`
 	PaymentConfirmation BitBool    `json:"payment_confirmation" db:"payment_confirmation"`
 	ReceiptConfirmation BitBool    `json:"receipt_confirmation" db:"receipt_confirmation"`
+}
+
+type PayerList struct {
+	PayerList []UserPaymentAmount
+}
+
+type RecipientList struct {
+	RecipientList []UserPaymentAmount
+}
+
+type UserPaymentAmount struct {
+	UserID              string `db:"user_id"`
+	TotalPaymentAmount  int    `db:"total_payment_amount"`
+	PaymentAmountToUser int
 }
 
 type BitBool bool
@@ -216,4 +242,106 @@ func (ni NullInt) Value() (driver.Value, error) {
 	}
 
 	return int64(ni.Int), nil
+}
+
+func NewYearlyAccountingStatus(year time.Time, userID string, transactionExistenceByMonths []time.Time, yearlyGroupAccountsList []GroupAccount) YearlyAccountingStatus {
+	yearlyAccountingStatus := YearlyAccountingStatus{
+		Year: fmt.Sprintf("%d年", year.Year()),
+		YearlyAccountingStatus: [12]MonthlyAccountingStatus{
+			{Month: "1月", CalculationStatus: "-"},
+			{Month: "2月", CalculationStatus: "-"},
+			{Month: "3月", CalculationStatus: "-"},
+			{Month: "4月", CalculationStatus: "-"},
+			{Month: "5月", CalculationStatus: "-"},
+			{Month: "6月", CalculationStatus: "-"},
+			{Month: "7月", CalculationStatus: "-"},
+			{Month: "8月", CalculationStatus: "-"},
+			{Month: "9月", CalculationStatus: "-"},
+			{Month: "10月", CalculationStatus: "-"},
+			{Month: "11月", CalculationStatus: "-"},
+			{Month: "12月", CalculationStatus: "-"},
+		},
+	}
+
+	for _, existenceByMonth := range transactionExistenceByMonths {
+		idx := existenceByMonth.Month() - 1
+		yearlyAccountingStatus.YearlyAccountingStatus[idx].CalculationStatus = "未精算"
+	}
+
+	for _, groupAccount := range yearlyGroupAccountsList {
+		idx := groupAccount.Month.Month() - 1
+		yearlyAccountingStatus.YearlyAccountingStatus[idx].CalculationStatus = "精算済"
+
+		if userID == groupAccount.Payer.String {
+			if !groupAccount.PaymentConfirmation {
+				yearlyAccountingStatus.YearlyAccountingStatus[idx].PaymentStatus.IncompleteCount++
+			} else if groupAccount.PaymentConfirmation && !groupAccount.ReceiptConfirmation {
+				yearlyAccountingStatus.YearlyAccountingStatus[idx].PaymentStatus.WaitingReceiptCount++
+			} else if groupAccount.PaymentConfirmation && groupAccount.ReceiptConfirmation {
+				yearlyAccountingStatus.YearlyAccountingStatus[idx].PaymentStatus.CompleteCount++
+			}
+		} else if userID == groupAccount.Recipient.String {
+			if !groupAccount.PaymentConfirmation {
+				yearlyAccountingStatus.YearlyAccountingStatus[idx].ReceiptStatus.WaitingPaymentCount++
+			} else if groupAccount.PaymentConfirmation && !groupAccount.ReceiptConfirmation {
+				yearlyAccountingStatus.YearlyAccountingStatus[idx].ReceiptStatus.IncompleteCount++
+			} else if groupAccount.PaymentConfirmation && groupAccount.ReceiptConfirmation {
+				yearlyAccountingStatus.YearlyAccountingStatus[idx].ReceiptStatus.CompleteCount++
+			}
+		}
+	}
+
+	return yearlyAccountingStatus
+}
+
+func (s *PaymentStatus) MarshalJSON() ([]byte, error) {
+	var messages []string
+
+	if s.IncompleteCount != 0 {
+		incompleteMessage := fmt.Sprintf("未払い: %d件", s.IncompleteCount)
+		messages = append(messages, incompleteMessage)
+	}
+
+	if s.WaitingReceiptCount != 0 {
+		waitingReceiptMessage := fmt.Sprintf("受領待ち: %d件", s.WaitingReceiptCount)
+		messages = append(messages, waitingReceiptMessage)
+	}
+
+	if s.CompleteCount != 0 {
+		completeMessage := fmt.Sprintf("完了: %d件", s.CompleteCount)
+		messages = append(messages, completeMessage)
+	}
+
+	if len(messages) != 0 {
+		message := strings.Join(messages, " / ")
+		return json.Marshal(message)
+	}
+
+	return json.Marshal("-")
+}
+
+func (s *ReceiptStatus) MarshalJSON() ([]byte, error) {
+	var messages []string
+
+	if s.WaitingPaymentCount != 0 {
+		waitingPaymentMessage := fmt.Sprintf("支払待ち: %d件", s.WaitingPaymentCount)
+		messages = append(messages, waitingPaymentMessage)
+	}
+
+	if s.IncompleteCount != 0 {
+		incompleteMessage := fmt.Sprintf("未受領: %d件", s.IncompleteCount)
+		messages = append(messages, incompleteMessage)
+	}
+
+	if s.CompleteCount != 0 {
+		completeMessage := fmt.Sprintf("完了: %d件", s.CompleteCount)
+		messages = append(messages, completeMessage)
+	}
+
+	if len(messages) != 0 {
+		message := strings.Join(messages, " / ")
+		return json.Marshal(message)
+	}
+
+	return json.Marshal("-")
 }
