@@ -828,8 +828,7 @@ func TestDBHandler_GetYearlyAccountingStatus(t *testing.T) {
 	}
 
 	var gotData bytes.Buffer
-	err = json.Indent(&gotData, body, "", "  ")
-	if err != nil {
+	if err = json.Indent(&gotData, body, "", "  "); err != nil {
 		t.Fatalf("unexpected error by json.Indent '%#v'", err)
 	}
 
