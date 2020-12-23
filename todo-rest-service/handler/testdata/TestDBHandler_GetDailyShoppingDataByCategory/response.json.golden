@@ -1,0 +1,90 @@
+{
+  "regular_shopping_list": [
+    {
+      "id": 1,
+      "posted_date": "2020-12-18T14:00:00Z",
+      "updated_date": "2020-12-19T20:00:00Z",
+      "expected_purchase_date": "2020/12/25(金)",
+      "cycle_type": "monthly",
+      "cycle": null,
+      "purchase": "米",
+      "shop": "コストコ",
+      "amount": 4000,
+      "big_category_id": 2,
+      "big_category_name": "食費",
+      "medium_category_id": null,
+      "medium_category_name": null,
+      "custom_category_id": 1,
+      "custom_category_name": "米",
+      "transaction_auto_add": true
+    },
+    {
+      "id": 2,
+      "posted_date": "2020-12-18T14:00:00Z",
+      "updated_date": "2020-12-19T20:00:00Z",
+      "expected_purchase_date": "2020/12/25(金)",
+      "cycle_type": "weekly",
+      "cycle": null,
+      "purchase": "トイレットペーパー",
+      "shop": "クリエイト",
+      "amount": 300,
+      "big_category_id": 3,
+      "big_category_name": "日用品",
+      "medium_category_id": 13,
+      "medium_category_name": "消耗品",
+      "custom_category_id": null,
+      "custom_category_name": null,
+      "transaction_auto_add": true
+    }
+  ],
+  "shopping_list_by_categories": [
+    {
+      "big_category_name": "食費",
+      "shopping_list": [
+        {
+          "id": 1,
+          "posted_date": "2020-12-18T14:00:00Z",
+          "updated_date": "2020-12-18T14:00:00Z",
+          "expected_purchase_date": "2020/12/18(金)",
+          "complete_flag": false,
+          "purchase": "米",
+          "shop": "コストコ",
+          "amount": 4000,
+          "big_category_id": 2,
+          "big_category_name": "食費",
+          "medium_category_id": null,
+          "medium_category_name": null,
+          "custom_category_id": 1,
+          "custom_category_name": "米",
+          "regular_shopping_list_id": 1,
+          "transaction_auto_add": true,
+          "related_transaction_data": null
+        }
+      ]
+    },
+    {
+      "big_category_name": "日用品",
+      "shopping_list": [
+        {
+          "id": 2,
+          "posted_date": "2020-12-18T14:00:00Z",
+          "updated_date": "2020-12-18T14:00:00Z",
+          "expected_purchase_date": "2020/12/18(金)",
+          "complete_flag": false,
+          "purchase": "トイレットペーパー",
+          "shop": "クリエイト",
+          "amount": 300,
+          "big_category_id": 3,
+          "big_category_name": "日用品",
+          "medium_category_id": 13,
+          "medium_category_name": "消耗品",
+          "custom_category_id": null,
+          "custom_category_name": null,
+          "regular_shopping_list_id": 2,
+          "transaction_auto_add": true,
+          "related_transaction_data": null
+        }
+      ]
+    }
+  ]
+}

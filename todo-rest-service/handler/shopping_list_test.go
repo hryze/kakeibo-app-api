@@ -200,6 +200,96 @@ func (m MockShoppingListRepository) DeleteRegularShoppingItem(regularShoppingIte
 	return nil
 }
 
+func (m MockShoppingListRepository) GetDailyShoppingListByDay(date time.Time, userID string) (model.ShoppingList, error) {
+	return model.ShoppingList{
+		ShoppingList: []model.ShoppingItem{
+			{
+				ID:                     1,
+				PostedDate:             time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 12, 18, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:           false,
+				Purchase:               "米",
+				Shop:                   model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 4000, Valid: true}},
+				BigCategoryID:          2,
+				BigCategoryName:        "",
+				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionAutoAdd:     true,
+				RelatedTransactionData: nil,
+			},
+			{
+				ID:                     2,
+				PostedDate:             time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 12, 18, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:           false,
+				Purchase:               "トイレットペーパー",
+				Shop:                   model.NullString{NullString: sql.NullString{String: "クリエイト", Valid: true}},
+				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 300, Valid: true}},
+				BigCategoryID:          3,
+				BigCategoryName:        "",
+				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 13, Valid: true}},
+				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 2, Valid: true}},
+				TransactionAutoAdd:     true,
+				RelatedTransactionData: nil,
+			},
+		},
+	}, nil
+}
+
+func (m MockShoppingListRepository) GetDailyShoppingListByCategory(date time.Time, userID string) (model.ShoppingList, error) {
+	return model.ShoppingList{
+		ShoppingList: []model.ShoppingItem{
+			{
+				ID:                     1,
+				PostedDate:             time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 12, 18, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:           false,
+				Purchase:               "米",
+				Shop:                   model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 4000, Valid: true}},
+				BigCategoryID:          2,
+				BigCategoryName:        "",
+				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionAutoAdd:     true,
+				RelatedTransactionData: nil,
+			},
+			{
+				ID:                     2,
+				PostedDate:             time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 12, 18, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:           false,
+				Purchase:               "トイレットペーパー",
+				Shop:                   model.NullString{NullString: sql.NullString{String: "クリエイト", Valid: true}},
+				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 300, Valid: true}},
+				BigCategoryID:          3,
+				BigCategoryName:        "",
+				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 13, Valid: true}},
+				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 2, Valid: true}},
+				TransactionAutoAdd:     true,
+				RelatedTransactionData: nil,
+			},
+		},
+	}, nil
+}
+
 func (m MockShoppingListRepository) GetMonthlyShoppingListByDay(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error) {
 	return model.ShoppingList{
 		ShoppingList: []model.ShoppingItem{
@@ -328,6 +418,70 @@ func (m MockShoppingListRepository) GetMonthlyShoppingListByCategory(firstDay ti
 	}, nil
 }
 
+func (m MockShoppingListRepository) GetExpiredShoppingList(dueDate time.Time, userID string) (model.ExpiredShoppingList, error) {
+	return model.ExpiredShoppingList{
+		ExpiredShoppingList: []model.ShoppingItem{
+			{
+				ID:                     1,
+				PostedDate:             time.Date(2020, 10, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:            time.Date(2020, 11, 18, 14, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 11, 18, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:           false,
+				Purchase:               "米",
+				Shop:                   model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 4000, Valid: true}},
+				BigCategoryID:          2,
+				BigCategoryName:        "",
+				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionAutoAdd:     true,
+				RelatedTransactionData: nil,
+			},
+			{
+				ID:                     2,
+				PostedDate:             time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 12, 18, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:           false,
+				Purchase:               "トイレットペーパー",
+				Shop:                   model.NullString{NullString: sql.NullString{String: "クリエイト", Valid: true}},
+				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 300, Valid: true}},
+				BigCategoryID:          3,
+				BigCategoryName:        "",
+				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 13, Valid: true}},
+				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 2, Valid: true}},
+				TransactionAutoAdd:     true,
+				RelatedTransactionData: nil,
+			},
+			{
+				ID:                     3,
+				PostedDate:             time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:            time.Date(2020, 12, 19, 20, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 12, 25, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:           false,
+				Purchase:               "トイレットペーパー",
+				Shop:                   model.NullString{NullString: sql.NullString{String: "クリエイト", Valid: true}},
+				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 300, Valid: true}},
+				BigCategoryID:          3,
+				BigCategoryName:        "",
+				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 13, Valid: true}},
+				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 2, Valid: true}},
+				TransactionAutoAdd:     true,
+				RelatedTransactionData: nil,
+			},
+		},
+	}, nil
+}
+
 func (m MockShoppingListRepository) GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error) {
 	if shoppingItemID == 2 {
 		return model.ShoppingItem{
@@ -384,6 +538,210 @@ func (m MockShoppingListRepository) PutShoppingItem(shoppingItem *model.Shopping
 
 func (m MockShoppingListRepository) DeleteShoppingItem(shoppingItemID int) error {
 	return nil
+}
+
+func TestDBHandler_GetDailyShoppingDataByDay(t *testing.T) {
+	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
+		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
+	}
+
+	accountHost := os.Getenv("ACCOUNT_HOST")
+	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+
+	mockGetCategoriesNameList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var mockCategoriesNameList []MockCategoriesName
+
+		if serverCounter == 0 {
+			atomic.AddInt64(&serverCounter, 1)
+
+			mockCategoriesNameList = []MockCategoriesName{
+				{
+					BigCategoryName:    model.NullString{NullString: sql.NullString{String: "食費", Valid: true}},
+					MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+					CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+				},
+				{
+					BigCategoryName:    model.NullString{NullString: sql.NullString{String: "日用品", Valid: true}},
+					MediumCategoryName: model.NullString{NullString: sql.NullString{String: "消耗品", Valid: true}},
+					CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				},
+			}
+		} else if serverCounter == 1 {
+			atomic.AddInt64(&serverCounter, -1)
+
+			mockCategoriesNameList = []MockCategoriesName{
+				{
+					BigCategoryName:    model.NullString{NullString: sql.NullString{String: "食費", Valid: true}},
+					MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+					CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+				},
+				{
+					BigCategoryName:    model.NullString{NullString: sql.NullString{String: "日用品", Valid: true}},
+					MediumCategoryName: model.NullString{NullString: sql.NullString{String: "消耗品", Valid: true}},
+					CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				},
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&mockCategoriesNameList); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
+	router := mux.NewRouter()
+	router.HandleFunc("/categories/names", mockGetCategoriesNameList).Methods("GET")
+
+	listener, err := net.Listen("tcp", accountHostURL)
+	if err != nil {
+		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
+	}
+
+	ts := httptest.Server{
+		Listener: listener,
+		Config:   &http.Server{Handler: router},
+	}
+
+	ts.Start()
+	defer ts.Close()
+
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		ShoppingListRepo: MockShoppingListRepository{},
+		TimeManage:       MockTime{},
+	}
+
+	r := httptest.NewRequest("GET", "/shopping-list/2020-12-18/daily", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"date": "2020-12-18",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	dbMu.Lock()
+	defer dbMu.Unlock()
+
+	serverMu.Lock()
+	defer serverMu.Unlock()
+
+	h.GetDailyShoppingDataByDay(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.ShoppingDataByDay{}, &model.ShoppingDataByDay{})
+}
+
+func TestDBHandler_GetDailyShoppingDataByCategory(t *testing.T) {
+	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
+		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
+	}
+
+	accountHost := os.Getenv("ACCOUNT_HOST")
+	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+
+	mockGetCategoriesNameList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var mockCategoriesNameList []MockCategoriesName
+
+		if serverCounter == 0 {
+			atomic.AddInt64(&serverCounter, 1)
+
+			mockCategoriesNameList = []MockCategoriesName{
+				{
+					BigCategoryName:    model.NullString{NullString: sql.NullString{String: "食費", Valid: true}},
+					MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+					CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+				},
+				{
+					BigCategoryName:    model.NullString{NullString: sql.NullString{String: "日用品", Valid: true}},
+					MediumCategoryName: model.NullString{NullString: sql.NullString{String: "消耗品", Valid: true}},
+					CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				},
+			}
+		} else if serverCounter == 1 {
+			atomic.AddInt64(&serverCounter, -1)
+
+			mockCategoriesNameList = []MockCategoriesName{
+				{
+					BigCategoryName:    model.NullString{NullString: sql.NullString{String: "食費", Valid: true}},
+					MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+					CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+				},
+				{
+					BigCategoryName:    model.NullString{NullString: sql.NullString{String: "日用品", Valid: true}},
+					MediumCategoryName: model.NullString{NullString: sql.NullString{String: "消耗品", Valid: true}},
+					CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				},
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&mockCategoriesNameList); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
+	router := mux.NewRouter()
+	router.HandleFunc("/categories/names", mockGetCategoriesNameList).Methods("GET")
+
+	listener, err := net.Listen("tcp", accountHostURL)
+	if err != nil {
+		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
+	}
+
+	ts := httptest.Server{
+		Listener: listener,
+		Config:   &http.Server{Handler: router},
+	}
+
+	ts.Start()
+	defer ts.Close()
+
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		ShoppingListRepo: MockShoppingListRepository{},
+		TimeManage:       MockTime{},
+	}
+
+	r := httptest.NewRequest("GET", "/shopping-list/2020-12-18/categories", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"date": "2020-12-18",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	dbMu.Lock()
+	defer dbMu.Unlock()
+
+	serverMu.Lock()
+	defer serverMu.Unlock()
+
+	h.GetDailyShoppingDataByCategory(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.ShoppingDataByDay{}, &model.ShoppingDataByDay{})
 }
 
 func TestDBHandler_GetMonthlyShoppingDataByDay(t *testing.T) {
@@ -598,6 +956,82 @@ func TestDBHandler_GetMonthlyShoppingDataByCategory(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.ShoppingDataByCategory{}, &model.ShoppingDataByCategory{})
+}
+
+func TestDBHandler_GetExpiredShoppingList(t *testing.T) {
+	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
+		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
+	}
+
+	accountHost := os.Getenv("ACCOUNT_HOST")
+	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+
+	mockGetCategoriesNameList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockCategoriesNameList := []MockCategoriesName{
+			{
+				BigCategoryName:    model.NullString{NullString: sql.NullString{String: "食費", Valid: true}},
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+			},
+			{
+				BigCategoryName:    model.NullString{NullString: sql.NullString{String: "日用品", Valid: true}},
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "消耗品", Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			},
+			{
+				BigCategoryName:    model.NullString{NullString: sql.NullString{String: "日用品", Valid: true}},
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "消耗品", Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&mockCategoriesNameList); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
+	router := mux.NewRouter()
+	router.HandleFunc("/categories/names", mockGetCategoriesNameList).Methods("GET")
+
+	listener, err := net.Listen("tcp", accountHostURL)
+	if err != nil {
+		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
+	}
+
+	ts := httptest.Server{
+		Listener: listener,
+		Config:   &http.Server{Handler: router},
+	}
+
+	ts.Start()
+	defer ts.Close()
+
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		ShoppingListRepo: MockShoppingListRepository{},
+		TimeManage:       MockTime{},
+	}
+
+	r := httptest.NewRequest("GET", "/shopping-list/expired", nil)
+	w := httptest.NewRecorder()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.GetExpiredShoppingList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.ExpiredShoppingList{}, &model.ExpiredShoppingList{})
 }
 
 func TestDBHandler_PostRegularShoppingItem(t *testing.T) {

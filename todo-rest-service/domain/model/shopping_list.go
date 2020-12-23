@@ -50,6 +50,10 @@ type ShoppingList struct {
 	ShoppingList []ShoppingItem `json:"shopping_list"`
 }
 
+type ExpiredShoppingList struct {
+	ExpiredShoppingList []ShoppingItem `json:"expired_shopping_list"`
+}
+
 type ShoppingItem struct {
 	ID                     int              `json:"id"                       db:"id"`
 	PostedDate             time.Time        `json:"posted_date"              db:"posted_date"`
