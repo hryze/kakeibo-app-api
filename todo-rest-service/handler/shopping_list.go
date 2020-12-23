@@ -746,6 +746,236 @@ func (h *DBHandler) GetMonthlyShoppingDataByCategory(w http.ResponseWriter, r *h
 	}
 }
 
+func (h *DBHandler) GetExpiredShoppingList(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	now := h.TimeManage.Now()
+	dueDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, -1)
+
+	expiredShoppingList, err := h.ShoppingListRepo.GetExpiredShoppingList(dueDate, userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(expiredShoppingList.ExpiredShoppingList) != 0 {
+		categoriesIdList := make([]CategoriesID, len(expiredShoppingList.ExpiredShoppingList))
+
+		for i, shoppingItem := range expiredShoppingList.ExpiredShoppingList {
+			categoriesIdList[i] = CategoriesID{
+				MediumCategoryID: shoppingItem.MediumCategoryID,
+				CustomCategoryID: shoppingItem.CustomCategoryID,
+			}
+		}
+
+		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		if err := json.Unmarshal(categoriesNameListBytes, &expiredShoppingList.ExpiredShoppingList); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&expiredShoppingList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) PostShoppingItem(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	var shoppingItem model.ShoppingItem
+	if err := json.NewDecoder(r.Body).Decode(&shoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	result, err := h.ShoppingListRepo.PostShoppingItem(&shoppingItem, userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	lastInsertId, err := result.LastInsertId()
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	shoppingItem, err = h.ShoppingListRepo.GetShoppingItem(int(lastInsertId))
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	categoriesID := CategoriesID{
+		MediumCategoryID: shoppingItem.MediumCategoryID,
+		CustomCategoryID: shoppingItem.CustomCategoryID,
+	}
+
+	categoriesNameBytes, err := getShoppingItemCategoriesName(categoriesID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := json.Unmarshal(categoriesNameBytes, &shoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(&shoppingItem); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) PutShoppingItem(w http.ResponseWriter, r *http.Request) {
+	_, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	var shoppingItem model.ShoppingItem
+	if err := json.NewDecoder(r.Body).Decode(&shoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	shoppingItem.ID, err = strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"ショッピングアイテムIDを正しく指定してください。"}))
+		return
+	}
+
+	if shoppingItem.CompleteFlag && shoppingItem.TransactionAutoAdd && shoppingItem.RelatedTransactionData == nil {
+		cookie, err := r.Cookie("session_id")
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		shoppingItem, err = postRelatedTransaction(shoppingItem, cookie)
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	} else if !shoppingItem.CompleteFlag && shoppingItem.RelatedTransactionData != nil {
+		cookie, err := r.Cookie("session_id")
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		shoppingItem, err = deleteRelatedTransaction(shoppingItem, cookie)
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	if _, err := h.ShoppingListRepo.PutShoppingItem(&shoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	dbShoppingItem, err := h.ShoppingListRepo.GetShoppingItem(shoppingItem.ID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	shoppingItem.PostedDate = dbShoppingItem.PostedDate
+	shoppingItem.UpdatedDate = dbShoppingItem.UpdatedDate
+
+	categoriesID := CategoriesID{
+		MediumCategoryID: shoppingItem.MediumCategoryID,
+		CustomCategoryID: shoppingItem.CustomCategoryID,
+	}
+
+	categoriesNameBytes, err := getShoppingItemCategoriesName(categoriesID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := json.Unmarshal(categoriesNameBytes, &shoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&shoppingItem); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DBHandler) DeleteShoppingItem(w http.ResponseWriter, r *http.Request) {
+	_, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	shoppingItemID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"ショッピングアイテムIDを正しく指定してください。"}))
+		return
+	}
+
+	if err := h.ShoppingListRepo.DeleteShoppingItem(shoppingItemID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"ショッピングアイテムを削除しました。"}); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
 func (h *DBHandler) PostRegularShoppingItem(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
@@ -970,185 +1200,6 @@ func (h *DBHandler) DeleteRegularShoppingItem(w http.ResponseWriter, r *http.Req
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"定期ショッピングアイテムを削除しました。"}); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-}
-
-func (h *DBHandler) PostShoppingItem(w http.ResponseWriter, r *http.Request) {
-	userID, err := verifySessionID(h, w, r)
-	if err != nil {
-		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	var shoppingItem model.ShoppingItem
-	if err := json.NewDecoder(r.Body).Decode(&shoppingItem); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	result, err := h.ShoppingListRepo.PostShoppingItem(&shoppingItem, userID)
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	lastInsertId, err := result.LastInsertId()
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	shoppingItem, err = h.ShoppingListRepo.GetShoppingItem(int(lastInsertId))
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	categoriesID := CategoriesID{
-		MediumCategoryID: shoppingItem.MediumCategoryID,
-		CustomCategoryID: shoppingItem.CustomCategoryID,
-	}
-
-	categoriesNameBytes, err := getShoppingItemCategoriesName(categoriesID)
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	if err := json.Unmarshal(categoriesNameBytes, &shoppingItem); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(&shoppingItem); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-}
-
-func (h *DBHandler) PutShoppingItem(w http.ResponseWriter, r *http.Request) {
-	_, err := verifySessionID(h, w, r)
-	if err != nil {
-		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	var shoppingItem model.ShoppingItem
-	if err := json.NewDecoder(r.Body).Decode(&shoppingItem); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	shoppingItem.ID, err = strconv.Atoi(mux.Vars(r)["id"])
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"ショッピングアイテムIDを正しく指定してください。"}))
-		return
-	}
-
-	if shoppingItem.CompleteFlag && shoppingItem.TransactionAutoAdd && shoppingItem.RelatedTransactionData == nil {
-		cookie, err := r.Cookie("session_id")
-		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		shoppingItem, err = postRelatedTransaction(shoppingItem, cookie)
-		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-	} else if !shoppingItem.CompleteFlag && shoppingItem.RelatedTransactionData != nil {
-		cookie, err := r.Cookie("session_id")
-		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		shoppingItem, err = deleteRelatedTransaction(shoppingItem, cookie)
-		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-	}
-
-	if _, err := h.ShoppingListRepo.PutShoppingItem(&shoppingItem); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	dbShoppingItem, err := h.ShoppingListRepo.GetShoppingItem(shoppingItem.ID)
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	shoppingItem.PostedDate = dbShoppingItem.PostedDate
-	shoppingItem.UpdatedDate = dbShoppingItem.UpdatedDate
-
-	categoriesID := CategoriesID{
-		MediumCategoryID: shoppingItem.MediumCategoryID,
-		CustomCategoryID: shoppingItem.CustomCategoryID,
-	}
-
-	categoriesNameBytes, err := getShoppingItemCategoriesName(categoriesID)
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	if err := json.Unmarshal(categoriesNameBytes, &shoppingItem); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&shoppingItem); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-}
-
-func (h *DBHandler) DeleteShoppingItem(w http.ResponseWriter, r *http.Request) {
-	_, err := verifySessionID(h, w, r)
-	if err != nil {
-		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	shoppingItemID, err := strconv.Atoi(mux.Vars(r)["id"])
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"ショッピングアイテムIDを正しく指定してください。"}))
-		return
-	}
-
-	if err := h.ShoppingListRepo.DeleteShoppingItem(shoppingItemID); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"ショッピングアイテムを削除しました。"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

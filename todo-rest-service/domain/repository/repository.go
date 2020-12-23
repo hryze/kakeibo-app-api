@@ -41,6 +41,7 @@ type ShoppingListRepository interface {
 	GetDailyShoppingListByCategory(date time.Time, userID string) (model.ShoppingList, error)
 	GetMonthlyShoppingListByDay(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error)
 	GetMonthlyShoppingListByCategory(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error)
+	GetExpiredShoppingList(dueDate time.Time, userID string) (model.ExpiredShoppingList, error)
 	GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error)
 	PostShoppingItem(shoppingItem *model.ShoppingItem, userID string) (sql.Result, error)
 	PutShoppingItem(shoppingItem *model.ShoppingItem) (sql.Result, error)

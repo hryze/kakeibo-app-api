@@ -822,6 +822,60 @@ func (r *ShoppingListRepository) GetMonthlyShoppingListByCategory(firstDay time.
 	return shoppingList, nil
 }
 
+func (r *ShoppingListRepository) GetExpiredShoppingList(dueDate time.Time, userID string) (model.ExpiredShoppingList, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            updated_date,
+            expected_purchase_date,
+            complete_flag,
+            purchase,
+            shop,
+            amount,
+            big_category_id,
+            medium_category_id,
+            custom_category_id,
+            regular_shopping_list_id,
+            transaction_auto_add,
+            transaction_id
+        FROM
+            shopping_list
+        WHERE
+            user_id = ?
+        AND
+            complete_flag = false
+        AND
+            expected_purchase_date <= ?
+        ORDER BY
+            expected_purchase_date, updated_date DESC`
+
+	expiredShoppingList := model.ExpiredShoppingList{
+		ExpiredShoppingList: make([]model.ShoppingItem, 0),
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, userID, dueDate)
+	if err != nil {
+		return expiredShoppingList, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var expiredShoppingItem model.ShoppingItem
+		if err := rows.StructScan(&expiredShoppingItem); err != nil {
+			return expiredShoppingList, err
+		}
+
+		expiredShoppingList.ExpiredShoppingList = append(expiredShoppingList.ExpiredShoppingList, expiredShoppingItem)
+	}
+
+	if err := rows.Err(); err != nil {
+		return expiredShoppingList, err
+	}
+
+	return expiredShoppingList, nil
+}
+
 func (r *ShoppingListRepository) GetShoppingItem(shoppingItemID int) (model.ShoppingItem, error) {
 	query := `
         SELECT
