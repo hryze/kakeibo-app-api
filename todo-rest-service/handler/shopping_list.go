@@ -266,6 +266,107 @@ func deleteRelatedTransaction(shoppingItem model.ShoppingItem, cookie *http.Cook
 	return shoppingItem, nil
 }
 
+func (h *DBHandler) GetDailyShoppingDataByDay(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	regularShoppingList, err := h.ShoppingListRepo.GetRegularShoppingList(userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(regularShoppingList.RegularShoppingList) != 0 {
+		now := h.TimeManage.Now()
+		today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+
+		if err = h.ShoppingListRepo.PutRegularShoppingList(regularShoppingList, userID, today); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		regularShoppingList, err = h.ShoppingListRepo.GetRegularShoppingList(userID)
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		categoriesIdList := make([]CategoriesID, len(regularShoppingList.RegularShoppingList))
+
+		for i, regularShoppingItem := range regularShoppingList.RegularShoppingList {
+			categoriesIdList[i] = CategoriesID{
+				MediumCategoryID: regularShoppingItem.MediumCategoryID,
+				CustomCategoryID: regularShoppingItem.CustomCategoryID,
+			}
+		}
+
+		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		if err := json.Unmarshal(categoriesNameListBytes, &regularShoppingList.RegularShoppingList); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	date, err := time.Parse("2006-01-02", mux.Vars(r)["date"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"日付を正しく指定してください。"}))
+		return
+	}
+
+	shoppingList, err := h.ShoppingListRepo.GetDailyShoppingListByDay(date, userID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		return
+	}
+
+	if len(shoppingList.ShoppingList) != 0 {
+		categoriesIdList := make([]CategoriesID, len(shoppingList.ShoppingList))
+
+		for i, shoppingItem := range shoppingList.ShoppingList {
+			categoriesIdList[i] = CategoriesID{
+				MediumCategoryID: shoppingItem.MediumCategoryID,
+				CustomCategoryID: shoppingItem.CustomCategoryID,
+			}
+		}
+
+		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		if err := json.Unmarshal(categoriesNameListBytes, &shoppingList.ShoppingList); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	shoppingData := model.ShoppingDataByDay{
+		RegularShoppingList: regularShoppingList,
+		ShoppingList:        shoppingList,
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&shoppingData); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
 func (h *DBHandler) GetMonthlyShoppingDataByDay(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
