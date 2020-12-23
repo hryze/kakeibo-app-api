@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-type ShoppingDataByMonth struct {
+type ShoppingDataByDay struct {
 	RegularShoppingList
 	ShoppingList
 }
 
-type ShoppingDataByCategories struct {
+type ShoppingDataByCategory struct {
 	RegularShoppingList
-	ShoppingListByCategories []ShoppingListByCategory `json:"shopping_list_by_categories"`
+	ShoppingListByCategory []ShoppingListByCategory `json:"shopping_list_by_categories"`
 }
 
 type ShoppingListByCategory struct {

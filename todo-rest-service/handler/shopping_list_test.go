@@ -200,7 +200,7 @@ func (m MockShoppingListRepository) DeleteRegularShoppingItem(regularShoppingIte
 	return nil
 }
 
-func (m MockShoppingListRepository) GetShoppingListByMonth(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error) {
+func (m MockShoppingListRepository) GetMonthlyShoppingListByDay(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error) {
 	return model.ShoppingList{
 		ShoppingList: []model.ShoppingItem{
 			{
@@ -264,7 +264,7 @@ func (m MockShoppingListRepository) GetShoppingListByMonth(firstDay time.Time, l
 	}, nil
 }
 
-func (m MockShoppingListRepository) GetShoppingListByCategories(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error) {
+func (m MockShoppingListRepository) GetMonthlyShoppingListByCategory(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error) {
 	return model.ShoppingList{
 		ShoppingList: []model.ShoppingItem{
 			{
@@ -386,7 +386,7 @@ func (m MockShoppingListRepository) DeleteShoppingItem(shoppingItemID int) error
 	return nil
 }
 
-func TestDBHandler_GetShoppingDataByMonth(t *testing.T) {
+func TestDBHandler_GetMonthlyShoppingDataByDay(t *testing.T) {
 	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
 		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
 	}
@@ -464,7 +464,7 @@ func TestDBHandler_GetShoppingDataByMonth(t *testing.T) {
 		TimeManage:       MockTime{},
 	}
 
-	r := httptest.NewRequest("GET", "/shopping-list/2020-12/monthly", nil)
+	r := httptest.NewRequest("GET", "/shopping-list/2020-12/daily", nil)
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
@@ -484,16 +484,16 @@ func TestDBHandler_GetShoppingDataByMonth(t *testing.T) {
 	serverMu.Lock()
 	defer serverMu.Unlock()
 
-	h.GetShoppingDataByMonth(w, r)
+	h.GetMonthlyShoppingDataByDay(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &model.ShoppingDataByMonth{}, &model.ShoppingDataByMonth{})
+	testutil.AssertResponseBody(t, res, &model.ShoppingDataByDay{}, &model.ShoppingDataByDay{})
 }
 
-func TestDBHandler_GetShoppingDataByCategories(t *testing.T) {
+func TestDBHandler_GetMonthlyShoppingDataByCategory(t *testing.T) {
 	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
 		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
 	}
@@ -591,13 +591,13 @@ func TestDBHandler_GetShoppingDataByCategories(t *testing.T) {
 	serverMu.Lock()
 	defer serverMu.Unlock()
 
-	h.GetShoppingDataByCategories(w, r)
+	h.GetMonthlyShoppingDataByCategory(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &model.ShoppingDataByCategories{}, &model.ShoppingDataByCategories{})
+	testutil.AssertResponseBody(t, res, &model.ShoppingDataByCategory{}, &model.ShoppingDataByCategory{})
 }
 
 func TestDBHandler_PostRegularShoppingItem(t *testing.T) {
