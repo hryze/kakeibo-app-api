@@ -78,6 +78,8 @@ type GroupTransactionsRepository interface {
 	PutGroupAccountsList(groupAccountsList []model.GroupAccount) error
 	DeleteGroupAccountsList(yearMonth time.Time, groupID int) error
 	GetMonthlyGroupTransactionTotalAmountByBigCategory(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionTotalAmountByBigCategory, error)
+	YearlyGroupTransactionExistenceConfirmation(firstDayOfYear time.Time, groupID int) ([]time.Time, error)
+	GetYearlyGroupAccountsList(firstDayOfYear time.Time, groupID int) ([]model.GroupAccount, error)
 }
 
 type GroupBudgetsRepository interface {

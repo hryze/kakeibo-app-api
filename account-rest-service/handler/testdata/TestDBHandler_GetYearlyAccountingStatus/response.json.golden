@@ -1,0 +1,77 @@
+{
+  "Year": "2020年",
+  "yearly_accounting_status": [
+    {
+      "month": "1月",
+      "calculation_status": "-",
+      "payment_status": "-",
+      "receipt_status": "-"
+    },
+    {
+      "month": "2月",
+      "calculation_status": "精算済",
+      "payment_status": "-",
+      "receipt_status": "支払待ち: 1件 / 未受領: 1件"
+    },
+    {
+      "month": "3月",
+      "calculation_status": "-",
+      "payment_status": "-",
+      "receipt_status": "-"
+    },
+    {
+      "month": "4月",
+      "calculation_status": "未精算",
+      "payment_status": "-",
+      "receipt_status": "-"
+    },
+    {
+      "month": "5月",
+      "calculation_status": "-",
+      "payment_status": "-",
+      "receipt_status": "-"
+    },
+    {
+      "month": "6月",
+      "calculation_status": "-",
+      "payment_status": "-",
+      "receipt_status": "-"
+    },
+    {
+      "month": "7月",
+      "calculation_status": "精算済",
+      "payment_status": "受領待ち: 1件 / 完了: 1件",
+      "receipt_status": "-"
+    },
+    {
+      "month": "8月",
+      "calculation_status": "未精算",
+      "payment_status": "-",
+      "receipt_status": "-"
+    },
+    {
+      "month": "9月",
+      "calculation_status": "-",
+      "payment_status": "-",
+      "receipt_status": "-"
+    },
+    {
+      "month": "10月",
+      "calculation_status": "未精算",
+      "payment_status": "-",
+      "receipt_status": "-"
+    },
+    {
+      "month": "11月",
+      "calculation_status": "精算済",
+      "payment_status": "-",
+      "receipt_status": "-"
+    },
+    {
+      "month": "12月",
+      "calculation_status": "-",
+      "payment_status": "-",
+      "receipt_status": "-"
+    }
+  ]
+}

@@ -66,6 +66,7 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/{id:[0-9]+}", h.PutGroupTransaction).Methods("PUT")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/{id:[0-9]+}", h.DeleteGroupTransaction).Methods("DELETE")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/search", h.SearchGroupTransactionsList).Methods("GET")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/{year:[0-9]{4}}/account", h.GetYearlyAccountingStatus).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/{year_month:[0-9]{4}-[0-9]{2}}/account", h.GetMonthlyGroupTransactionsAccount).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/{year_month:[0-9]{4}-[0-9]{2}}/account", h.PostMonthlyGroupTransactionsAccount).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/{year_month:[0-9]{4}-[0-9]{2}}/account", h.PutMonthlyGroupTransactionsAccount).Methods("PUT")
