@@ -31,12 +31,13 @@ func InjectRedis() *infrastructure.RedisHandler {
 
 func InjectDBHandler() *handler.DBHandler {
 	return &handler.DBHandler{
-		HealthRepo:       infrastructure.NewHealthRepository(InjectRedis(), InjectMySQL()),
-		AuthRepo:         infrastructure.NewAuthRepository(InjectRedis()),
-		TodoRepo:         infrastructure.NewTodoRepository(InjectMySQL()),
-		ShoppingListRepo: infrastructure.NewShoppingListRepository(InjectMySQL()),
-		GroupTodoRepo:    infrastructure.NewGroupTodoRepository(InjectMySQL()),
-		GroupTasksRepo:   infrastructure.NewGroupTasksRepository(InjectMySQL()),
-		TimeManage:       handler.NewRealTime(),
+		HealthRepo:            infrastructure.NewHealthRepository(InjectRedis(), InjectMySQL()),
+		AuthRepo:              infrastructure.NewAuthRepository(InjectRedis()),
+		TodoRepo:              infrastructure.NewTodoRepository(InjectMySQL()),
+		ShoppingListRepo:      infrastructure.NewShoppingListRepository(InjectMySQL()),
+		GroupTodoRepo:         infrastructure.NewGroupTodoRepository(InjectMySQL()),
+		GroupShoppingListRepo: infrastructure.NewGroupShoppingListRepository(InjectMySQL()),
+		GroupTasksRepo:        infrastructure.NewGroupTasksRepository(InjectMySQL()),
+		TimeManage:            handler.NewRealTime(),
 	}
 }

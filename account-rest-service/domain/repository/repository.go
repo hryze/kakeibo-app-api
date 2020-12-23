@@ -62,6 +62,7 @@ type GroupCategoriesRepository interface {
 	FindGroupCustomCategoryID(groupCustomCategoryID int) error
 	GetBigCategoryID(groupCustomCategoryID int) (int, error)
 	DeleteGroupCustomCategory(previousGroupCustomCategoryID int, replaceMediumCategoryID int) error
+	GetGroupCategoriesName(categoriesID model.CategoriesID) (*model.CategoriesName, error)
 }
 
 type GroupTransactionsRepository interface {

@@ -60,6 +60,7 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/categories/custom-categories", h.PostGroupCustomCategory).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/categories/custom-categories/{id:[0-9]+}", h.PutGroupCustomCategory).Methods("PUT")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/categories/custom-categories/{id:[0-9]+}", h.DeleteGroupCustomCategory).Methods("DELETE")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/categories/name", h.GetGroupCategoriesName).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/{year_month:[0-9]{4}-[0-9]{2}}", h.GetMonthlyGroupTransactionsList).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/latest", h.Get10LatestGroupTransactionsList).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions", h.PostGroupTransaction).Methods("POST")

@@ -61,6 +61,11 @@ type GroupTodoRepository interface {
 	SearchGroupTodoList(groupTodoSqlQuery string) ([]model.GroupTodo, error)
 }
 
+type GroupShoppingListRepository interface {
+	GetGroupShoppingItem(groupShoppingItemID int) (model.GroupShoppingItem, error)
+	PostGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem, groupID int) (sql.Result, error)
+}
+
 type GroupTasksRepository interface {
 	GetGroupTasksUsersList(groupID int) ([]model.GroupTasksUser, error)
 	GetGroupTasksListAssignedToUser(groupID int) ([]model.GroupTask, error)

@@ -238,3 +238,47 @@ func (r *GroupCategoriesRepository) DeleteGroupCustomCategory(previousGroupCusto
 
 	return nil
 }
+
+func (r *GroupCategoriesRepository) GetGroupCategoriesName(categoriesID model.CategoriesID) (*model.CategoriesName, error) {
+	var categoriesName model.CategoriesName
+	var query string
+	var categoryID int64
+
+	if categoriesID.MediumCategoryID.Valid {
+		query = `
+            SELECT
+                big_categories.category_name big_category_name,
+                medium_categories.category_name medium_category_name
+            FROM
+                medium_categories
+            LEFT JOIN
+                big_categories
+            ON
+                medium_categories.big_category_id = big_categories.id
+            WHERE
+                medium_categories.id = ?`
+
+		categoryID = categoriesID.MediumCategoryID.Int64
+	} else if categoriesID.CustomCategoryID.Valid {
+		query = `
+            SELECT
+                big_categories.category_name big_category_name,
+                group_custom_categories.category_name custom_category_name
+            FROM
+                group_custom_categories
+            LEFT JOIN
+                big_categories
+            ON
+                group_custom_categories.big_category_id = big_categories.id
+            WHERE
+                group_custom_categories.id = ?`
+
+		categoryID = categoriesID.CustomCategoryID.Int64
+	}
+
+	if err := r.MySQLHandler.conn.QueryRowx(query, categoryID).StructScan(&categoriesName); err != nil {
+		return nil, err
+	}
+
+	return &categoriesName, nil
+}

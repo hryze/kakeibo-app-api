@@ -347,3 +347,24 @@ func (h *DBHandler) DeleteGroupCustomCategory(w http.ResponseWriter, r *http.Req
 		return
 	}
 }
+
+func (h *DBHandler) GetGroupCategoriesName(w http.ResponseWriter, r *http.Request) {
+	var categoriesID model.CategoriesID
+	if err := json.NewDecoder(r.Body).Decode(&categoriesID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	categoriesName, err := h.GroupCategoriesRepo.GetGroupCategoriesName(categoriesID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&categoriesName); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
