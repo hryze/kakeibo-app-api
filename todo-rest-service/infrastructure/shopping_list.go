@@ -610,7 +610,7 @@ func (r *ShoppingListRepository) DeleteRegularShoppingItem(regularShoppingItemID
 	return nil
 }
 
-func (r *ShoppingListRepository) GetShoppingListByMonth(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error) {
+func (r *ShoppingListRepository) GetMonthlyShoppingListByDay(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error) {
 	query := `
         SELECT
             id,
@@ -664,7 +664,7 @@ func (r *ShoppingListRepository) GetShoppingListByMonth(firstDay time.Time, last
 	return shoppingList, nil
 }
 
-func (r *ShoppingListRepository) GetShoppingListByCategories(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error) {
+func (r *ShoppingListRepository) GetMonthlyShoppingListByCategory(firstDay time.Time, lastDay time.Time, userID string) (model.ShoppingList, error) {
 	query := `
         SELECT
             id,

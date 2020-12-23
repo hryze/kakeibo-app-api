@@ -266,7 +266,7 @@ func deleteRelatedTransaction(shoppingItem model.ShoppingItem, cookie *http.Cook
 	return shoppingItem, nil
 }
 
-func (h *DBHandler) GetShoppingDataByMonth(w http.ResponseWriter, r *http.Request) {
+func (h *DBHandler) GetMonthlyShoppingDataByDay(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
@@ -328,7 +328,7 @@ func (h *DBHandler) GetShoppingDataByMonth(w http.ResponseWriter, r *http.Reques
 
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
-	shoppingList, err := h.ShoppingListRepo.GetShoppingListByMonth(firstDay, lastDay, userID)
+	shoppingList, err := h.ShoppingListRepo.GetMonthlyShoppingListByDay(firstDay, lastDay, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
@@ -356,7 +356,7 @@ func (h *DBHandler) GetShoppingDataByMonth(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	shoppingData := model.ShoppingDataByMonth{
+	shoppingData := model.ShoppingDataByDay{
 		RegularShoppingList: regularShoppingList,
 		ShoppingList:        shoppingList,
 	}
@@ -369,7 +369,7 @@ func (h *DBHandler) GetShoppingDataByMonth(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (h *DBHandler) GetShoppingDataByCategories(w http.ResponseWriter, r *http.Request) {
+func (h *DBHandler) GetMonthlyShoppingDataByCategory(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
 		if err == http.ErrNoCookie || err == redis.ErrNil {
@@ -431,7 +431,7 @@ func (h *DBHandler) GetShoppingDataByCategories(w http.ResponseWriter, r *http.R
 
 	lastDay := time.Date(firstDay.Year(), firstDay.Month()+1, 1, 0, 0, 0, 0, firstDay.Location()).Add(-1 * time.Second)
 
-	shoppingList, err := h.ShoppingListRepo.GetShoppingListByCategories(firstDay, lastDay, userID)
+	shoppingList, err := h.ShoppingListRepo.GetMonthlyShoppingListByCategory(firstDay, lastDay, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 		return
@@ -495,9 +495,9 @@ func (h *DBHandler) GetShoppingDataByCategories(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	shoppingDataByCategories := model.ShoppingDataByCategories{
-		RegularShoppingList:      regularShoppingList,
-		ShoppingListByCategories: shoppingListByCategories,
+	shoppingDataByCategories := model.ShoppingDataByCategory{
+		RegularShoppingList:    regularShoppingList,
+		ShoppingListByCategory: shoppingListByCategories,
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
