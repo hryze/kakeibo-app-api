@@ -634,7 +634,59 @@ func (r *ShoppingListRepository) GetDailyShoppingListByDay(date time.Time, userI
         AND
             expected_purchase_date = ?
         ORDER BY
-            expected_purchase_date, updated_date DESC`
+            updated_date DESC`
+
+	shoppingList := model.ShoppingList{
+		ShoppingList: make([]model.ShoppingItem, 0),
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, userID, date)
+	if err != nil {
+		return shoppingList, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var shoppingItem model.ShoppingItem
+		if err := rows.StructScan(&shoppingItem); err != nil {
+			return shoppingList, err
+		}
+
+		shoppingList.ShoppingList = append(shoppingList.ShoppingList, shoppingItem)
+	}
+
+	if err := rows.Err(); err != nil {
+		return shoppingList, err
+	}
+
+	return shoppingList, nil
+}
+
+func (r *ShoppingListRepository) GetDailyShoppingListByCategory(date time.Time, userID string) (model.ShoppingList, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            updated_date,
+            expected_purchase_date,
+            complete_flag,
+            purchase,
+            shop,
+            amount,
+            big_category_id,
+            medium_category_id,
+            custom_category_id,
+            regular_shopping_list_id,
+            transaction_auto_add,
+            transaction_id
+        FROM
+            shopping_list
+        WHERE
+            user_id = ?
+        AND
+            expected_purchase_date = ?
+        ORDER BY
+            big_category_id, updated_date DESC`
 
 	shoppingList := model.ShoppingList{
 		ShoppingList: make([]model.ShoppingItem, 0),
