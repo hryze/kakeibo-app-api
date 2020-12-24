@@ -125,3 +125,16 @@ func (r *GroupShoppingListRepository) PutGroupShoppingItem(groupShoppingItem *mo
 
 	return result, err
 }
+
+func (r *GroupShoppingListRepository) DeleteGroupShoppingItem(groupShoppingItemID int) error {
+	query := `
+        DELETE
+        FROM
+            group_shopping_list
+        WHERE
+            id = ?`
+
+	_, err := r.MySQLHandler.conn.Exec(query, groupShoppingItemID)
+
+	return err
+}

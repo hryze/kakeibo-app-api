@@ -76,6 +76,10 @@ func (m MockGroupShoppingListRepository) PutGroupShoppingItem(groupShoppingItem 
 	return MockSqlResult{}, nil
 }
 
+func (m MockGroupShoppingListRepository) DeleteGroupShoppingItem(groupShoppingItemID int) error {
+	return nil
+}
+
 func TestDBHandler_PostGroupShoppingItem(t *testing.T) {
 	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
 		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
@@ -244,4 +248,34 @@ func TestDBHandler_PutGroupShoppingItem(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupShoppingItem{}, &model.GroupShoppingItem{})
+}
+
+func TestDBHandler_DeleteGroupShoppingItem(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:              MockAuthRepository{},
+		GroupShoppingListRepo: MockGroupShoppingListRepository{},
+	}
+
+	r := httptest.NewRequest("DELETE", "/groups/1/shopping-list/2", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+		"id":       "2",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.DeleteGroupShoppingItem(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
 }
