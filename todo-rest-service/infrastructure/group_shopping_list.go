@@ -79,3 +79,49 @@ func (r *GroupShoppingListRepository) PostGroupShoppingItem(groupShoppingItem *m
 
 	return result, err
 }
+
+func (r *GroupShoppingListRepository) PutGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem) (sql.Result, error) {
+	query := `
+        UPDATE
+            group_shopping_list
+        SET 
+            expected_purchase_date = ?,
+            complete_flag = ?,
+            purchase = ?,
+            shop = ?,
+            amount = ?,
+            big_category_id = ?,
+            medium_category_id = ?,
+            custom_category_id = ?,
+            payment_user_id = ?,
+            transaction_auto_add = ?,
+            transaction_id = ?
+        WHERE
+            id = ?`
+
+	relatedTransactionID := func(relatedTransactionData *model.GroupTransactionData) *int64 {
+		if relatedTransactionData != nil {
+			return &relatedTransactionData.ID.Int64
+		}
+
+		return nil
+	}
+
+	result, err := r.MySQLHandler.conn.Exec(
+		query,
+		groupShoppingItem.ExpectedPurchaseDate,
+		groupShoppingItem.CompleteFlag,
+		groupShoppingItem.Purchase,
+		groupShoppingItem.Shop,
+		groupShoppingItem.Amount,
+		groupShoppingItem.BigCategoryID,
+		groupShoppingItem.MediumCategoryID,
+		groupShoppingItem.CustomCategoryID,
+		groupShoppingItem.PaymentUserID,
+		groupShoppingItem.TransactionAutoAdd,
+		relatedTransactionID(groupShoppingItem.RelatedTransactionData),
+		groupShoppingItem.ID,
+	)
+
+	return result, err
+}

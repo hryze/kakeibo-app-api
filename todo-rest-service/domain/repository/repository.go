@@ -64,6 +64,7 @@ type GroupTodoRepository interface {
 type GroupShoppingListRepository interface {
 	GetGroupShoppingItem(groupShoppingItemID int) (model.GroupShoppingItem, error)
 	PostGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem, groupID int) (sql.Result, error)
+	PutGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem) (sql.Result, error)
 }
 
 type GroupTasksRepository interface {
