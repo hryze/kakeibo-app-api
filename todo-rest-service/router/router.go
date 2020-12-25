@@ -62,6 +62,7 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/todo-list/{id:[0-9]+}", h.DeleteGroupTodo).Methods("DELETE")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/todo-list/search", h.SearchGroupTodoList).Methods("GET")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/shopping-list/regular", h.PostGroupRegularShoppingItem).Methods("POST")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/shopping-list/regular/{id:[0-9]+}", h.PutGroupRegularShoppingItem).Methods("PUT")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/shopping-list", h.PostGroupShoppingItem).Methods("POST")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/shopping-list/{id:[0-9]+}", h.PutGroupShoppingItem).Methods("PUT")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/shopping-list/{id:[0-9]+}", h.DeleteGroupShoppingItem).Methods("DELETE")

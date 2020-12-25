@@ -65,6 +65,7 @@ type GroupShoppingListRepository interface {
 	GetGroupRegularShoppingItem(groupRegularShoppingItemID int) (model.GroupRegularShoppingItem, error)
 	GetGroupShoppingListRelatedToGroupRegularShoppingItem(todayGroupShoppingItemID int, laterThanTodayGroupShoppingItemID int) (model.GroupShoppingList, error)
 	PostGroupRegularShoppingItem(groupRegularShoppingItem *model.GroupRegularShoppingItem, groupID int, today time.Time) (sql.Result, sql.Result, sql.Result, error)
+	PutGroupRegularShoppingItem(groupRegularShoppingItem *model.GroupRegularShoppingItem, groupRegularShoppingItemID int, groupID int, today time.Time) (sql.Result, sql.Result, error)
 	GetGroupShoppingItem(groupShoppingItemID int) (model.GroupShoppingItem, error)
 	PostGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem, groupID int) (sql.Result, error)
 	PutGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem) (sql.Result, error)

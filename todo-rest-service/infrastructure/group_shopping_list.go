@@ -242,6 +242,175 @@ func (r *GroupShoppingListRepository) PostGroupRegularShoppingItem(groupRegularS
 	return groupRegularShoppingItemResult, todayGroupShoppingItemResult, laterThanTodayGroupShoppingItemResult, nil
 }
 
+func (r *GroupShoppingListRepository) PutGroupRegularShoppingItem(groupRegularShoppingItem *model.GroupRegularShoppingItem, groupRegularShoppingItemID int, groupID int, today time.Time) (sql.Result, sql.Result, error) {
+	updateGroupRegularShoppingItemQuery := `
+        UPDATE
+            group_regular_shopping_list
+        SET
+            expected_purchase_date = ?,
+            cycle_type = ?,
+            cycle = ?,
+            purchase = ?,
+            shop = ?,
+            amount = ?,
+            big_category_id = ?,
+            medium_category_id = ?,
+            custom_category_id = ?,
+            payment_user_id = ?,
+            transaction_auto_add = ?
+        WHERE
+            id = ?`
+
+	deleteTodayGroupShoppingItemQuery := `
+        DELETE
+        FROM
+            group_shopping_list
+        WHERE
+            regular_shopping_list_id = ?
+        AND
+            expected_purchase_date = ?
+        AND
+            complete_flag = false`
+
+	deleteLaterThanTodayGroupShoppingItemQuery := `
+        DELETE
+        FROM
+            group_shopping_list
+        WHERE
+            regular_shopping_list_id = ?
+        AND
+            expected_purchase_date > ?
+        AND
+            complete_flag = false`
+
+	insertGroupShoppingItemQuery := `
+        INSERT INTO group_shopping_list
+        (
+            expected_purchase_date,
+            purchase,
+            shop,
+            amount,
+            big_category_id,
+            medium_category_id,
+            custom_category_id,
+            regular_shopping_list_id,
+            payment_user_id,
+            group_id,
+            transaction_auto_add
+        )
+        VALUES
+            (?,?,?,?,?,?,?,?,?,?,?)`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	transactions := func(tx *sql.Tx) (sql.Result, sql.Result, error) {
+		var todayGroupShoppingItemResult, laterThanTodayGroupShoppingItemResult sql.Result
+		nextExpectedPurchaseDate := groupRegularShoppingItem.ExpectedPurchaseDate.Time
+
+		if today.Equal(groupRegularShoppingItem.ExpectedPurchaseDate.Time) {
+			if groupRegularShoppingItem.CycleType == "daily" {
+				nextExpectedPurchaseDate = nextExpectedPurchaseDate.AddDate(0, 0, 1)
+			} else if groupRegularShoppingItem.CycleType == "weekly" {
+				nextExpectedPurchaseDate = nextExpectedPurchaseDate.AddDate(0, 0, 7)
+			} else if groupRegularShoppingItem.CycleType == "monthly" {
+				nextExpectedPurchaseDate = nextExpectedPurchaseDate.AddDate(0, 1, 0)
+			} else if groupRegularShoppingItem.CycleType == "custom" {
+				nextExpectedPurchaseDate = nextExpectedPurchaseDate.AddDate(0, 0, groupRegularShoppingItem.Cycle.Int)
+			}
+
+			if _, err := tx.Exec(
+				deleteTodayGroupShoppingItemQuery,
+				groupRegularShoppingItemID,
+				today,
+			); err != nil {
+				return nil, nil, err
+			}
+
+			todayGroupShoppingItemResult, err = tx.Exec(
+				insertGroupShoppingItemQuery,
+				today,
+				groupRegularShoppingItem.Purchase,
+				groupRegularShoppingItem.Shop,
+				groupRegularShoppingItem.Amount,
+				groupRegularShoppingItem.BigCategoryID,
+				groupRegularShoppingItem.MediumCategoryID,
+				groupRegularShoppingItem.CustomCategoryID,
+				groupRegularShoppingItemID,
+				groupRegularShoppingItem.PaymentUserID,
+				groupID,
+				groupRegularShoppingItem.TransactionAutoAdd,
+			)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
+
+		if _, err := tx.Exec(
+			updateGroupRegularShoppingItemQuery,
+			nextExpectedPurchaseDate,
+			groupRegularShoppingItem.CycleType,
+			groupRegularShoppingItem.Cycle,
+			groupRegularShoppingItem.Purchase,
+			groupRegularShoppingItem.Shop,
+			groupRegularShoppingItem.Amount,
+			groupRegularShoppingItem.BigCategoryID,
+			groupRegularShoppingItem.MediumCategoryID,
+			groupRegularShoppingItem.CustomCategoryID,
+			groupRegularShoppingItem.PaymentUserID,
+			groupRegularShoppingItem.TransactionAutoAdd,
+			groupRegularShoppingItemID,
+		); err != nil {
+			return nil, nil, err
+		}
+
+		if _, err := tx.Exec(
+			deleteLaterThanTodayGroupShoppingItemQuery,
+			groupRegularShoppingItemID,
+			today,
+		); err != nil {
+			return nil, nil, err
+		}
+
+		laterThanTodayGroupShoppingItemResult, err = tx.Exec(
+			insertGroupShoppingItemQuery,
+			nextExpectedPurchaseDate,
+			groupRegularShoppingItem.Purchase,
+			groupRegularShoppingItem.Shop,
+			groupRegularShoppingItem.Amount,
+			groupRegularShoppingItem.BigCategoryID,
+			groupRegularShoppingItem.MediumCategoryID,
+			groupRegularShoppingItem.CustomCategoryID,
+			groupRegularShoppingItemID,
+			groupRegularShoppingItem.PaymentUserID,
+			groupID,
+			groupRegularShoppingItem.TransactionAutoAdd,
+		)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return todayGroupShoppingItemResult, laterThanTodayGroupShoppingItemResult, nil
+	}
+
+	todayGroupShoppingItemResult, laterThanTodayGroupShoppingItemResult, err := transactions(tx)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, nil, err
+		}
+
+		return nil, nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, nil, err
+	}
+
+	return todayGroupShoppingItemResult, laterThanTodayGroupShoppingItemResult, nil
+}
+
 func (r *GroupShoppingListRepository) GetGroupShoppingItem(groupShoppingItemID int) (model.GroupShoppingItem, error) {
 	query := `
         SELECT

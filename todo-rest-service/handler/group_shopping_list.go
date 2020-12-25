@@ -322,6 +322,122 @@ func (h *DBHandler) PostGroupRegularShoppingItem(w http.ResponseWriter, r *http.
 	}
 }
 
+func (h *DBHandler) PutGroupRegularShoppingItem(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	var groupRegularShoppingItem model.GroupRegularShoppingItem
+	if err := json.NewDecoder(r.Body).Decode(&groupRegularShoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupRegularShoppingItemID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"定期ショッピングアイテムIDを正しく指定してください。"}))
+		return
+	}
+
+	now := h.TimeManage.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+
+	todayGroupShoppingItemResult, laterThanTodayGroupShoppingItemResult, err := h.GroupShoppingListRepo.PutGroupRegularShoppingItem(&groupRegularShoppingItem, groupRegularShoppingItemID, groupID, today)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	var todayGroupShoppingItemID int64
+	if todayGroupShoppingItemResult != nil {
+		todayGroupShoppingItemID, err = todayGroupShoppingItemResult.LastInsertId()
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	laterThanTodayGroupShoppingItemID, err := laterThanTodayGroupShoppingItemResult.LastInsertId()
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupRegularShoppingItem, err = h.GroupShoppingListRepo.GetGroupRegularShoppingItem(groupRegularShoppingItemID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupShoppingList, err := h.GroupShoppingListRepo.GetGroupShoppingListRelatedToGroupRegularShoppingItem(int(todayGroupShoppingItemID), int(laterThanTodayGroupShoppingItemID))
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	categoriesID := CategoriesID{
+		MediumCategoryID: groupRegularShoppingItem.MediumCategoryID,
+		CustomCategoryID: groupRegularShoppingItem.CustomCategoryID,
+	}
+
+	categoriesNameBytes, err := getGroupShoppingItemCategoriesName(categoriesID, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := json.Unmarshal(categoriesNameBytes, &groupRegularShoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	for i := 0; i < len(groupShoppingList.GroupShoppingList); i++ {
+		if err := json.Unmarshal(categoriesNameBytes, &groupShoppingList.GroupShoppingList[i]); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	shoppingData := struct {
+		GroupRegularShoppingItem model.GroupRegularShoppingItem `json:"regular_shopping_item"`
+		model.GroupShoppingList
+	}{
+		GroupRegularShoppingItem: groupRegularShoppingItem,
+		GroupShoppingList:        groupShoppingList,
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&shoppingData); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
 func (h *DBHandler) PostGroupShoppingItem(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {

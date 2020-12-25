@@ -93,6 +93,10 @@ func (m MockGroupShoppingListRepository) PostGroupRegularShoppingItem(groupRegul
 	return MockSqlResult{}, MockSqlResult{}, MockSqlResult{}, nil
 }
 
+func (m MockGroupShoppingListRepository) PutGroupRegularShoppingItem(groupRegularShoppingItem *model.GroupRegularShoppingItem, groupRegularShoppingItemID int, groupID int, today time.Time) (sql.Result, sql.Result, error) {
+	return MockSqlResult{}, MockSqlResult{}, nil
+}
+
 func (m MockGroupShoppingListRepository) GetGroupShoppingItem(groupShoppingItemID int) (model.GroupShoppingItem, error) {
 	if groupShoppingItemID == 2 {
 		return model.GroupShoppingItem{
@@ -218,6 +222,83 @@ func TestDBHandler_PostGroupRegularShoppingItem(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
+	testutil.AssertResponseBody(t, res,
+		&struct {
+			GroupRegularShoppingItem model.GroupRegularShoppingItem `json:"regular_shopping_item"`
+			model.GroupShoppingList
+		}{},
+		&struct {
+			GroupRegularShoppingItem model.GroupRegularShoppingItem `json:"regular_shopping_item"`
+			model.GroupShoppingList
+		}{})
+}
+
+func TestDBHandler_PutGroupRegularShoppingItem(t *testing.T) {
+	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
+		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
+	}
+
+	accountHost := os.Getenv("ACCOUNT_HOST")
+	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+
+	mockGetGroupShoppingItemCategoriesName := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockCategoriesName := MockCategoriesName{
+			BigCategoryName:    model.NullString{NullString: sql.NullString{String: "日用品", Valid: true}},
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "消耗品", Valid: true}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&mockCategoriesName); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
+	router := mux.NewRouter()
+	router.HandleFunc("/groups/{group_id:[0-9]+}/categories/name", mockGetGroupShoppingItemCategoriesName).Methods("GET")
+
+	listener, err := net.Listen("tcp", accountHostURL)
+	if err != nil {
+		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
+	}
+
+	ts := httptest.Server{
+		Listener: listener,
+		Config:   &http.Server{Handler: router},
+	}
+
+	ts.Start()
+	defer ts.Close()
+
+	h := DBHandler{
+		AuthRepo:              MockAuthRepository{},
+		GroupShoppingListRepo: MockGroupShoppingListRepository{},
+		TimeManage:            MockTime{},
+	}
+
+	r := httptest.NewRequest("PUT", "/groups/1/shopping-list/regular/1", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+		"id":       "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.PutGroupRegularShoppingItem(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res,
 		&struct {
 			GroupRegularShoppingItem model.GroupRegularShoppingItem `json:"regular_shopping_item"`
