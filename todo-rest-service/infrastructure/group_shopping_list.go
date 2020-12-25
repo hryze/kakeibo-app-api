@@ -411,6 +411,55 @@ func (r *GroupShoppingListRepository) PutGroupRegularShoppingItem(groupRegularSh
 	return todayGroupShoppingItemResult, laterThanTodayGroupShoppingItemResult, nil
 }
 
+func (r *GroupShoppingListRepository) DeleteGroupRegularShoppingItem(groupRegularShoppingItemID int) error {
+	deleteGroupShoppingItemQuery := `
+        DELETE
+        FROM
+            group_shopping_list
+        WHERE
+            regular_shopping_list_id = ?
+        AND
+            complete_flag = false`
+
+	deleteGroupRegularShoppingItemQuery := `
+        DELETE
+        FROM
+            group_regular_shopping_list
+        WHERE
+            id = ?`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		if _, err := tx.Exec(deleteGroupShoppingItemQuery, groupRegularShoppingItemID); err != nil {
+			return err
+		}
+
+		if _, err := tx.Exec(deleteGroupRegularShoppingItemQuery, groupRegularShoppingItemID); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *GroupShoppingListRepository) GetGroupShoppingItem(groupShoppingItemID int) (model.GroupShoppingItem, error) {
 	query := `
         SELECT
