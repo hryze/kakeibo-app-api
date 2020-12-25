@@ -177,7 +177,8 @@ func (r *ShoppingListRepository) PostRegularShoppingItem(regularShoppingItem *mo
             medium_category_id,
             custom_category_id,
             regular_shopping_list_id,
-            user_id,transaction_auto_add
+            user_id,
+            transaction_auto_add
         )
         VALUES
             (?,?,?,?,?,?,?,?,?,?)`
