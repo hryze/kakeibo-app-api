@@ -792,6 +792,74 @@ func (h *DBHandler) GetMonthlyGroupShoppingDataByCategory(w http.ResponseWriter,
 	}
 }
 
+func (h *DBHandler) GetExpiredGroupShoppingList(w http.ResponseWriter, r *http.Request) {
+	userID, err := verifySessionID(h, w, r)
+	if err != nil {
+		if err == http.ErrNoCookie || err == redis.ErrNil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		return
+	}
+
+	if err := verifyGroupAffiliation(groupID, userID); err != nil {
+		badRequestErrorMsg, ok := err.(*BadRequestErrorMsg)
+		if !ok {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, badRequestErrorMsg))
+		return
+	}
+
+	now := h.TimeManage.Now()
+	dueDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, -1)
+
+	expiredGroupShoppingList, err := h.GroupShoppingListRepo.GetExpiredGroupShoppingList(dueDate, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if len(expiredGroupShoppingList.ExpiredGroupShoppingList) != 0 {
+		categoriesIdList := make([]CategoriesID, len(expiredGroupShoppingList.ExpiredGroupShoppingList))
+
+		for i, groupShoppingItem := range expiredGroupShoppingList.ExpiredGroupShoppingList {
+			categoriesIdList[i] = CategoriesID{
+				MediumCategoryID: groupShoppingItem.MediumCategoryID,
+				CustomCategoryID: groupShoppingItem.CustomCategoryID,
+			}
+		}
+
+		categoriesNameListBytes, err := getGroupShoppingItemCategoriesNameList(categoriesIdList, groupID)
+		if err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+
+		if err := json.Unmarshal(categoriesNameListBytes, &expiredGroupShoppingList.ExpiredGroupShoppingList); err != nil {
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&expiredGroupShoppingList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
 func (h *DBHandler) PostGroupRegularShoppingItem(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
