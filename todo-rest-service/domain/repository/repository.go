@@ -71,6 +71,7 @@ type GroupShoppingListRepository interface {
 	DeleteGroupRegularShoppingItem(groupRegularShoppingItemID int) error
 	GetDailyGroupShoppingListByDay(date time.Time, groupID int) (model.GroupShoppingList, error)
 	GetDailyGroupShoppingListByCategory(date time.Time, groupID int) (model.GroupShoppingList, error)
+	GetMonthlyGroupShoppingListByDay(firstDay time.Time, lastDay time.Time, groupID int) (model.GroupShoppingList, error)
 	GetGroupShoppingItem(groupShoppingItemID int) (model.GroupShoppingItem, error)
 	PostGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem, groupID int) (sql.Result, error)
 	PutGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem) (sql.Result, error)

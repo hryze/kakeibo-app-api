@@ -298,6 +298,55 @@ func (m MockGroupShoppingListRepository) GetDailyGroupShoppingListByCategory(dat
 	}, nil
 }
 
+func (m MockGroupShoppingListRepository) GetMonthlyGroupShoppingListByDay(firstDay time.Time, lastDay time.Time, groupID int) (model.GroupShoppingList, error) {
+	return model.GroupShoppingList{
+		GroupShoppingList: []model.GroupShoppingItem{
+			{
+				ID:                    1,
+				PostedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:           time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:  model.Date{Time: time.Date(2020, 12, 18, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:          true,
+				Purchase:              "米",
+				Shop:                  model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Amount:                model.NullInt64{NullInt64: sql.NullInt64{Int64: 4000, Valid: true}},
+				BigCategoryID:         2,
+				BigCategoryName:       "",
+				MediumCategoryID:      model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName:    model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:      model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName:    model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID: model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				PaymentUserID:         model.NullString{NullString: sql.NullString{String: "userID1", Valid: true}},
+				TransactionAutoAdd:    true,
+				RelatedTransactionData: &model.GroupTransactionData{
+					ID: model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				},
+			},
+			{
+				ID:                     2,
+				PostedDate:             time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 12, 20, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:           false,
+				Purchase:               "トイレットペーパー",
+				Shop:                   model.NullString{NullString: sql.NullString{String: "クリエイト", Valid: true}},
+				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 300, Valid: true}},
+				BigCategoryID:          3,
+				BigCategoryName:        "",
+				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 13, Valid: true}},
+				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 2, Valid: true}},
+				PaymentUserID:          model.NullString{NullString: sql.NullString{String: "userID1", Valid: true}},
+				TransactionAutoAdd:     true,
+				RelatedTransactionData: nil,
+			},
+		},
+	}, nil
+}
+
 func (m MockGroupShoppingListRepository) GetGroupShoppingItem(groupShoppingItemID int) (model.GroupShoppingItem, error) {
 	if groupShoppingItemID == 2 {
 		return model.GroupShoppingItem{
@@ -626,6 +675,141 @@ func TestDBHandler_GetDailyGroupShoppingDataByCategory(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupShoppingDataByCategory{}, &model.GroupShoppingDataByCategory{})
+}
+
+func TestDBHandler_GetMonthlyGroupShoppingDataByDay(t *testing.T) {
+	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
+		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
+	}
+
+	accountHost := os.Getenv("ACCOUNT_HOST")
+	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+
+	mockGetGroupShoppingItemCategoriesNameList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var mockCategoriesNameList []MockCategoriesName
+
+		if serverCounter == 0 {
+			atomic.AddInt64(&serverCounter, 1)
+
+			mockCategoriesNameList = []MockCategoriesName{
+				{
+					BigCategoryName:    model.NullString{NullString: sql.NullString{String: "食費", Valid: true}},
+					MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+					CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+				},
+				{
+					BigCategoryName:    model.NullString{NullString: sql.NullString{String: "日用品", Valid: true}},
+					MediumCategoryName: model.NullString{NullString: sql.NullString{String: "消耗品", Valid: true}},
+					CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				},
+			}
+		} else if serverCounter == 1 {
+			atomic.AddInt64(&serverCounter, -1)
+
+			mockCategoriesNameList = []MockCategoriesName{
+				{
+					BigCategoryName:    model.NullString{NullString: sql.NullString{String: "食費", Valid: true}},
+					MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+					CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+				},
+				{
+					BigCategoryName:    model.NullString{NullString: sql.NullString{String: "日用品", Valid: true}},
+					MediumCategoryName: model.NullString{NullString: sql.NullString{String: "消耗品", Valid: true}},
+					CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				},
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&mockCategoriesNameList); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
+	mockGetGroupShoppingItemRelatedTransactionDataList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		groupShoppingItemRelatedTransactionDataList := []*model.GroupTransactionData{
+			{
+				ID:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionType:    "expense",
+				PostedDate:         time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				TransactionDate:    "2020/12/18(金)",
+				Shop:               model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "【買い物リスト】米", Valid: true}},
+				Amount:             4000,
+				PostedUserID:       "userID1",
+				UpdatedUserID:      model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				PaymentUserID:      "userID1",
+				BigCategoryID:      2,
+				BigCategoryName:    "食費",
+				MediumCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&groupShoppingItemRelatedTransactionDataList); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
+	router := mux.NewRouter()
+	router.HandleFunc("/groups/{group_id:[0-9]+}/categories/names", mockGetGroupShoppingItemCategoriesNameList).Methods("GET")
+	router.HandleFunc("/groups/{group_id:[0-9]+}/transactions/related-shopping-list", mockGetGroupShoppingItemRelatedTransactionDataList).Methods("GET")
+
+	listener, err := net.Listen("tcp", accountHostURL)
+	if err != nil {
+		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
+	}
+
+	ts := httptest.Server{
+		Listener: listener,
+		Config:   &http.Server{Handler: router},
+	}
+
+	ts.Start()
+	defer ts.Close()
+
+	h := DBHandler{
+		AuthRepo:              MockAuthRepository{},
+		GroupShoppingListRepo: MockGroupShoppingListRepository{},
+		TimeManage:            MockTime{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/1/shopping-list/2020-12/daily", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id":   "1",
+		"year_month": "2020-12",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	dbMu.Lock()
+	defer dbMu.Unlock()
+
+	serverMu.Lock()
+	defer serverMu.Unlock()
+
+	h.GetMonthlyGroupShoppingDataByDay(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &model.GroupShoppingDataByDay{}, &model.GroupShoppingDataByDay{})
 }
 
 func TestDBHandler_PostGroupRegularShoppingItem(t *testing.T) {
