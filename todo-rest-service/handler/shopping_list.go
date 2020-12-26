@@ -148,6 +148,63 @@ func getShoppingItemCategoriesNameList(categoriesIdList []CategoriesID) ([]byte,
 	return categoriesNameBytes, nil
 }
 
+func getShoppingItemRelatedTransactionDataList(transactionIdList []int64) ([]*model.TransactionData, error) {
+	accountHost := os.Getenv("ACCOUNT_HOST")
+	requestURL := fmt.Sprintf("http://%s:8081/transactions/related-shopping-list", accountHost)
+
+	requestBody, err := json.Marshal(&transactionIdList)
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest(
+		"GET",
+		requestURL,
+		bytes.NewBuffer(requestBody),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			MaxIdleConns:          500,
+			MaxIdleConnsPerHost:   100,
+			IdleConnTimeout:       90 * time.Second,
+			ResponseHeaderTimeout: 10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		},
+		Timeout: 60 * time.Second,
+	}
+
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_, _ = io.Copy(ioutil.Discard, response.Body)
+		response.Body.Close()
+	}()
+
+	var shoppingItemRelatedTransactionDataList []*model.TransactionData
+	if err := json.NewDecoder(response.Body).Decode(&shoppingItemRelatedTransactionDataList); err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode == http.StatusInternalServerError {
+		return nil, &InternalServerErrorMsg{"500 Internal Server Error"}
+	}
+
+	return shoppingItemRelatedTransactionDataList, nil
+}
+
 func postRelatedTransaction(shoppingItem model.ShoppingItem, cookie *http.Cookie) (model.ShoppingItem, error) {
 	accountHost := os.Getenv("ACCOUNT_HOST")
 	requestURL := fmt.Sprintf("http://%s:8081/transactions", accountHost)
@@ -266,6 +323,110 @@ func deleteRelatedTransaction(shoppingItem model.ShoppingItem, cookie *http.Cook
 	return shoppingItem, nil
 }
 
+func generateRegularShoppingList(regularShoppingList model.RegularShoppingList) (model.RegularShoppingList, error) {
+	categoriesIdList := make([]CategoriesID, len(regularShoppingList.RegularShoppingList))
+
+	for i, regularShoppingItem := range regularShoppingList.RegularShoppingList {
+		categoriesIdList[i] = CategoriesID{
+			MediumCategoryID: regularShoppingItem.MediumCategoryID,
+			CustomCategoryID: regularShoppingItem.CustomCategoryID,
+		}
+	}
+
+	categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+	if err != nil {
+		return regularShoppingList, err
+	}
+
+	if err := json.Unmarshal(categoriesNameListBytes, &regularShoppingList.RegularShoppingList); err != nil {
+		return regularShoppingList, err
+	}
+
+	return regularShoppingList, nil
+}
+
+func generateShoppingList(shoppingList model.ShoppingList) (model.ShoppingList, error) {
+	categoriesIdList := make([]CategoriesID, len(shoppingList.ShoppingList))
+	var transactionIdList []int64
+
+	for i, shoppingItem := range shoppingList.ShoppingList {
+		categoriesIdList[i] = CategoriesID{
+			MediumCategoryID: shoppingItem.MediumCategoryID,
+			CustomCategoryID: shoppingItem.CustomCategoryID,
+		}
+
+		if shoppingItem.RelatedTransactionData != nil {
+			transactionIdList = append(transactionIdList, shoppingItem.RelatedTransactionData.ID.Int64)
+		}
+	}
+
+	categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+	if err != nil {
+		return shoppingList, err
+	}
+
+	if err := json.Unmarshal(categoriesNameListBytes, &shoppingList.ShoppingList); err != nil {
+		return shoppingList, err
+	}
+
+	if len(transactionIdList) != 0 {
+		shoppingItemRelatedTransactionDataList, err := getShoppingItemRelatedTransactionDataList(transactionIdList)
+		if err != nil {
+			return shoppingList, err
+		}
+
+		for _, shoppingItemRelatedTransactionData := range shoppingItemRelatedTransactionDataList {
+			for i, shoppingItem := range shoppingList.ShoppingList {
+				if shoppingItem.RelatedTransactionData != nil && shoppingItemRelatedTransactionData.ID.Int64 == shoppingItem.RelatedTransactionData.ID.Int64 {
+					shoppingList.ShoppingList[i].RelatedTransactionData = shoppingItemRelatedTransactionData
+				}
+			}
+		}
+	}
+
+	return shoppingList, nil
+}
+
+func generateShoppingListByCategories(shoppingList model.ShoppingList) []model.ShoppingListByCategory {
+	shoppingListByCategories := make([]model.ShoppingListByCategory, 0)
+
+	for i, j := 0, 0; i < len(shoppingList.ShoppingList); i++ {
+		firstIndexBigCategoryID := shoppingList.ShoppingList[j].BigCategoryID
+		currentIndexBigCategoryID := shoppingList.ShoppingList[i].BigCategoryID
+
+		if firstIndexBigCategoryID != currentIndexBigCategoryID {
+			shoppingListByCategory := model.ShoppingListByCategory{
+				BigCategoryName: shoppingList.ShoppingList[j].BigCategoryName,
+				ShoppingList:    append(make([]model.ShoppingItem, 0, i-j), shoppingList.ShoppingList[j:i]...),
+			}
+
+			shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
+
+			j = i
+		}
+
+		if i == len(shoppingList.ShoppingList)-1 {
+			if firstIndexBigCategoryID == currentIndexBigCategoryID {
+				shoppingListByCategory := model.ShoppingListByCategory{
+					BigCategoryName: shoppingList.ShoppingList[j].BigCategoryName,
+					ShoppingList:    append(make([]model.ShoppingItem, 0, i-j), shoppingList.ShoppingList[j:]...),
+				}
+
+				shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
+			} else if i == j {
+				shoppingListByCategory := model.ShoppingListByCategory{
+					BigCategoryName: shoppingList.ShoppingList[i].BigCategoryName,
+					ShoppingList:    []model.ShoppingItem{shoppingList.ShoppingList[i]},
+				}
+
+				shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
+			}
+		}
+	}
+
+	return shoppingListByCategories
+}
+
 func (h *DBHandler) GetDailyShoppingDataByDay(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
@@ -299,22 +460,8 @@ func (h *DBHandler) GetDailyShoppingDataByDay(w http.ResponseWriter, r *http.Req
 			return
 		}
 
-		categoriesIdList := make([]CategoriesID, len(regularShoppingList.RegularShoppingList))
-
-		for i, regularShoppingItem := range regularShoppingList.RegularShoppingList {
-			categoriesIdList[i] = CategoriesID{
-				MediumCategoryID: regularShoppingItem.MediumCategoryID,
-				CustomCategoryID: regularShoppingItem.CustomCategoryID,
-			}
-		}
-
-		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		regularShoppingList, err = generateRegularShoppingList(regularShoppingList)
 		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		if err := json.Unmarshal(categoriesNameListBytes, &regularShoppingList.RegularShoppingList); err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
@@ -333,23 +480,9 @@ func (h *DBHandler) GetDailyShoppingDataByDay(w http.ResponseWriter, r *http.Req
 	}
 
 	if len(shoppingList.ShoppingList) != 0 {
-		categoriesIdList := make([]CategoriesID, len(shoppingList.ShoppingList))
-
-		for i, shoppingItem := range shoppingList.ShoppingList {
-			categoriesIdList[i] = CategoriesID{
-				MediumCategoryID: shoppingItem.MediumCategoryID,
-				CustomCategoryID: shoppingItem.CustomCategoryID,
-			}
-		}
-
-		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		shoppingList, err = generateShoppingList(shoppingList)
 		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		if err := json.Unmarshal(categoriesNameListBytes, &shoppingList.ShoppingList); err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 			return
 		}
 	}
@@ -400,22 +533,8 @@ func (h *DBHandler) GetDailyShoppingDataByCategory(w http.ResponseWriter, r *htt
 			return
 		}
 
-		categoriesIdList := make([]CategoriesID, len(regularShoppingList.RegularShoppingList))
-
-		for i, regularShoppingItem := range regularShoppingList.RegularShoppingList {
-			categoriesIdList[i] = CategoriesID{
-				MediumCategoryID: regularShoppingItem.MediumCategoryID,
-				CustomCategoryID: regularShoppingItem.CustomCategoryID,
-			}
-		}
-
-		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		regularShoppingList, err = generateRegularShoppingList(regularShoppingList)
 		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		if err := json.Unmarshal(categoriesNameListBytes, &regularShoppingList.RegularShoppingList); err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
@@ -434,62 +553,14 @@ func (h *DBHandler) GetDailyShoppingDataByCategory(w http.ResponseWriter, r *htt
 	}
 
 	if len(shoppingList.ShoppingList) != 0 {
-		categoriesIdList := make([]CategoriesID, len(shoppingList.ShoppingList))
-
-		for i, shoppingItem := range shoppingList.ShoppingList {
-			categoriesIdList[i] = CategoriesID{
-				MediumCategoryID: shoppingItem.MediumCategoryID,
-				CustomCategoryID: shoppingItem.CustomCategoryID,
-			}
-		}
-
-		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		shoppingList, err = generateShoppingList(shoppingList)
 		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		if err := json.Unmarshal(categoriesNameListBytes, &shoppingList.ShoppingList); err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 			return
 		}
 	}
 
-	shoppingListByCategories := make([]model.ShoppingListByCategory, 0)
-
-	for i, j := 0, 0; i < len(shoppingList.ShoppingList); i++ {
-		firstIndexBigCategoryID := shoppingList.ShoppingList[j].BigCategoryID
-		currentIndexBigCategoryID := shoppingList.ShoppingList[i].BigCategoryID
-
-		if firstIndexBigCategoryID != currentIndexBigCategoryID {
-			shoppingListByCategory := model.ShoppingListByCategory{
-				BigCategoryName: shoppingList.ShoppingList[j].BigCategoryName,
-				ShoppingList:    append(make([]model.ShoppingItem, 0, i-j), shoppingList.ShoppingList[j:i]...),
-			}
-
-			shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
-
-			j = i
-		}
-
-		if i == len(shoppingList.ShoppingList)-1 {
-			if firstIndexBigCategoryID == currentIndexBigCategoryID {
-				shoppingListByCategory := model.ShoppingListByCategory{
-					BigCategoryName: shoppingList.ShoppingList[j].BigCategoryName,
-					ShoppingList:    append(make([]model.ShoppingItem, 0, i-j), shoppingList.ShoppingList[j:]...),
-				}
-
-				shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
-			} else if i == j {
-				shoppingListByCategory := model.ShoppingListByCategory{
-					BigCategoryName: shoppingList.ShoppingList[i].BigCategoryName,
-					ShoppingList:    []model.ShoppingItem{shoppingList.ShoppingList[i]},
-				}
-
-				shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
-			}
-		}
-	}
+	shoppingListByCategories := generateShoppingListByCategories(shoppingList)
 
 	shoppingDataByCategories := model.ShoppingDataByCategory{
 		RegularShoppingList:    regularShoppingList,
@@ -537,22 +608,8 @@ func (h *DBHandler) GetMonthlyShoppingDataByDay(w http.ResponseWriter, r *http.R
 			return
 		}
 
-		categoriesIdList := make([]CategoriesID, len(regularShoppingList.RegularShoppingList))
-
-		for i, regularShoppingItem := range regularShoppingList.RegularShoppingList {
-			categoriesIdList[i] = CategoriesID{
-				MediumCategoryID: regularShoppingItem.MediumCategoryID,
-				CustomCategoryID: regularShoppingItem.CustomCategoryID,
-			}
-		}
-
-		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		regularShoppingList, err = generateRegularShoppingList(regularShoppingList)
 		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		if err := json.Unmarshal(categoriesNameListBytes, &regularShoppingList.RegularShoppingList); err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
@@ -573,23 +630,9 @@ func (h *DBHandler) GetMonthlyShoppingDataByDay(w http.ResponseWriter, r *http.R
 	}
 
 	if len(shoppingList.ShoppingList) != 0 {
-		categoriesIdList := make([]CategoriesID, len(shoppingList.ShoppingList))
-
-		for i, shoppingItem := range shoppingList.ShoppingList {
-			categoriesIdList[i] = CategoriesID{
-				MediumCategoryID: shoppingItem.MediumCategoryID,
-				CustomCategoryID: shoppingItem.CustomCategoryID,
-			}
-		}
-
-		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		shoppingList, err = generateShoppingList(shoppingList)
 		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		if err := json.Unmarshal(categoriesNameListBytes, &shoppingList.ShoppingList); err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 			return
 		}
 	}
@@ -640,22 +683,8 @@ func (h *DBHandler) GetMonthlyShoppingDataByCategory(w http.ResponseWriter, r *h
 			return
 		}
 
-		categoriesIdList := make([]CategoriesID, len(regularShoppingList.RegularShoppingList))
-
-		for i, regularShoppingItem := range regularShoppingList.RegularShoppingList {
-			categoriesIdList[i] = CategoriesID{
-				MediumCategoryID: regularShoppingItem.MediumCategoryID,
-				CustomCategoryID: regularShoppingItem.CustomCategoryID,
-			}
-		}
-
-		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		regularShoppingList, err = generateRegularShoppingList(regularShoppingList)
 		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		if err := json.Unmarshal(categoriesNameListBytes, &regularShoppingList.RegularShoppingList); err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
@@ -676,62 +705,14 @@ func (h *DBHandler) GetMonthlyShoppingDataByCategory(w http.ResponseWriter, r *h
 	}
 
 	if len(shoppingList.ShoppingList) != 0 {
-		categoriesIdList := make([]CategoriesID, len(shoppingList.ShoppingList))
-
-		for i, shoppingItem := range shoppingList.ShoppingList {
-			categoriesIdList[i] = CategoriesID{
-				MediumCategoryID: shoppingItem.MediumCategoryID,
-				CustomCategoryID: shoppingItem.CustomCategoryID,
-			}
-		}
-
-		categoriesNameListBytes, err := getShoppingItemCategoriesNameList(categoriesIdList)
+		shoppingList, err = generateShoppingList(shoppingList)
 		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		if err := json.Unmarshal(categoriesNameListBytes, &shoppingList.ShoppingList); err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
 			return
 		}
 	}
 
-	shoppingListByCategories := make([]model.ShoppingListByCategory, 0)
-
-	for i, j := 0, 0; i < len(shoppingList.ShoppingList); i++ {
-		firstIndexBigCategoryID := shoppingList.ShoppingList[j].BigCategoryID
-		currentIndexBigCategoryID := shoppingList.ShoppingList[i].BigCategoryID
-
-		if firstIndexBigCategoryID != currentIndexBigCategoryID {
-			shoppingListByCategory := model.ShoppingListByCategory{
-				BigCategoryName: shoppingList.ShoppingList[j].BigCategoryName,
-				ShoppingList:    append(make([]model.ShoppingItem, 0, i-j), shoppingList.ShoppingList[j:i]...),
-			}
-
-			shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
-
-			j = i
-		}
-
-		if i == len(shoppingList.ShoppingList)-1 {
-			if firstIndexBigCategoryID == currentIndexBigCategoryID {
-				shoppingListByCategory := model.ShoppingListByCategory{
-					BigCategoryName: shoppingList.ShoppingList[j].BigCategoryName,
-					ShoppingList:    append(make([]model.ShoppingItem, 0, i-j), shoppingList.ShoppingList[j:]...),
-				}
-
-				shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
-			} else if i == j {
-				shoppingListByCategory := model.ShoppingListByCategory{
-					BigCategoryName: shoppingList.ShoppingList[i].BigCategoryName,
-					ShoppingList:    []model.ShoppingItem{shoppingList.ShoppingList[i]},
-				}
-
-				shoppingListByCategories = append(shoppingListByCategories, shoppingListByCategory)
-			}
-		}
-	}
+	shoppingListByCategories := generateShoppingListByCategories(shoppingList)
 
 	shoppingDataByCategories := model.ShoppingDataByCategory{
 		RegularShoppingList:    regularShoppingList,

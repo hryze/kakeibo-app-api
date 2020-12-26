@@ -626,3 +626,24 @@ func (h *DBHandler) SearchTransactionsList(w http.ResponseWriter, r *http.Reques
 		return
 	}
 }
+
+func (h *DBHandler) GetShoppingItemRelatedTransactionDataList(w http.ResponseWriter, r *http.Request) {
+	var transactionIdList []int
+	if err := json.NewDecoder(r.Body).Decode(&transactionIdList); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	transactionsList, err := h.TransactionsRepo.GetShoppingItemRelatedTransactionDataList(transactionIdList)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&transactionsList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}

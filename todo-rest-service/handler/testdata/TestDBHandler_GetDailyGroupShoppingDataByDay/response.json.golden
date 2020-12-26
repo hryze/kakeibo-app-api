@@ -63,6 +63,7 @@
         "transaction_type": "expense",
         "posted_date": "2020-12-18T14:00:00Z",
         "updated_date": "2020-12-18T14:00:00Z",
+        "transaction_date": "2020/12/18(金)",
         "shop": "コストコ",
         "memo": "【買い物リスト】米",
         "amount": 4000,

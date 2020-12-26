@@ -305,6 +305,43 @@ func (t MockTransactionsRepository) SearchTransactionsList(query string) ([]mode
 	}, nil
 }
 
+func (t MockTransactionsRepository) GetShoppingItemRelatedTransactionDataList(transactionIdList []int) ([]model.TransactionSender, error) {
+	return []model.TransactionSender{
+		{
+			ID:                 1,
+			TransactionType:    "expense",
+			PostedDate:         time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
+			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+			Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
+			Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
+			Amount:             15000,
+			BigCategoryID:      3,
+			BigCategoryName:    "日用品",
+			MediumCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 16, Valid: true}},
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "家具", Valid: true}},
+			CustomCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+		},
+		{
+			ID:                 2,
+			TransactionType:    "expense",
+			PostedDate:         time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC),
+			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 15, 0, 0, 0, 0, time.UTC)},
+			Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			Amount:             1300,
+			BigCategoryID:      2,
+			BigCategoryName:    "食費",
+			MediumCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			CustomCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+		},
+	}, nil
+}
+
 func (t MockTransactionsRepository) GetMonthlyTransactionTotalAmountByBigCategory(userID string, firstDay time.Time, lastDay time.Time) ([]model.TransactionTotalAmountByBigCategory, error) {
 	return []model.TransactionTotalAmountByBigCategory{
 		{
@@ -510,4 +547,29 @@ func TestDBHandler_SearchTransactionsList(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.TransactionsList{}, &model.TransactionsList{})
+}
+
+func TestDBHandler_GetShoppingItemRelatedTransactionDataList(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:         MockAuthRepository{},
+		TransactionsRepo: MockTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/transactions/related-shopping-list", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.GetShoppingItemRelatedTransactionDataList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &[]model.TransactionSender{}, &[]model.TransactionSender{})
 }

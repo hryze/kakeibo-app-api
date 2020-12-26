@@ -37,6 +37,7 @@ type TransactionsRepository interface {
 	PutTransaction(transaction *model.TransactionReceiver, transactionID int) error
 	DeleteTransaction(transactionID int) error
 	SearchTransactionsList(query string) ([]model.TransactionSender, error)
+	GetShoppingItemRelatedTransactionDataList(transactionIdList []int) ([]model.TransactionSender, error)
 	GetMonthlyTransactionTotalAmountByBigCategory(userID string, firstDay time.Time, lastDay time.Time) ([]model.TransactionTotalAmountByBigCategory, error)
 }
 

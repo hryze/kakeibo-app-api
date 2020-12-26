@@ -367,7 +367,7 @@ func TestDBHandler_GetDailyGroupShoppingDataByDay(t *testing.T) {
 				TransactionType:    "expense",
 				PostedDate:         time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
 				UpdatedDate:        time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
-				TransactionDate:    "",
+				TransactionDate:    "2020/12/18(金)",
 				Shop:               model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
 				Memo:               model.NullString{NullString: sql.NullString{String: "【買い物リスト】米", Valid: true}},
 				Amount:             4000,
