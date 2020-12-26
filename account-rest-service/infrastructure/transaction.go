@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"database/sql"
+	"strings"
 	"time"
 
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
@@ -236,6 +237,72 @@ func (r *TransactionsRepository) SearchTransactionsList(query string) ([]model.T
 	defer rows.Close()
 
 	transactionsList := make([]model.TransactionSender, 0)
+	for rows.Next() {
+		var transactionSender model.TransactionSender
+		if err := rows.StructScan(&transactionSender); err != nil {
+			return nil, err
+		}
+
+		transactionsList = append(transactionsList, transactionSender)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return transactionsList, nil
+}
+
+func (r *TransactionsRepository) GetShoppingItemRelatedTransactionDataList(transactionIdList []int) ([]model.TransactionSender, error) {
+	sliceQuery := make([]string, len(transactionIdList))
+	queryArgs := make([]interface{}, len(transactionIdList))
+
+	for i, transactionId := range transactionIdList {
+		sliceQuery[i] = `
+        SELECT
+            transactions.id id,
+            transactions.transaction_type transaction_type,
+            transactions.posted_date posted_date,
+            transactions.updated_date updated_date,
+            transactions.transaction_date transaction_date,
+            transactions.shop shop,
+            transactions.memo memo,
+            transactions.amount amount,
+            transactions.big_category_id big_category_id,
+            big_categories.category_name big_category_name,
+            transactions.medium_category_id medium_category_id,
+            medium_categories.category_name medium_category_name,
+            transactions.custom_category_id custom_category_id,
+            custom_categories.category_name custom_category_name
+        FROM
+            transactions
+        LEFT JOIN
+            big_categories
+        ON
+            transactions.big_category_id = big_categories.id
+        LEFT JOIN
+            medium_categories
+        ON
+            transactions.medium_category_id = medium_categories.id
+        LEFT JOIN
+            custom_categories
+        ON
+            transactions.custom_category_id = custom_categories.id
+        WHERE
+            transactions.id = ?`
+
+		queryArgs[i] = transactionId
+	}
+
+	query := strings.Join(sliceQuery, " UNION ALL ")
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, queryArgs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var transactionsList []model.TransactionSender
 	for rows.Next() {
 		var transactionSender model.TransactionSender
 		if err := rows.StructScan(&transactionSender); err != nil {

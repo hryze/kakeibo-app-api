@@ -204,23 +204,25 @@ func (m MockShoppingListRepository) GetDailyShoppingListByDay(date time.Time, us
 	return model.ShoppingList{
 		ShoppingList: []model.ShoppingItem{
 			{
-				ID:                     1,
-				PostedDate:             time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
-				UpdatedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
-				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 12, 18, 0, 0, 0, 0, time.UTC)},
-				CompleteFlag:           false,
-				Purchase:               "米",
-				Shop:                   model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
-				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 4000, Valid: true}},
-				BigCategoryID:          2,
-				BigCategoryName:        "",
-				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
-				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
-				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
-				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
-				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
-				TransactionAutoAdd:     true,
-				RelatedTransactionData: nil,
+				ID:                    1,
+				PostedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:           time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:  model.Date{Time: time.Date(2020, 12, 18, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:          true,
+				Purchase:              "米",
+				Shop:                  model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Amount:                model.NullInt64{NullInt64: sql.NullInt64{Int64: 4000, Valid: true}},
+				BigCategoryID:         2,
+				BigCategoryName:       "",
+				MediumCategoryID:      model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName:    model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:      model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName:    model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID: model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionAutoAdd:    true,
+				RelatedTransactionData: &model.TransactionData{
+					ID: model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				},
 			},
 			{
 				ID:                     2,
@@ -249,23 +251,25 @@ func (m MockShoppingListRepository) GetDailyShoppingListByCategory(date time.Tim
 	return model.ShoppingList{
 		ShoppingList: []model.ShoppingItem{
 			{
-				ID:                     1,
-				PostedDate:             time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
-				UpdatedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
-				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 12, 18, 0, 0, 0, 0, time.UTC)},
-				CompleteFlag:           false,
-				Purchase:               "米",
-				Shop:                   model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
-				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 4000, Valid: true}},
-				BigCategoryID:          2,
-				BigCategoryName:        "",
-				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
-				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
-				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
-				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
-				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
-				TransactionAutoAdd:     true,
-				RelatedTransactionData: nil,
+				ID:                    1,
+				PostedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:           time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:  model.Date{Time: time.Date(2020, 12, 18, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:          true,
+				Purchase:              "米",
+				Shop:                  model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Amount:                model.NullInt64{NullInt64: sql.NullInt64{Int64: 4000, Valid: true}},
+				BigCategoryID:         2,
+				BigCategoryName:       "",
+				MediumCategoryID:      model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName:    model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:      model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName:    model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID: model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionAutoAdd:    true,
+				RelatedTransactionData: &model.TransactionData{
+					ID: model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				},
 			},
 			{
 				ID:                     2,
@@ -313,23 +317,25 @@ func (m MockShoppingListRepository) GetMonthlyShoppingListByDay(firstDay time.Ti
 				RelatedTransactionData: nil,
 			},
 			{
-				ID:                     1,
-				PostedDate:             time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
-				UpdatedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
-				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 12, 25, 0, 0, 0, 0, time.UTC)},
-				CompleteFlag:           false,
-				Purchase:               "米",
-				Shop:                   model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
-				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 4000, Valid: true}},
-				BigCategoryID:          2,
-				BigCategoryName:        "",
-				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
-				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
-				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
-				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
-				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
-				TransactionAutoAdd:     true,
-				RelatedTransactionData: nil,
+				ID:                    1,
+				PostedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:           time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:  model.Date{Time: time.Date(2020, 12, 18, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:          true,
+				Purchase:              "米",
+				Shop:                  model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Amount:                model.NullInt64{NullInt64: sql.NullInt64{Int64: 4000, Valid: true}},
+				BigCategoryID:         2,
+				BigCategoryName:       "",
+				MediumCategoryID:      model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName:    model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:      model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName:    model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID: model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionAutoAdd:    true,
+				RelatedTransactionData: &model.TransactionData{
+					ID: model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				},
 			},
 			{
 				ID:                     3,
@@ -358,23 +364,25 @@ func (m MockShoppingListRepository) GetMonthlyShoppingListByCategory(firstDay ti
 	return model.ShoppingList{
 		ShoppingList: []model.ShoppingItem{
 			{
-				ID:                     1,
-				PostedDate:             time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
-				UpdatedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
-				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 12, 25, 0, 0, 0, 0, time.UTC)},
-				CompleteFlag:           false,
-				Purchase:               "米",
-				Shop:                   model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
-				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 4000, Valid: true}},
-				BigCategoryID:          2,
-				BigCategoryName:        "",
-				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
-				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
-				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
-				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
-				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
-				TransactionAutoAdd:     true,
-				RelatedTransactionData: nil,
+				ID:                    1,
+				PostedDate:            time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:           time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				ExpectedPurchaseDate:  model.Date{Time: time.Date(2020, 12, 18, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:          true,
+				Purchase:              "米",
+				Shop:                  model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Amount:                model.NullInt64{NullInt64: sql.NullInt64{Int64: 4000, Valid: true}},
+				BigCategoryID:         2,
+				BigCategoryName:       "",
+				MediumCategoryID:      model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName:    model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:      model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName:    model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID: model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionAutoAdd:    true,
+				RelatedTransactionData: &model.TransactionData{
+					ID: model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				},
 			},
 			{
 				ID:                     2,
@@ -591,8 +599,37 @@ func TestDBHandler_GetDailyShoppingDataByDay(t *testing.T) {
 		}
 	})
 
+	mockGetShoppingItemRelatedTransactionDataList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		shoppingItemRelatedTransactionDataList := []*model.TransactionData{
+			{
+				ID:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionType:    "expense",
+				PostedDate:         time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				TransactionDate:    "2020/12/18(金)",
+				Shop:               model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "【買い物リスト】米", Valid: true}},
+				Amount:             4000,
+				BigCategoryID:      2,
+				BigCategoryName:    "食費",
+				MediumCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&shoppingItemRelatedTransactionDataList); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
 	router := mux.NewRouter()
 	router.HandleFunc("/categories/names", mockGetCategoriesNameList).Methods("GET")
+	router.HandleFunc("/transactions/related-shopping-list", mockGetShoppingItemRelatedTransactionDataList).Methods("GET")
 
 	listener, err := net.Listen("tcp", accountHostURL)
 	if err != nil {
@@ -693,8 +730,37 @@ func TestDBHandler_GetDailyShoppingDataByCategory(t *testing.T) {
 		}
 	})
 
+	mockGetShoppingItemRelatedTransactionDataList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		shoppingItemRelatedTransactionDataList := []*model.TransactionData{
+			{
+				ID:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionType:    "expense",
+				PostedDate:         time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				TransactionDate:    "2020/12/18(金)",
+				Shop:               model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "【買い物リスト】米", Valid: true}},
+				Amount:             4000,
+				BigCategoryID:      2,
+				BigCategoryName:    "食費",
+				MediumCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&shoppingItemRelatedTransactionDataList); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
 	router := mux.NewRouter()
 	router.HandleFunc("/categories/names", mockGetCategoriesNameList).Methods("GET")
+	router.HandleFunc("/transactions/related-shopping-list", mockGetShoppingItemRelatedTransactionDataList).Methods("GET")
 
 	listener, err := net.Listen("tcp", accountHostURL)
 	if err != nil {
@@ -800,8 +866,37 @@ func TestDBHandler_GetMonthlyShoppingDataByDay(t *testing.T) {
 		}
 	})
 
+	mockGetShoppingItemRelatedTransactionDataList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		shoppingItemRelatedTransactionDataList := []*model.TransactionData{
+			{
+				ID:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionType:    "expense",
+				PostedDate:         time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				TransactionDate:    "2020/12/18(金)",
+				Shop:               model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "【買い物リスト】米", Valid: true}},
+				Amount:             4000,
+				BigCategoryID:      2,
+				BigCategoryName:    "食費",
+				MediumCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&shoppingItemRelatedTransactionDataList); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
 	router := mux.NewRouter()
 	router.HandleFunc("/categories/names", mockGetCategoriesNameList).Methods("GET")
+	router.HandleFunc("/transactions/related-shopping-list", mockGetShoppingItemRelatedTransactionDataList).Methods("GET")
 
 	listener, err := net.Listen("tcp", accountHostURL)
 	if err != nil {
@@ -907,8 +1002,37 @@ func TestDBHandler_GetMonthlyShoppingDataByCategory(t *testing.T) {
 		}
 	})
 
+	mockGetShoppingItemRelatedTransactionDataList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		shoppingItemRelatedTransactionDataList := []*model.TransactionData{
+			{
+				ID:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionType:    "expense",
+				PostedDate:         time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				UpdatedDate:        time.Date(2020, 12, 18, 14, 0, 0, 0, time.UTC),
+				TransactionDate:    "2020/12/18(金)",
+				Shop:               model.NullString{NullString: sql.NullString{String: "コストコ", Valid: true}},
+				Memo:               model.NullString{NullString: sql.NullString{String: "【買い物リスト】米", Valid: true}},
+				Amount:             4000,
+				BigCategoryID:      2,
+				BigCategoryName:    "食費",
+				MediumCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(&shoppingItemRelatedTransactionDataList); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
+
 	router := mux.NewRouter()
 	router.HandleFunc("/categories/names", mockGetCategoriesNameList).Methods("GET")
+	router.HandleFunc("/transactions/related-shopping-list", mockGetShoppingItemRelatedTransactionDataList).Methods("GET")
 
 	listener, err := net.Listen("tcp", accountHostURL)
 	if err != nil {

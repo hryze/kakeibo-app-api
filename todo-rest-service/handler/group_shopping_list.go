@@ -366,15 +366,17 @@ func generateGroupShoppingList(groupShoppingList model.GroupShoppingList, groupI
 		return groupShoppingList, err
 	}
 
-	groupShoppingItemRelatedTransactionDataList, err := getGroupShoppingItemRelatedTransactionDataList(transactionIdList, groupID)
-	if err != nil {
-		return groupShoppingList, err
-	}
+	if len(transactionIdList) != 0 {
+		groupShoppingItemRelatedTransactionDataList, err := getGroupShoppingItemRelatedTransactionDataList(transactionIdList, groupID)
+		if err != nil {
+			return groupShoppingList, err
+		}
 
-	for _, groupShoppingItemRelatedTransactionData := range groupShoppingItemRelatedTransactionDataList {
-		for i, groupShoppingItem := range groupShoppingList.GroupShoppingList {
-			if groupShoppingItem.RelatedTransactionData != nil && groupShoppingItemRelatedTransactionData.ID.Int64 == groupShoppingItem.RelatedTransactionData.ID.Int64 {
-				groupShoppingList.GroupShoppingList[i].RelatedTransactionData = groupShoppingItemRelatedTransactionData
+		for _, groupShoppingItemRelatedTransactionData := range groupShoppingItemRelatedTransactionDataList {
+			for i, groupShoppingItem := range groupShoppingList.GroupShoppingList {
+				if groupShoppingItem.RelatedTransactionData != nil && groupShoppingItemRelatedTransactionData.ID.Int64 == groupShoppingItem.RelatedTransactionData.ID.Int64 {
+					groupShoppingList.GroupShoppingList[i].RelatedTransactionData = groupShoppingItemRelatedTransactionData
+				}
 			}
 		}
 	}

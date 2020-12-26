@@ -46,7 +46,7 @@
           "posted_date": "2020-12-18T14:00:00Z",
           "updated_date": "2020-12-18T14:00:00Z",
           "expected_purchase_date": "2020/12/18(金)",
-          "complete_flag": false,
+          "complete_flag": true,
           "purchase": "米",
           "shop": "コストコ",
           "amount": 4000,
@@ -58,7 +58,22 @@
           "custom_category_name": "米",
           "regular_shopping_list_id": 1,
           "transaction_auto_add": true,
-          "related_transaction_data": null
+          "related_transaction_data": {
+            "id": 1,
+            "transaction_type": "expense",
+            "posted_date": "2020-12-18T14:00:00Z",
+            "updated_date": "2020-12-18T14:00:00Z",
+            "transaction_date": "2020/12/18(金)",
+            "shop": "コストコ",
+            "memo": "【買い物リスト】米",
+            "amount": 4000,
+            "big_category_id": 2,
+            "big_category_name": "食費",
+            "medium_category_id": null,
+            "medium_category_name": null,
+            "custom_category_id": 1,
+            "custom_category_name": "米"
+          }
         }
       ]
     },
