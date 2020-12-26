@@ -185,6 +185,21 @@ func (m MockGroupCategoriesRepository) GetGroupCategoriesName(categoriesID model
 	}, nil
 }
 
+func (m MockGroupCategoriesRepository) GetGroupCategoriesNameList(categoriesIDList []model.CategoriesID) ([]model.CategoriesName, error) {
+	return []model.CategoriesName{
+		{
+			BigCategoryName:    model.NullString{NullString: sql.NullString{String: "食費", Valid: true}},
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+		},
+		{
+			BigCategoryName:    model.NullString{NullString: sql.NullString{String: "日用品", Valid: true}},
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "消耗品", Valid: true}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+		},
+	}, nil
+}
+
 func TestDBHandler_GetGroupCategoriesList(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:            MockAuthRepository{},
@@ -309,7 +324,7 @@ func TestDBHandler_GetGroupCategoriesName(t *testing.T) {
 		GroupCategoriesRepo: MockGroupCategoriesRepository{},
 	}
 
-	r := httptest.NewRequest("GET", "/groups/1/categories", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest("GET", "/groups/1/categories/name", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
@@ -330,4 +345,33 @@ func TestDBHandler_GetGroupCategoriesName(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.CategoriesName{}, &model.CategoriesName{})
+}
+
+func TestDBHandler_GetGroupCategoriesNameList(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:            MockAuthRepository{},
+		GroupCategoriesRepo: MockGroupCategoriesRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/1/categories/names", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.GetGroupCategoriesNameList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &[]model.CategoriesName{}, &[]model.CategoriesName{})
 }

@@ -15,6 +15,54 @@ func NewGroupShoppingListRepository(mysqlHandler *MySQLHandler) *GroupShoppingLi
 	return &GroupShoppingListRepository{mysqlHandler}
 }
 
+func (r *GroupShoppingListRepository) GetGroupRegularShoppingList(groupID int) (model.GroupRegularShoppingList, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            updated_date,
+            expected_purchase_date,
+            cycle_type,
+            cycle,
+            purchase,
+            shop,
+            amount,
+            big_category_id,
+            medium_category_id,
+            custom_category_id,
+            payment_user_id,
+            transaction_auto_add
+        FROM
+            group_regular_shopping_list
+        WHERE
+            group_id = ?`
+
+	groupRegularShoppingList := model.GroupRegularShoppingList{
+		GroupRegularShoppingList: make([]model.GroupRegularShoppingItem, 0),
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID)
+	if err != nil {
+		return groupRegularShoppingList, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var groupRegularShoppingItem model.GroupRegularShoppingItem
+		if err := rows.StructScan(&groupRegularShoppingItem); err != nil {
+			return groupRegularShoppingList, err
+		}
+
+		groupRegularShoppingList.GroupRegularShoppingList = append(groupRegularShoppingList.GroupRegularShoppingList, groupRegularShoppingItem)
+	}
+
+	if err := rows.Err(); err != nil {
+		return groupRegularShoppingList, err
+	}
+
+	return groupRegularShoppingList, nil
+}
+
 func (r *GroupShoppingListRepository) GetGroupRegularShoppingItem(groupRegularShoppingItemID int) (model.GroupRegularShoppingItem, error) {
 	query := `
         SELECT
@@ -411,6 +459,123 @@ func (r *GroupShoppingListRepository) PutGroupRegularShoppingItem(groupRegularSh
 	return todayGroupShoppingItemResult, laterThanTodayGroupShoppingItemResult, nil
 }
 
+func (r *GroupShoppingListRepository) PutGroupRegularShoppingList(groupRegularShoppingList model.GroupRegularShoppingList, groupID int, today time.Time) error {
+	updateGroupRegularShoppingItemQuery := `
+        UPDATE
+            group_regular_shopping_list
+        SET
+            expected_purchase_date = ?,
+            cycle_type = ?,
+            cycle = ?,
+            purchase = ?,
+            shop = ?,
+            amount = ?,
+            big_category_id = ?,
+            medium_category_id = ?,
+            custom_category_id = ?,
+            payment_user_id = ?,
+            transaction_auto_add = ?
+        WHERE
+            id = ?`
+
+	insertGroupShoppingItemQuery := `
+        INSERT INTO 
+            group_shopping_list
+        (
+            expected_purchase_date,
+            purchase,
+            shop,
+            amount,
+            big_category_id,
+            medium_category_id,
+            custom_category_id,
+            regular_shopping_list_id,
+            payment_user_id,
+            group_id,
+            transaction_auto_add
+        )
+        VALUES
+        (
+            ?,?,?,?,?,?,?,?,?,?,?
+        )`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		for _, groupRegularShoppingItem := range groupRegularShoppingList.GroupRegularShoppingList {
+			nextExpectedPurchaseDate := groupRegularShoppingItem.ExpectedPurchaseDate.Time
+
+			for !today.Before(nextExpectedPurchaseDate) {
+				if groupRegularShoppingItem.CycleType == "daily" {
+					nextExpectedPurchaseDate = nextExpectedPurchaseDate.AddDate(0, 0, 1)
+				} else if groupRegularShoppingItem.CycleType == "weekly" {
+					nextExpectedPurchaseDate = nextExpectedPurchaseDate.AddDate(0, 0, 7)
+				} else if groupRegularShoppingItem.CycleType == "monthly" {
+					nextExpectedPurchaseDate = nextExpectedPurchaseDate.AddDate(0, 1, 0)
+				} else if groupRegularShoppingItem.CycleType == "custom" {
+					nextExpectedPurchaseDate = nextExpectedPurchaseDate.AddDate(0, 0, groupRegularShoppingItem.Cycle.Int)
+				}
+
+				if _, err = tx.Exec(
+					insertGroupShoppingItemQuery,
+					nextExpectedPurchaseDate,
+					groupRegularShoppingItem.Purchase,
+					groupRegularShoppingItem.Shop,
+					groupRegularShoppingItem.Amount,
+					groupRegularShoppingItem.BigCategoryID,
+					groupRegularShoppingItem.MediumCategoryID,
+					groupRegularShoppingItem.CustomCategoryID,
+					groupRegularShoppingItem.ID,
+					groupRegularShoppingItem.PaymentUserID,
+					groupID,
+					groupRegularShoppingItem.TransactionAutoAdd,
+				); err != nil {
+					return err
+				}
+			}
+
+			if !today.Before(groupRegularShoppingItem.ExpectedPurchaseDate.Time) {
+				if _, err := tx.Exec(
+					updateGroupRegularShoppingItemQuery,
+					nextExpectedPurchaseDate,
+					groupRegularShoppingItem.CycleType,
+					groupRegularShoppingItem.Cycle,
+					groupRegularShoppingItem.Purchase,
+					groupRegularShoppingItem.Shop,
+					groupRegularShoppingItem.Amount,
+					groupRegularShoppingItem.BigCategoryID,
+					groupRegularShoppingItem.MediumCategoryID,
+					groupRegularShoppingItem.CustomCategoryID,
+					groupRegularShoppingItem.PaymentUserID,
+					groupRegularShoppingItem.TransactionAutoAdd,
+					groupRegularShoppingItem.ID,
+				); err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *GroupShoppingListRepository) DeleteGroupRegularShoppingItem(groupRegularShoppingItemID int) error {
 	deleteGroupShoppingItemQuery := `
         DELETE
@@ -458,6 +623,59 @@ func (r *GroupShoppingListRepository) DeleteGroupRegularShoppingItem(groupRegula
 	}
 
 	return nil
+}
+
+func (r *GroupShoppingListRepository) GetDailyGroupShoppingListByDay(date time.Time, groupID int) (model.GroupShoppingList, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            updated_date,
+            expected_purchase_date,
+            complete_flag,
+            purchase,
+            shop,
+            amount,
+            big_category_id,
+            medium_category_id,
+            custom_category_id,
+            regular_shopping_list_id,
+            payment_user_id,
+            transaction_auto_add,
+            transaction_id
+        FROM
+            group_shopping_list
+        WHERE
+            group_id = ?
+        AND
+            expected_purchase_date = ?
+        ORDER BY
+            updated_date DESC`
+
+	groupShoppingList := model.GroupShoppingList{
+		GroupShoppingList: make([]model.GroupShoppingItem, 0),
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, date)
+	if err != nil {
+		return groupShoppingList, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var groupShoppingItem model.GroupShoppingItem
+		if err := rows.StructScan(&groupShoppingItem); err != nil {
+			return groupShoppingList, err
+		}
+
+		groupShoppingList.GroupShoppingList = append(groupShoppingList.GroupShoppingList, groupShoppingItem)
+	}
+
+	if err := rows.Err(); err != nil {
+		return groupShoppingList, err
+	}
+
+	return groupShoppingList, nil
 }
 
 func (r *GroupShoppingListRepository) GetGroupShoppingItem(groupShoppingItemID int) (model.GroupShoppingItem, error) {

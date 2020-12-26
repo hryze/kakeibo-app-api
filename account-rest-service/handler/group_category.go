@@ -368,3 +368,24 @@ func (h *DBHandler) GetGroupCategoriesName(w http.ResponseWriter, r *http.Reques
 		return
 	}
 }
+
+func (h *DBHandler) GetGroupCategoriesNameList(w http.ResponseWriter, r *http.Request) {
+	var categoriesIDList []model.CategoriesID
+	if err := json.NewDecoder(r.Body).Decode(&categoriesIDList); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	categoriesNameList, err := h.GroupCategoriesRepo.GetGroupCategoriesNameList(categoriesIDList)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&categoriesNameList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}

@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+type GroupShoppingDataByDay struct {
+	GroupRegularShoppingList
+	GroupShoppingList
+}
+
+type GroupRegularShoppingList struct {
+	GroupRegularShoppingList []GroupRegularShoppingItem `json:"regular_shopping_list"`
+}
+
 type GroupRegularShoppingItem struct {
 	ID                   int        `json:"id"                     db:"id"`
 	PostedDate           time.Time  `json:"posted_date"            db:"posted_date"`

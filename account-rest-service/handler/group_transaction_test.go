@@ -387,6 +387,49 @@ func (m MockGroupTransactionsRepository) SearchGroupTransactionsList(query strin
 	}, nil
 }
 
+func (m MockGroupTransactionsRepository) GetGroupShoppingItemRelatedTransactionDataList(transactionIdList []int) ([]model.GroupTransactionSender, error) {
+	return []model.GroupTransactionSender{
+		{
+			ID:                 1,
+			TransactionType:    "expense",
+			PostedDate:         time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 1, 16, 0, 0, 0, time.UTC),
+			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC)},
+			Shop:               model.NullString{NullString: sql.NullString{String: "ニトリ", Valid: true}},
+			Memo:               model.NullString{NullString: sql.NullString{String: "ベッド購入", Valid: true}},
+			Amount:             15000,
+			PostedUserID:       "userID1",
+			UpdatedUserID:      model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			PaymentUserID:      "userID1",
+			BigCategoryID:      3,
+			BigCategoryName:    "日用品",
+			MediumCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 16, Valid: true}},
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "家具", Valid: true}},
+			CustomCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+		},
+		{
+			ID:                 2,
+			TransactionType:    "expense",
+			PostedDate:         time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC),
+			UpdatedDate:        time.Date(2020, 7, 15, 16, 0, 0, 0, time.UTC),
+			TransactionDate:    model.SenderDate{Time: time.Date(2020, 7, 15, 0, 0, 0, 0, time.UTC)},
+			Shop:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			Memo:               model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			Amount:             1300,
+			PostedUserID:       "userID1",
+			UpdatedUserID:      model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			PaymentUserID:      "userID1",
+			BigCategoryID:      2,
+			BigCategoryName:    "食費",
+			MediumCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+			MediumCategoryName: model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+			CustomCategoryID:   model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+			CustomCategoryName: model.NullString{NullString: sql.NullString{String: "米", Valid: true}},
+		},
+	}, nil
+}
+
 func (m MockGroupTransactionsRepository) GetUserPaymentAmountList(groupID int, groupUserIDList []string, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error) {
 	return []model.UserPaymentAmount{
 		{UserID: "userID1", TotalPaymentAmount: 60000, PaymentAmountToUser: 0},
@@ -785,6 +828,35 @@ func TestDBHandler_SearchGroupTransactionsList(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &model.GroupTransactionsList{}, &model.GroupTransactionsList{})
+}
+
+func TestDBHandler_GetGroupShoppingItemRelatedTransactionDataList(t *testing.T) {
+	h := DBHandler{
+		AuthRepo:              MockAuthRepository{},
+		GroupTransactionsRepo: MockGroupTransactionsRepository{},
+	}
+
+	r := httptest.NewRequest("GET", "/groups/1/transactions/related-shopping-list", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	cookie := &http.Cookie{
+		Name:  "session_id",
+		Value: uuid.New().String(),
+	}
+
+	r.AddCookie(cookie)
+
+	h.GetGroupShoppingItemRelatedTransactionDataList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &[]model.GroupTransactionSender{}, &[]model.GroupTransactionSender{})
 }
 
 func TestDBHandler_GetYearlyAccountingStatus(t *testing.T) {
