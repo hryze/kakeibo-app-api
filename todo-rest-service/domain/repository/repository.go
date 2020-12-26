@@ -72,6 +72,7 @@ type GroupShoppingListRepository interface {
 	GetDailyGroupShoppingListByDay(date time.Time, groupID int) (model.GroupShoppingList, error)
 	GetDailyGroupShoppingListByCategory(date time.Time, groupID int) (model.GroupShoppingList, error)
 	GetMonthlyGroupShoppingListByDay(firstDay time.Time, lastDay time.Time, groupID int) (model.GroupShoppingList, error)
+	GetMonthlyGroupShoppingListByCategory(firstDay time.Time, lastDay time.Time, groupID int) (model.GroupShoppingList, error)
 	GetGroupShoppingItem(groupShoppingItemID int) (model.GroupShoppingItem, error)
 	PostGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem, groupID int) (sql.Result, error)
 	PutGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem) (sql.Result, error)
