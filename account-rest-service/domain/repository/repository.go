@@ -62,6 +62,8 @@ type GroupCategoriesRepository interface {
 	FindGroupCustomCategoryID(groupCustomCategoryID int) error
 	GetBigCategoryID(groupCustomCategoryID int) (int, error)
 	DeleteGroupCustomCategory(previousGroupCustomCategoryID int, replaceMediumCategoryID int) error
+	GetGroupCategoriesName(categoriesID model.CategoriesID) (*model.CategoriesName, error)
+	GetGroupCategoriesNameList(categoriesIDList []model.CategoriesID) ([]model.CategoriesName, error)
 }
 
 type GroupTransactionsRepository interface {
@@ -72,6 +74,7 @@ type GroupTransactionsRepository interface {
 	PutGroupTransaction(groupTransaction *model.GroupTransactionReceiver, groupTransactionID int, updatedUserID string) error
 	DeleteGroupTransaction(groupTransactionID int) error
 	SearchGroupTransactionsList(query string) ([]model.GroupTransactionSender, error)
+	GetGroupShoppingItemRelatedTransactionDataList(transactionIdList []int) ([]model.GroupTransactionSender, error)
 	GetUserPaymentAmountList(groupID int, groupUserIDList []string, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error)
 	GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error)
 	PostGroupAccountsList(groupAccountsList []model.GroupAccount) error

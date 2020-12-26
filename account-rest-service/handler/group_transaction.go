@@ -750,6 +750,27 @@ func (h *DBHandler) SearchGroupTransactionsList(w http.ResponseWriter, r *http.R
 	}
 }
 
+func (h *DBHandler) GetGroupShoppingItemRelatedTransactionDataList(w http.ResponseWriter, r *http.Request) {
+	var transactionIdList []int
+	if err := json.NewDecoder(r.Body).Decode(&transactionIdList); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	groupTransactionsList, err := h.GroupTransactionsRepo.GetGroupShoppingItemRelatedTransactionDataList(transactionIdList)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&groupTransactionsList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
 func (h *DBHandler) GetYearlyAccountingStatus(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {

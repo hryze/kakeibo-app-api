@@ -1,0 +1,13 @@
+{
+  "expected_purchase_date": "2020-09-06T15:30:54.7772",
+  "cycle_type": "weekly",
+  "cycle": null,
+  "purchase": "トイレットペーパー",
+  "shop": "クリエイト",
+  "amount": 300,
+  "big_category_id": 3,
+  "medium_category_id": 13,
+  "custom_category_id": null,
+  "payment_user_id": "userID1",
+  "transaction_auto_add": true
+}

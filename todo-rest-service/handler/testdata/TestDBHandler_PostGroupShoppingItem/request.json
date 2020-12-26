@@ -1,0 +1,11 @@
+{
+  "expected_purchase_date": "2020-12-24T16:00:00.0000",
+  "purchase": "鶏肉3kg",
+  "shop": "コストコ",
+  "amount": 1000,
+  "big_category_id": 2,
+  "medium_category_id": 6,
+  "custom_category_id": null,
+  "payment_user_id": "userID1",
+  "transaction_auto_add": true
+}

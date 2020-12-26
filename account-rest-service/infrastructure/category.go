@@ -267,7 +267,6 @@ func (r *CategoriesRepository) GetCategoriesName(categoriesID model.CategoriesID
 	}
 
 	return &categoriesName, nil
-
 }
 
 func (r *CategoriesRepository) GetCategoriesNameList(categoriesIDList []model.CategoriesID) ([]model.CategoriesName, error) {

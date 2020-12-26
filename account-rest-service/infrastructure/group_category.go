@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
 )
@@ -237,4 +238,113 @@ func (r *GroupCategoriesRepository) DeleteGroupCustomCategory(previousGroupCusto
 	}
 
 	return nil
+}
+
+func (r *GroupCategoriesRepository) GetGroupCategoriesName(categoriesID model.CategoriesID) (*model.CategoriesName, error) {
+	var categoriesName model.CategoriesName
+	var query string
+	var categoryID int64
+
+	if categoriesID.MediumCategoryID.Valid {
+		query = `
+            SELECT
+                big_categories.category_name big_category_name,
+                medium_categories.category_name medium_category_name
+            FROM
+                medium_categories
+            LEFT JOIN
+                big_categories
+            ON
+                medium_categories.big_category_id = big_categories.id
+            WHERE
+                medium_categories.id = ?`
+
+		categoryID = categoriesID.MediumCategoryID.Int64
+	} else if categoriesID.CustomCategoryID.Valid {
+		query = `
+            SELECT
+                big_categories.category_name big_category_name,
+                group_custom_categories.category_name custom_category_name
+            FROM
+                group_custom_categories
+            LEFT JOIN
+                big_categories
+            ON
+                group_custom_categories.big_category_id = big_categories.id
+            WHERE
+                group_custom_categories.id = ?`
+
+		categoryID = categoriesID.CustomCategoryID.Int64
+	}
+
+	if err := r.MySQLHandler.conn.QueryRowx(query, categoryID).StructScan(&categoriesName); err != nil {
+		return nil, err
+	}
+
+	return &categoriesName, nil
+}
+
+func (r *GroupCategoriesRepository) GetGroupCategoriesNameList(categoriesIDList []model.CategoriesID) ([]model.CategoriesName, error) {
+	sliceQuery := make([]string, len(categoriesIDList))
+	queryArgs := make([]interface{}, len(categoriesIDList))
+
+	for i, categoriesID := range categoriesIDList {
+		if categoriesID.MediumCategoryID.Valid {
+			sliceQuery[i] = `
+            SELECT
+                big_categories.category_name big_category_name,
+                medium_categories.category_name medium_category_name,
+                NULL custom_category_name
+            FROM
+                medium_categories
+            LEFT JOIN
+                big_categories
+            ON
+                medium_categories.big_category_id = big_categories.id
+            WHERE
+                medium_categories.id = ?`
+
+			queryArgs[i] = categoriesID.MediumCategoryID.Int64
+		} else if categoriesID.CustomCategoryID.Valid {
+			sliceQuery[i] = `
+            SELECT
+                big_categories.category_name big_category_name,
+                NULL medium_category_name,
+                group_custom_categories.category_name custom_category_name
+            FROM
+                group_custom_categories
+            LEFT JOIN
+                big_categories
+            ON
+                group_custom_categories.big_category_id = big_categories.id
+            WHERE
+                group_custom_categories.id = ?`
+
+			queryArgs[i] = categoriesID.CustomCategoryID.Int64
+		}
+	}
+
+	query := strings.Join(sliceQuery, " UNION ALL ")
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, queryArgs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	categoriesNameList := make([]model.CategoriesName, len(categoriesIDList))
+	for i := 0; rows.Next(); i++ {
+		var categoriesName model.CategoriesName
+		if err := rows.StructScan(&categoriesName); err != nil {
+			return nil, err
+		}
+
+		categoriesNameList[i] = categoriesName
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return categoriesNameList, nil
 }

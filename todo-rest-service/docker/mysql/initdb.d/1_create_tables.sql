@@ -87,7 +87,7 @@ CREATE TABLE group_regular_shopping_list
   big_category_id INT NOT NULL,
   medium_category_id INT DEFAULT NULL,
   custom_category_id INT DEFAULT NULL,
-  payment_user_id VARCHAR(10) NOT NULL,
+  payment_user_id VARCHAR(10) DEFAULT NULL,
   group_id INT NOT NULL,
   transaction_auto_add bit(1) NOT NULL DEFAULT b'0',
   PRIMARY KEY(id)
@@ -107,7 +107,7 @@ CREATE TABLE group_shopping_list
   medium_category_id INT DEFAULT NULL,
   custom_category_id INT DEFAULT NULL,
   regular_shopping_list_id INT DEFAULT NULL,
-  payment_user_id VARCHAR(10) NOT NULL,
+  payment_user_id VARCHAR(10) DEFAULT NULL,
   group_id INT NOT NULL,
   transaction_auto_add bit(1) NOT NULL DEFAULT b'0',
   transaction_id INT DEFAULT NULL,

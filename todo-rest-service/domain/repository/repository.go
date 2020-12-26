@@ -61,6 +61,21 @@ type GroupTodoRepository interface {
 	SearchGroupTodoList(groupTodoSqlQuery string) ([]model.GroupTodo, error)
 }
 
+type GroupShoppingListRepository interface {
+	GetGroupRegularShoppingList(groupID int) (model.GroupRegularShoppingList, error)
+	GetGroupRegularShoppingItem(groupRegularShoppingItemID int) (model.GroupRegularShoppingItem, error)
+	GetGroupShoppingListRelatedToGroupRegularShoppingItem(todayGroupShoppingItemID int, laterThanTodayGroupShoppingItemID int) (model.GroupShoppingList, error)
+	PostGroupRegularShoppingItem(groupRegularShoppingItem *model.GroupRegularShoppingItem, groupID int, today time.Time) (sql.Result, sql.Result, sql.Result, error)
+	PutGroupRegularShoppingItem(groupRegularShoppingItem *model.GroupRegularShoppingItem, groupRegularShoppingItemID int, groupID int, today time.Time) (sql.Result, sql.Result, error)
+	PutGroupRegularShoppingList(groupRegularShoppingList model.GroupRegularShoppingList, groupID int, today time.Time) error
+	DeleteGroupRegularShoppingItem(groupRegularShoppingItemID int) error
+	GetDailyGroupShoppingListByDay(date time.Time, groupID int) (model.GroupShoppingList, error)
+	GetGroupShoppingItem(groupShoppingItemID int) (model.GroupShoppingItem, error)
+	PostGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem, groupID int) (sql.Result, error)
+	PutGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem) (sql.Result, error)
+	DeleteGroupShoppingItem(groupShoppingItemID int) error
+}
+
 type GroupTasksRepository interface {
 	GetGroupTasksUsersList(groupID int) ([]model.GroupTasksUser, error)
 	GetGroupTasksListAssignedToUser(groupID int) ([]model.GroupTask, error)
