@@ -46,6 +46,7 @@ type ShoppingListRepository interface {
 	PostShoppingItem(shoppingItem *model.ShoppingItem, userID string) (sql.Result, error)
 	PutShoppingItem(shoppingItem *model.ShoppingItem) (sql.Result, error)
 	DeleteShoppingItem(shoppingItemID int) error
+	PutShoppingListCustomCategoryIdToMediumCategoryId(mediumCategoryID int, customCategoryID int) error
 }
 
 type GroupTodoRepository interface {
