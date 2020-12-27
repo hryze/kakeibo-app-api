@@ -1369,3 +1369,22 @@ func (h *DBHandler) DeleteGroupShoppingItem(w http.ResponseWriter, r *http.Reque
 		return
 	}
 }
+
+func (h *DBHandler) PutGroupShoppingListCustomCategoryIdToMediumCategoryId(w http.ResponseWriter, r *http.Request) {
+	categoriesID := struct {
+		MediumCategoryID int `json:"medium_category_id"`
+		CustomCategoryID int `json:"custom_category_id"`
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&categoriesID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := h.GroupShoppingListRepo.PutGroupShoppingListCustomCategoryIdToMediumCategoryId(categoriesID.MediumCategoryID, categoriesID.CustomCategoryID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}

@@ -1,12 +1,19 @@
 package handler
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
@@ -46,6 +53,66 @@ func validateGroupCustomCategory(r *http.Request, groupCustomCategory *model.Gro
 	}
 
 	return nil
+}
+
+func putGroupShoppingListCustomCategoryIdToMediumCategoryId(mediumCategoryID int, customCategoryID int, groupID int) error {
+	todoHost := os.Getenv("TODO_HOST")
+	requestURL := fmt.Sprintf("http://%s:8082/groups/%d/shopping-list/categories", todoHost, groupID)
+
+	categoriesID := struct {
+		MediumCategoryID int `json:"medium_category_id"`
+		CustomCategoryID int `json:"custom_category_id"`
+	}{
+		MediumCategoryID: mediumCategoryID,
+		CustomCategoryID: customCategoryID,
+	}
+
+	requestBody, err := json.Marshal(&categoriesID)
+	if err != nil {
+		return err
+	}
+
+	request, err := http.NewRequest(
+		"PUT",
+		requestURL,
+		bytes.NewBuffer(requestBody),
+	)
+	if err != nil {
+		return err
+	}
+
+	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			MaxIdleConns:          500,
+			MaxIdleConnsPerHost:   100,
+			IdleConnTimeout:       90 * time.Second,
+			ResponseHeaderTimeout: 10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		},
+		Timeout: 60 * time.Second,
+	}
+
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		_, _ = io.Copy(ioutil.Discard, response.Body)
+		response.Body.Close()
+	}()
+
+	if response.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	return errors.New("couldn't replace customCategoryID in shopping list with default mediumCategoryID")
 }
 
 func (h *DBHandler) GetGroupCategoriesList(w http.ResponseWriter, r *http.Request) {
@@ -336,6 +403,11 @@ func (h *DBHandler) DeleteGroupCustomCategory(w http.ResponseWriter, r *http.Req
 	}
 
 	if err := h.GroupCategoriesRepo.DeleteGroupCustomCategory(groupCustomCategoryID, mediumCategoryID); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	if err := putGroupShoppingListCustomCategoryIdToMediumCategoryId(mediumCategoryID, groupCustomCategoryID, groupID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}

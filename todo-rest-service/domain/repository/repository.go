@@ -79,6 +79,7 @@ type GroupShoppingListRepository interface {
 	PostGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem, groupID int) (sql.Result, error)
 	PutGroupShoppingItem(groupShoppingItem *model.GroupShoppingItem) (sql.Result, error)
 	DeleteGroupShoppingItem(groupShoppingItemID int) error
+	PutGroupShoppingListCustomCategoryIdToMediumCategoryId(mediumCategoryID int, customCategoryID int) error
 }
 
 type GroupTasksRepository interface {
