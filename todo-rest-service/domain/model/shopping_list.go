@@ -31,19 +31,20 @@ type RegularShoppingItem struct {
 	ID                   int        `json:"id"                     db:"id"`
 	PostedDate           time.Time  `json:"posted_date"            db:"posted_date"`
 	UpdatedDate          time.Time  `json:"updated_date"           db:"updated_date"`
-	ExpectedPurchaseDate Date       `json:"expected_purchase_date" db:"expected_purchase_date"`
-	CycleType            string     `json:"cycle_type"             db:"cycle_type"`
-	Cycle                NullInt    `json:"cycle"                  db:"cycle"`
-	Purchase             string     `json:"purchase"               db:"purchase"`
-	Shop                 NullString `json:"shop"                   db:"shop"`
-	Amount               NullInt64  `json:"amount"                 db:"amount"`
-	BigCategoryID        int        `json:"big_category_id"        db:"big_category_id"`
+	ExpectedPurchaseDate Date       `json:"expected_purchase_date" db:"expected_purchase_date" validate:"required,date_range"`
+	CycleType            string     `json:"cycle_type"             db:"cycle_type"             validate:"required,oneof=daily weekly monthly custom"`
+	Cycle                NullInt    `json:"cycle"                  db:"cycle"                  validate:"omitempty,min=1"`
+	Purchase             string     `json:"purchase"               db:"purchase"               validate:"required,max=50,blank"`
+	Shop                 NullString `json:"shop"                   db:"shop"                   validate:"omitempty,max=20,blank"`
+	Amount               NullInt64  `json:"amount"                 db:"amount"                 validate:"omitempty,min=1"`
+	BigCategoryID        int        `json:"big_category_id"        db:"big_category_id"        validate:"required,min=2,max=17,either_id"`
 	BigCategoryName      string     `json:"big_category_name"      db:"big_category_name"`
-	MediumCategoryID     NullInt64  `json:"medium_category_id"     db:"medium_category_id"`
+	MediumCategoryID     NullInt64  `json:"medium_category_id"     db:"medium_category_id"     validate:"omitempty,min=1,max=99"`
 	MediumCategoryName   NullString `json:"medium_category_name"   db:"medium_category_name"`
-	CustomCategoryID     NullInt64  `json:"custom_category_id"     db:"custom_category_id"`
+	CustomCategoryID     NullInt64  `json:"custom_category_id"     db:"custom_category_id"     validate:"omitempty,min=1"`
 	CustomCategoryName   NullString `json:"custom_category_name"   db:"custom_category_name"`
 	TransactionAutoAdd   BitBool    `json:"transaction_auto_add"   db:"transaction_auto_add"`
+	Today                time.Time  `json:"-"`
 }
 
 type ShoppingList struct {
@@ -58,20 +59,21 @@ type ShoppingItem struct {
 	ID                     int              `json:"id"                       db:"id"`
 	PostedDate             time.Time        `json:"posted_date"              db:"posted_date"`
 	UpdatedDate            time.Time        `json:"updated_date"             db:"updated_date"`
-	ExpectedPurchaseDate   Date             `json:"expected_purchase_date"   db:"expected_purchase_date"`
+	ExpectedPurchaseDate   Date             `json:"expected_purchase_date"   db:"expected_purchase_date" validate:"required,date_range"`
 	CompleteFlag           BitBool          `json:"complete_flag"            db:"complete_flag"`
-	Purchase               string           `json:"purchase"                 db:"purchase"`
-	Shop                   NullString       `json:"shop"                     db:"shop"`
-	Amount                 NullInt64        `json:"amount"                   db:"amount"`
-	BigCategoryID          int              `json:"big_category_id"          db:"big_category_id"`
+	Purchase               string           `json:"purchase"                 db:"purchase"               validate:"required,max=50,blank"`
+	Shop                   NullString       `json:"shop"                     db:"shop"                   validate:"omitempty,max=20,blank"`
+	Amount                 NullInt64        `json:"amount"                   db:"amount"                 validate:"omitempty,min=1"`
+	BigCategoryID          int              `json:"big_category_id"          db:"big_category_id"        validate:"required,min=2,max=17,either_id"`
 	BigCategoryName        string           `json:"big_category_name"        db:"big_category_name"`
-	MediumCategoryID       NullInt64        `json:"medium_category_id"       db:"medium_category_id"`
+	MediumCategoryID       NullInt64        `json:"medium_category_id"       db:"medium_category_id"     validate:"omitempty,min=1,max=99"`
 	MediumCategoryName     NullString       `json:"medium_category_name"     db:"medium_category_name"`
-	CustomCategoryID       NullInt64        `json:"custom_category_id"       db:"custom_category_id"`
+	CustomCategoryID       NullInt64        `json:"custom_category_id"       db:"custom_category_id"     validate:"omitempty,min=1"`
 	CustomCategoryName     NullString       `json:"custom_category_name"     db:"custom_category_name"`
 	RegularShoppingListID  NullInt64        `json:"regular_shopping_list_id" db:"regular_shopping_list_id"`
 	TransactionAutoAdd     BitBool          `json:"transaction_auto_add"     db:"transaction_auto_add"`
 	RelatedTransactionData *TransactionData `json:"related_transaction_data" db:"transaction_id"`
+	Today                  time.Time        `json:"-"`
 }
 
 type TransactionData struct {

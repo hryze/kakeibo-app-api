@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
@@ -91,7 +92,7 @@ func (r *ShoppingListRepository) GetRegularShoppingItem(regularShoppingItemID in
 	return regularShoppingItem, nil
 }
 
-func (r *ShoppingListRepository) GetShoppingListRelatedToRegularShoppingItem(todayShoppingItemID int, laterThanTodayShoppingItemID int) (model.ShoppingList, error) {
+func (r *ShoppingListRepository) GetShoppingListRelatedToPostedRegularShoppingItem(todayShoppingItemID int, laterThanTodayShoppingItemID int) (model.ShoppingList, error) {
 	query := `
         SELECT
             id,
@@ -282,7 +283,66 @@ func (r *ShoppingListRepository) PostRegularShoppingItem(regularShoppingItem *mo
 	return regularShoppingItemResult, todayShoppingItemResult, laterThanTodayShoppingItemResult, nil
 }
 
-func (r *ShoppingListRepository) PutRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, regularShoppingItemID int, userID string, today time.Time) (sql.Result, sql.Result, error) {
+func (r *ShoppingListRepository) GetShoppingListRelatedToUpdatedRegularShoppingItem(regularShoppingItemID int) (model.ShoppingList, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            updated_date,
+            expected_purchase_date,
+            complete_flag,
+            purchase,
+            shop,
+            amount,
+            big_category_id,
+            medium_category_id,
+            custom_category_id,
+            regular_shopping_list_id,
+            transaction_auto_add,
+            transaction_id
+        FROM
+            shopping_list
+        WHERE
+            regular_shopping_list_id = ?
+        ORDER BY
+            expected_purchase_date, updated_date DESC`
+
+	shoppingList := model.ShoppingList{
+		ShoppingList: make([]model.ShoppingItem, 0),
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, regularShoppingItemID)
+	if err != nil {
+		return shoppingList, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var shoppingItem model.ShoppingItem
+		if err := rows.StructScan(&shoppingItem); err != nil {
+			return shoppingList, err
+		}
+
+		shoppingList.ShoppingList = append(shoppingList.ShoppingList, shoppingItem)
+	}
+
+	if err := rows.Err(); err != nil {
+		return shoppingList, err
+	}
+
+	return shoppingList, nil
+}
+
+func (r *ShoppingListRepository) PutRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, regularShoppingItemID int, userID string, today time.Time) error {
+	deleteShoppingItemQuery := `
+        DELETE
+        FROM
+            shopping_list
+        WHERE
+            regular_shopping_list_id = ?
+        AND
+            complete_flag = false`
+
 	updateRegularShoppingItemQuery := `
         UPDATE
             regular_shopping_list
@@ -299,28 +359,6 @@ func (r *ShoppingListRepository) PutRegularShoppingItem(regularShoppingItem *mod
             transaction_auto_add = ?
         WHERE
             id = ?`
-
-	deleteTodayShoppingItemQuery := `
-        DELETE
-        FROM
-            shopping_list
-        WHERE
-            regular_shopping_list_id = ?
-        AND
-            expected_purchase_date = ?
-        AND
-            complete_flag = false`
-
-	deleteLaterThanTodayShoppingItemQuery := `
-        DELETE
-        FROM
-            shopping_list
-        WHERE
-            regular_shopping_list_id = ?
-        AND
-            expected_purchase_date > ?
-        AND
-            complete_flag = false`
 
 	insertShoppingItemQuery := `
         INSERT INTO 
@@ -344,14 +382,36 @@ func (r *ShoppingListRepository) PutRegularShoppingItem(regularShoppingItem *mod
 
 	tx, err := r.MySQLHandler.conn.Begin()
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 
-	transactions := func(tx *sql.Tx) (sql.Result, sql.Result, error) {
-		var todayShoppingItemResult, laterThanTodayShoppingItemResult sql.Result
+	transactions := func(tx *sql.Tx) error {
+		if _, err := tx.Exec(
+			deleteShoppingItemQuery,
+			regularShoppingItemID,
+		); err != nil {
+			return err
+		}
+
+		if _, err = tx.Exec(
+			insertShoppingItemQuery,
+			regularShoppingItem.ExpectedPurchaseDate,
+			regularShoppingItem.Purchase,
+			regularShoppingItem.Shop,
+			regularShoppingItem.Amount,
+			regularShoppingItem.BigCategoryID,
+			regularShoppingItem.MediumCategoryID,
+			regularShoppingItem.CustomCategoryID,
+			regularShoppingItemID,
+			userID,
+			regularShoppingItem.TransactionAutoAdd,
+		); err != nil {
+			return err
+		}
+
 		nextExpectedPurchaseDate := regularShoppingItem.ExpectedPurchaseDate.Time
 
-		if today.Equal(regularShoppingItem.ExpectedPurchaseDate.Time) {
+		for !today.Before(nextExpectedPurchaseDate) {
 			if regularShoppingItem.CycleType == "daily" {
 				nextExpectedPurchaseDate = nextExpectedPurchaseDate.AddDate(0, 0, 1)
 			} else if regularShoppingItem.CycleType == "weekly" {
@@ -362,17 +422,9 @@ func (r *ShoppingListRepository) PutRegularShoppingItem(regularShoppingItem *mod
 				nextExpectedPurchaseDate = nextExpectedPurchaseDate.AddDate(0, 0, regularShoppingItem.Cycle.Int)
 			}
 
-			if _, err := tx.Exec(
-				deleteTodayShoppingItemQuery,
-				regularShoppingItemID,
-				today,
-			); err != nil {
-				return nil, nil, err
-			}
-
-			todayShoppingItemResult, err = tx.Exec(
+			if _, err = tx.Exec(
 				insertShoppingItemQuery,
-				today,
+				nextExpectedPurchaseDate,
 				regularShoppingItem.Purchase,
 				regularShoppingItem.Shop,
 				regularShoppingItem.Amount,
@@ -382,9 +434,9 @@ func (r *ShoppingListRepository) PutRegularShoppingItem(regularShoppingItem *mod
 				regularShoppingItemID,
 				userID,
 				regularShoppingItem.TransactionAutoAdd,
-			)
-			if err != nil {
-				return nil, nil, err
+			); err != nil {
+				fmt.Println(err)
+				return err
 			}
 		}
 
@@ -402,51 +454,25 @@ func (r *ShoppingListRepository) PutRegularShoppingItem(regularShoppingItem *mod
 			regularShoppingItem.TransactionAutoAdd,
 			regularShoppingItemID,
 		); err != nil {
-			return nil, nil, err
+			return err
 		}
 
-		if _, err := tx.Exec(
-			deleteLaterThanTodayShoppingItemQuery,
-			regularShoppingItemID,
-			today,
-		); err != nil {
-			return nil, nil, err
-		}
-
-		laterThanTodayShoppingItemResult, err = tx.Exec(
-			insertShoppingItemQuery,
-			nextExpectedPurchaseDate,
-			regularShoppingItem.Purchase,
-			regularShoppingItem.Shop,
-			regularShoppingItem.Amount,
-			regularShoppingItem.BigCategoryID,
-			regularShoppingItem.MediumCategoryID,
-			regularShoppingItem.CustomCategoryID,
-			regularShoppingItemID,
-			userID,
-			regularShoppingItem.TransactionAutoAdd,
-		)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		return todayShoppingItemResult, laterThanTodayShoppingItemResult, nil
+		return nil
 	}
 
-	todayShoppingItemResult, laterThanTodayShoppingItemResult, err := transactions(tx)
-	if err != nil {
+	if err := transactions(tx); err != nil {
 		if err := tx.Rollback(); err != nil {
-			return nil, nil, err
+			return err
 		}
 
-		return nil, nil, err
+		return err
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, nil, err
+		return err
 	}
 
-	return todayShoppingItemResult, laterThanTodayShoppingItemResult, nil
+	return nil
 }
 
 func (r *ShoppingListRepository) PutRegularShoppingList(regularShoppingList model.RegularShoppingList, userID string, today time.Time) error {
@@ -455,15 +481,6 @@ func (r *ShoppingListRepository) PutRegularShoppingList(regularShoppingList mode
             regular_shopping_list
         SET
             expected_purchase_date = ?,
-            cycle_type = ?,
-            cycle = ?,
-            purchase = ?,
-            shop = ?,
-            amount = ?,
-            big_category_id = ?,
-            medium_category_id = ?,
-            custom_category_id = ?,
-            transaction_auto_add = ?
         WHERE
             id = ?`
 
@@ -528,15 +545,6 @@ func (r *ShoppingListRepository) PutRegularShoppingList(regularShoppingList mode
 				if _, err := tx.Exec(
 					updateRegularShoppingItemQuery,
 					nextExpectedPurchaseDate,
-					regularShoppingItem.CycleType,
-					regularShoppingItem.Cycle,
-					regularShoppingItem.Purchase,
-					regularShoppingItem.Shop,
-					regularShoppingItem.Amount,
-					regularShoppingItem.BigCategoryID,
-					regularShoppingItem.MediumCategoryID,
-					regularShoppingItem.CustomCategoryID,
-					regularShoppingItem.TransactionAutoAdd,
 					regularShoppingItem.ID,
 				); err != nil {
 					return err

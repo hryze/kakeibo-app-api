@@ -32,9 +32,10 @@ type TodoRepository interface {
 type ShoppingListRepository interface {
 	GetRegularShoppingList(userID string) (model.RegularShoppingList, error)
 	GetRegularShoppingItem(regularShoppingItemID int) (model.RegularShoppingItem, error)
-	GetShoppingListRelatedToRegularShoppingItem(todayShoppingItemID int, laterThanTodayShoppingItemID int) (model.ShoppingList, error)
+	GetShoppingListRelatedToPostedRegularShoppingItem(todayShoppingItemID int, laterThanTodayShoppingItemID int) (model.ShoppingList, error)
 	PostRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, userID string, today time.Time) (sql.Result, sql.Result, sql.Result, error)
-	PutRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, regularShoppingItemID int, userID string, today time.Time) (sql.Result, sql.Result, error)
+	GetShoppingListRelatedToUpdatedRegularShoppingItem(regularShoppingItemID int) (model.ShoppingList, error)
+	PutRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, regularShoppingItemID int, userID string, today time.Time) error
 	PutRegularShoppingList(regularShoppingList model.RegularShoppingList, userID string, today time.Time) error
 	DeleteRegularShoppingItem(regularShoppingItemID int) error
 	GetDailyShoppingListByDay(date time.Time, userID string) (model.ShoppingList, error)
@@ -65,9 +66,10 @@ type GroupTodoRepository interface {
 type GroupShoppingListRepository interface {
 	GetGroupRegularShoppingList(groupID int) (model.GroupRegularShoppingList, error)
 	GetGroupRegularShoppingItem(groupRegularShoppingItemID int) (model.GroupRegularShoppingItem, error)
-	GetGroupShoppingListRelatedToGroupRegularShoppingItem(todayGroupShoppingItemID int, laterThanTodayGroupShoppingItemID int) (model.GroupShoppingList, error)
+	GetGroupShoppingListRelatedToPostedGroupRegularShoppingItem(todayGroupShoppingItemID int, laterThanTodayGroupShoppingItemID int) (model.GroupShoppingList, error)
 	PostGroupRegularShoppingItem(groupRegularShoppingItem *model.GroupRegularShoppingItem, groupID int, today time.Time) (sql.Result, sql.Result, sql.Result, error)
-	PutGroupRegularShoppingItem(groupRegularShoppingItem *model.GroupRegularShoppingItem, groupRegularShoppingItemID int, groupID int, today time.Time) (sql.Result, sql.Result, error)
+	GetGroupShoppingListRelatedToUpdatedGroupRegularShoppingItem(groupRegularShoppingItemID int) (model.GroupShoppingList, error)
+	PutGroupRegularShoppingItem(groupRegularShoppingItem *model.GroupRegularShoppingItem, groupRegularShoppingItemID int, groupID int, today time.Time) error
 	PutGroupRegularShoppingList(groupRegularShoppingList model.GroupRegularShoppingList, groupID int, today time.Time) error
 	DeleteGroupRegularShoppingItem(groupRegularShoppingItemID int) error
 	GetDailyGroupShoppingListByDay(date time.Time, groupID int) (model.GroupShoppingList, error)
