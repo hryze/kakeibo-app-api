@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+
 	"github.com/gorilla/mux"
 
 	"github.com/google/uuid"
@@ -545,6 +547,10 @@ func (m MockShoppingListRepository) PutShoppingItem(shoppingItem *model.Shopping
 }
 
 func (m MockShoppingListRepository) DeleteShoppingItem(shoppingItemID int) error {
+	return nil
+}
+
+func (m MockShoppingListRepository) PutShoppingListCustomCategoryIdToMediumCategoryId(mediumCategoryID int, customCategoryID int) error {
 	return nil
 }
 
@@ -1524,4 +1530,22 @@ func TestDBHandler_DeleteShoppingItem(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
+}
+
+func TestDBHandler_PutShoppingListCustomCategoryIdToMediumCategoryId(t *testing.T) {
+	h := DBHandler{
+		ShoppingListRepo: MockShoppingListRepository{},
+	}
+
+	r := httptest.NewRequest("PUT", "/shopping-list/categories", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	h.PutShoppingListCustomCategoryIdToMediumCategoryId(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	if diff := cmp.Diff(http.StatusOK, res.StatusCode); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
 }

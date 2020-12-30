@@ -1020,3 +1020,62 @@ func (r *GroupShoppingListRepository) DeleteGroupShoppingItem(groupShoppingItemI
 
 	return err
 }
+
+func (r *GroupShoppingListRepository) PutGroupShoppingListCustomCategoryIdToMediumCategoryId(mediumCategoryID int, customCategoryID int) error {
+	updateGroupShoppingListQuery := `
+        UPDATE
+            group_shopping_list
+        SET 
+            medium_category_id = ?,
+            custom_category_id = NULL
+        WHERE
+            custom_category_id = ?`
+
+	updateGroupRegularShoppingListQuery := `
+        UPDATE
+            group_regular_shopping_list
+        SET 
+            medium_category_id = ?,
+            custom_category_id = NULL
+        WHERE
+            custom_category_id = ?`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		if _, err := tx.Exec(
+			updateGroupShoppingListQuery,
+			mediumCategoryID,
+			customCategoryID,
+		); err != nil {
+			return err
+		}
+
+		if _, err := tx.Exec(
+			updateGroupRegularShoppingListQuery,
+			mediumCategoryID,
+			customCategoryID,
+		); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -998,3 +998,62 @@ func (r *ShoppingListRepository) DeleteShoppingItem(shoppingItemID int) error {
 
 	return err
 }
+
+func (r *ShoppingListRepository) PutShoppingListCustomCategoryIdToMediumCategoryId(mediumCategoryID int, customCategoryID int) error {
+	updateShoppingListQuery := `
+        UPDATE
+            shopping_list
+        SET 
+            medium_category_id = ?,
+            custom_category_id = NULL
+        WHERE
+            custom_category_id = ?`
+
+	updateRegularShoppingListQuery := `
+        UPDATE
+            regular_shopping_list
+        SET 
+            medium_category_id = ?,
+            custom_category_id = NULL
+        WHERE
+            custom_category_id = ?`
+
+	tx, err := r.MySQLHandler.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		if _, err := tx.Exec(
+			updateShoppingListQuery,
+			mediumCategoryID,
+			customCategoryID,
+		); err != nil {
+			return err
+		}
+
+		if _, err := tx.Exec(
+			updateRegularShoppingListQuery,
+			mediumCategoryID,
+			customCategoryID,
+		); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}

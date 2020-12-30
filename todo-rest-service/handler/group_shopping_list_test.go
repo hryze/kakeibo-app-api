@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
@@ -520,6 +522,10 @@ func (m MockGroupShoppingListRepository) PutGroupShoppingItem(groupShoppingItem 
 }
 
 func (m MockGroupShoppingListRepository) DeleteGroupShoppingItem(groupShoppingItemID int) error {
+	return nil
+}
+
+func (m MockGroupShoppingListRepository) PutGroupShoppingListCustomCategoryIdToMediumCategoryId(mediumCategoryID int, customCategoryID int) error {
 	return nil
 }
 
@@ -1530,4 +1536,26 @@ func TestDBHandler_DeleteGroupShoppingItem(t *testing.T) {
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
 	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
+}
+
+func TestDBHandler_PutGroupShoppingListCustomCategoryIdToMediumCategoryId(t *testing.T) {
+	h := DBHandler{
+		GroupShoppingListRepo: MockGroupShoppingListRepository{},
+	}
+
+	r := httptest.NewRequest("PUT", "/groups/1/shopping-list/categories", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	h.PutGroupShoppingListCustomCategoryIdToMediumCategoryId(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	if diff := cmp.Diff(http.StatusOK, res.StatusCode); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
 }

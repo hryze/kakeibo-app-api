@@ -2,8 +2,11 @@ package handler
 
 import (
 	"database/sql"
+	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -289,6 +292,33 @@ func TestDBHandler_PutGroupCustomCategory(t *testing.T) {
 }
 
 func TestDBHandler_DeleteGroupCustomCategory(t *testing.T) {
+	if err := os.Setenv("TODO_HOST", "localhost"); err != nil {
+		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
+	}
+
+	todoHost := os.Getenv("TODO_HOST")
+	todoHostURL := fmt.Sprintf("%s:8082", todoHost)
+
+	mockGroupPutShoppingListCustomCategoryIdToMediumCategoryId := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	router := mux.NewRouter()
+	router.HandleFunc("/groups/{group_id:[0-9]+}/shopping-list/categories", mockGroupPutShoppingListCustomCategoryIdToMediumCategoryId).Methods("PUT")
+
+	listener, err := net.Listen("tcp", todoHostURL)
+	if err != nil {
+		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
+	}
+
+	ts := httptest.Server{
+		Listener: listener,
+		Config:   &http.Server{Handler: router},
+	}
+
+	ts.Start()
+	defer ts.Close()
+
 	h := DBHandler{
 		AuthRepo:            MockAuthRepository{},
 		GroupCategoriesRepo: MockGroupCategoriesRepository{},
