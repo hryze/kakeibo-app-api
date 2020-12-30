@@ -141,7 +141,7 @@ func (m MockShoppingListRepository) GetRegularShoppingItem(regularShoppingItemID
 	}, nil
 }
 
-func (m MockShoppingListRepository) GetShoppingListRelatedToRegularShoppingItem(todayShoppingItemID int, laterThanTodayShoppingItemID int) (model.ShoppingList, error) {
+func (m MockShoppingListRepository) GetShoppingListRelatedToPostedRegularShoppingItem(todayShoppingItemID int, laterThanTodayShoppingItemID int) (model.ShoppingList, error) {
 	return model.ShoppingList{
 		ShoppingList: []model.ShoppingItem{
 			{
@@ -190,8 +190,53 @@ func (m MockShoppingListRepository) PostRegularShoppingItem(regularShoppingItem 
 	return MockSqlResult{}, MockSqlResult{}, MockSqlResult{}, nil
 }
 
-func (m MockShoppingListRepository) PutRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, regularShoppingItemID int, userID string, today time.Time) (sql.Result, sql.Result, error) {
-	return MockSqlResult{}, MockSqlResult{}, nil
+func (m MockShoppingListRepository) GetShoppingListRelatedToUpdatedRegularShoppingItem(regularShoppingItemID int) (model.ShoppingList, error) {
+	return model.ShoppingList{
+		ShoppingList: []model.ShoppingItem{
+			{
+				ID:                     1,
+				PostedDate:             time.Date(2020, 9, 6, 14, 4, 52, 0, time.UTC),
+				UpdatedDate:            time.Date(2020, 9, 6, 14, 4, 52, 0, time.UTC),
+				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 9, 6, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:           false,
+				Purchase:               "トイレットペーパー",
+				Shop:                   model.NullString{NullString: sql.NullString{String: "クリエイト", Valid: true}},
+				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 300, Valid: true}},
+				BigCategoryID:          3,
+				BigCategoryName:        "",
+				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 13, Valid: true}},
+				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionAutoAdd:     true,
+				RelatedTransactionData: nil,
+			},
+			{
+				ID:                     2,
+				PostedDate:             time.Date(2020, 9, 6, 14, 4, 52, 0, time.UTC),
+				UpdatedDate:            time.Date(2020, 9, 6, 14, 4, 52, 0, time.UTC),
+				ExpectedPurchaseDate:   model.Date{Time: time.Date(2020, 9, 13, 0, 0, 0, 0, time.UTC)},
+				CompleteFlag:           false,
+				Purchase:               "トイレットペーパー",
+				Shop:                   model.NullString{NullString: sql.NullString{String: "クリエイト", Valid: true}},
+				Amount:                 model.NullInt64{NullInt64: sql.NullInt64{Int64: 300, Valid: true}},
+				BigCategoryID:          3,
+				BigCategoryName:        "",
+				MediumCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 13, Valid: true}},
+				MediumCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				CustomCategoryID:       model.NullInt64{NullInt64: sql.NullInt64{Int64: 0, Valid: false}},
+				CustomCategoryName:     model.NullString{NullString: sql.NullString{String: "", Valid: false}},
+				RegularShoppingListID:  model.NullInt64{NullInt64: sql.NullInt64{Int64: 1, Valid: true}},
+				TransactionAutoAdd:     true,
+				RelatedTransactionData: nil,
+			},
+		},
+	}, nil
+}
+
+func (m MockShoppingListRepository) PutRegularShoppingItem(regularShoppingItem *model.RegularShoppingItem, regularShoppingItemID int, userID string, today time.Time) error {
+	return nil
 }
 
 func (m MockShoppingListRepository) PutRegularShoppingList(regularShoppingList model.RegularShoppingList, userID string, today time.Time) error {
@@ -1383,6 +1428,7 @@ func TestDBHandler_PostShoppingItem(t *testing.T) {
 	h := DBHandler{
 		AuthRepo:         MockAuthRepository{},
 		ShoppingListRepo: MockShoppingListRepository{},
+		TimeManage:       MockTime{},
 	}
 
 	r := httptest.NewRequest("POST", "/shopping-list", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))

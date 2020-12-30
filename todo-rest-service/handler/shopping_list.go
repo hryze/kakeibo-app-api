@@ -2,15 +2,20 @@ package handler
 
 import (
 	"bytes"
+	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/go-playground/validator"
 
 	"github.com/gorilla/mux"
 
@@ -32,6 +37,268 @@ type RelatedTransaction struct {
 	BigCategoryID    int              `json:"big_category_id"`
 	MediumCategoryID model.NullInt64  `json:"medium_category_id"`
 	CustomCategoryID model.NullInt64  `json:"custom_category_id"`
+}
+
+type RegularShoppingItemValidationErrorMsg struct {
+	Message []string `json:"message"`
+}
+
+func (e *RegularShoppingItemValidationErrorMsg) Error() string {
+	b, err := json.Marshal(e)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return string(b)
+}
+
+type ShoppingItemValidationErrorMsg struct {
+	Message []string `json:"message"`
+}
+
+func (e *ShoppingItemValidationErrorMsg) Error() string {
+	b, err := json.Marshal(e)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return string(b)
+}
+
+func validateRegularShoppingItem(regularShoppingItem model.RegularShoppingItem) error {
+	validate := validator.New()
+	validate.RegisterCustomTypeFunc(regularShoppingItemValidateValuer, model.Date{}, model.NullString{}, model.NullInt{}, model.NullInt64{})
+	if err := validate.RegisterValidation("blank", blankValidation); err != nil {
+		return err
+	}
+
+	if err := validate.RegisterValidation("date_range", dateRangeValidation); err != nil {
+		return err
+	}
+
+	if err := validate.RegisterValidation("either_id", eitherCategoryIDValidation); err != nil {
+		return err
+	}
+
+	err := validate.Struct(regularShoppingItem)
+	if err == nil {
+		return nil
+	}
+
+	var regularShoppingItemValidationErrorMsg RegularShoppingItemValidationErrorMsg
+	for _, err := range err.(validator.ValidationErrors) {
+		var errorMessage string
+
+		fieldName := err.Field()
+		switch fieldName {
+		case "ExpectedPurchaseDate":
+			tagName := err.Tag()
+			switch tagName {
+			case "required":
+				errorMessage = "購入予定日が選択されていません。"
+			case "date_range":
+				errorMessage = "購入予定日は今日以降の日付を選択してください。"
+			}
+		case "CycleType":
+			tagName := err.Tag()
+			switch tagName {
+			case "required":
+				errorMessage = "購入周期タイプが選択されていません。"
+			case "oneof":
+				errorMessage = "購入周期タイプを正しく選択してください。"
+			}
+		case "Cycle":
+			errorMessage = "購入周期は1以上の正の整数を入力してください。"
+		case "Purchase":
+			tagName := err.Tag()
+			switch tagName {
+			case "max":
+				errorMessage = "定期購入品は50文字以内で入力してください。"
+			case "blank":
+				errorMessage = "定期購入品の文字列先頭か末尾に空白がないか確認してください。"
+			}
+		case "Shop":
+			tagName := err.Tag()
+			switch tagName {
+			case "max":
+				errorMessage = "店名は20文字以内で入力してください。"
+			case "blank":
+				errorMessage = "店名の文字列先頭か末尾に空白がないか確認してください。"
+			}
+		case "Amount":
+			errorMessage = "金額は1以上の正の整数を入力してください。"
+		case "BigCategoryID":
+			tagName := err.Tag()
+			switch tagName {
+			case "required":
+				errorMessage = "大カテゴリーが選択されていません。"
+			case "min", "max":
+				errorMessage = "大カテゴリーを正しく選択してください。"
+			case "either_id":
+				errorMessage = "中カテゴリーを正しく選択してください。"
+			}
+		case "MediumCategoryID":
+			errorMessage = "中カテゴリーを正しく選択してください。"
+		case "CustomCategoryID":
+			errorMessage = "中カテゴリーを正しく選択してください。"
+		}
+
+		regularShoppingItemValidationErrorMsg.Message = append(regularShoppingItemValidationErrorMsg.Message, errorMessage)
+	}
+
+	return &regularShoppingItemValidationErrorMsg
+}
+
+func regularShoppingItemValidateValuer(field reflect.Value) interface{} {
+	if valuer, ok := field.Interface().(driver.Valuer); ok {
+		val, err := valuer.Value()
+		if err == nil {
+			return val
+		}
+	}
+
+	return nil
+}
+
+func validateShoppingItem(shoppingItem model.ShoppingItem) error {
+	validate := validator.New()
+	validate.RegisterCustomTypeFunc(shoppingItemValidateValuer, model.Date{}, model.NullString{}, model.NullInt64{})
+	if err := validate.RegisterValidation("blank", blankValidation); err != nil {
+		return err
+	}
+
+	if err := validate.RegisterValidation("date_range", dateRangeValidation); err != nil {
+		return err
+	}
+
+	if err := validate.RegisterValidation("either_id", eitherCategoryIDValidation); err != nil {
+		return err
+	}
+
+	err := validate.Struct(shoppingItem)
+	if err == nil {
+		return nil
+	}
+
+	var shoppingItemValidationErrorMsg ShoppingItemValidationErrorMsg
+	for _, err := range err.(validator.ValidationErrors) {
+		var errorMessage string
+
+		fieldName := err.Field()
+		switch fieldName {
+		case "ExpectedPurchaseDate":
+			tagName := err.Tag()
+			switch tagName {
+			case "required":
+				errorMessage = "購入予定日が選択されていません。"
+			case "date_range":
+				errorMessage = "購入予定日は今日以降の日付を選択してください。"
+			}
+		case "Purchase":
+			tagName := err.Tag()
+			switch tagName {
+			case "max":
+				errorMessage = "購入品は50文字以内で入力してください。"
+			case "blank":
+				errorMessage = "購入品の文字列先頭か末尾に空白がないか確認してください。"
+			}
+		case "Shop":
+			tagName := err.Tag()
+			switch tagName {
+			case "max":
+				errorMessage = "店名は20文字以内で入力してください。"
+			case "blank":
+				errorMessage = "店名の文字列先頭か末尾に空白がないか確認してください。"
+			}
+		case "Amount":
+			errorMessage = "金額は1以上の正の整数を入力してください。"
+		case "BigCategoryID":
+			tagName := err.Tag()
+			switch tagName {
+			case "required":
+				errorMessage = "大カテゴリーが選択されていません。"
+			case "min", "max":
+				errorMessage = "大カテゴリーを正しく選択してください。"
+			case "either_id":
+				errorMessage = "中カテゴリーを正しく選択してください。"
+			}
+		case "MediumCategoryID":
+			errorMessage = "中カテゴリーを正しく選択してください。"
+		case "CustomCategoryID":
+			errorMessage = "中カテゴリーを正しく選択してください。"
+		}
+
+		shoppingItemValidationErrorMsg.Message = append(shoppingItemValidationErrorMsg.Message, errorMessage)
+	}
+
+	return &shoppingItemValidationErrorMsg
+}
+
+func shoppingItemValidateValuer(field reflect.Value) interface{} {
+	if valuer, ok := field.Interface().(driver.Valuer); ok {
+		val, err := valuer.Value()
+		if err == nil {
+			return val
+		}
+	}
+
+	return nil
+}
+
+func dateRangeValidation(fl validator.FieldLevel) bool {
+	flDate, ok := fl.Field().Interface().(time.Time)
+	if !ok {
+		return false
+	}
+
+	var today time.Time
+
+	switch item := fl.Parent().Interface().(type) {
+	case model.RegularShoppingItem:
+		today = item.Today
+	case model.ShoppingItem:
+		today = item.Today
+	case model.GroupRegularShoppingItem:
+		today = item.Today
+	case model.GroupShoppingItem:
+		today = item.Today
+	default:
+		return false
+	}
+
+	return !today.After(flDate)
+}
+
+func eitherCategoryIDValidation(fl validator.FieldLevel) bool {
+	var mediumCategoryIDValid bool
+	var customCategoryIDValid bool
+
+	switch item := fl.Parent().Interface().(type) {
+	case model.RegularShoppingItem:
+		mediumCategoryIDValid = item.MediumCategoryID.Valid
+		customCategoryIDValid = item.CustomCategoryID.Valid
+	case model.ShoppingItem:
+		mediumCategoryIDValid = item.MediumCategoryID.Valid
+		customCategoryIDValid = item.CustomCategoryID.Valid
+	case model.GroupRegularShoppingItem:
+		mediumCategoryIDValid = item.MediumCategoryID.Valid
+		customCategoryIDValid = item.CustomCategoryID.Valid
+	case model.GroupShoppingItem:
+		mediumCategoryIDValid = item.MediumCategoryID.Valid
+		customCategoryIDValid = item.CustomCategoryID.Valid
+	default:
+		return false
+	}
+
+	if mediumCategoryIDValid && customCategoryIDValid {
+		return false
+	}
+
+	if mediumCategoryIDValid || customCategoryIDValid {
+		return true
+	}
+
+	return false
 }
 
 func getShoppingItemCategoriesName(categoriesID CategoriesID) ([]byte, error) {
@@ -796,6 +1063,16 @@ func (h *DBHandler) PostShoppingItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	now := h.TimeManage.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+
+	shoppingItem.Today = today
+
+	if err := validateShoppingItem(shoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		return
+	}
+
 	result, err := h.ShoppingListRepo.PostShoppingItem(&shoppingItem, userID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -859,6 +1136,11 @@ func (h *DBHandler) PutShoppingItem(w http.ResponseWriter, r *http.Request) {
 	shoppingItem.ID, err = strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"ショッピングアイテムIDを正しく指定してください。"}))
+		return
+	}
+
+	if err := validateShoppingItem(shoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 
@@ -978,6 +1260,13 @@ func (h *DBHandler) PostRegularShoppingItem(w http.ResponseWriter, r *http.Reque
 	now := h.TimeManage.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 
+	regularShoppingItem.Today = today
+
+	if err := validateRegularShoppingItem(regularShoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		return
+	}
+
 	regularShoppingItemResult, todayShoppingItemResult, laterThanTodayShoppingItemResult, err := h.ShoppingListRepo.PostRegularShoppingItem(&regularShoppingItem, userID, today)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
@@ -1011,7 +1300,7 @@ func (h *DBHandler) PostRegularShoppingItem(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	shoppingList, err := h.ShoppingListRepo.GetShoppingListRelatedToRegularShoppingItem(int(todayShoppingItemID), int(laterThanTodayShoppingItemID))
+	shoppingList, err := h.ShoppingListRepo.GetShoppingListRelatedToPostedRegularShoppingItem(int(todayShoppingItemID), int(laterThanTodayShoppingItemID))
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
@@ -1080,26 +1369,15 @@ func (h *DBHandler) PutRegularShoppingItem(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	now := h.TimeManage.Now()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-
-	todayShoppingItemResult, laterThanTodayShoppingItemResult, err := h.ShoppingListRepo.PutRegularShoppingItem(&regularShoppingItem, regularShoppingItemID, userID, today)
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+	if err := validateRegularShoppingItem(regularShoppingItem); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
 		return
 	}
 
-	var todayShoppingItemID int64
-	if todayShoppingItemResult != nil {
-		todayShoppingItemID, err = todayShoppingItemResult.LastInsertId()
-		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-	}
+	now := h.TimeManage.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 
-	laterThanTodayShoppingItemID, err := laterThanTodayShoppingItemResult.LastInsertId()
-	if err != nil {
+	if err := h.ShoppingListRepo.PutRegularShoppingItem(&regularShoppingItem, regularShoppingItemID, userID, today); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
@@ -1110,7 +1388,7 @@ func (h *DBHandler) PutRegularShoppingItem(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	shoppingList, err := h.ShoppingListRepo.GetShoppingListRelatedToRegularShoppingItem(int(todayShoppingItemID), int(laterThanTodayShoppingItemID))
+	shoppingList, err := h.ShoppingListRepo.GetShoppingListRelatedToUpdatedRegularShoppingItem(regularShoppingItemID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
