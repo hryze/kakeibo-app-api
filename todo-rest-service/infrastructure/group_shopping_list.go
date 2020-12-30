@@ -678,6 +678,224 @@ func (r *GroupShoppingListRepository) GetDailyGroupShoppingListByDay(date time.T
 	return groupShoppingList, nil
 }
 
+func (r *GroupShoppingListRepository) GetDailyGroupShoppingListByCategory(date time.Time, groupID int) (model.GroupShoppingList, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            updated_date,
+            expected_purchase_date,
+            complete_flag,
+            purchase,
+            shop,
+            amount,
+            big_category_id,
+            medium_category_id,
+            custom_category_id,
+            regular_shopping_list_id,
+            payment_user_id,
+            transaction_auto_add,
+            transaction_id
+        FROM
+            group_shopping_list
+        WHERE
+            group_id = ?
+        AND
+            expected_purchase_date = ?
+        ORDER BY
+            big_category_id, updated_date DESC`
+
+	groupShoppingList := model.GroupShoppingList{
+		GroupShoppingList: make([]model.GroupShoppingItem, 0),
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, date)
+	if err != nil {
+		return groupShoppingList, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var groupShoppingItem model.GroupShoppingItem
+		if err := rows.StructScan(&groupShoppingItem); err != nil {
+			return groupShoppingList, err
+		}
+
+		groupShoppingList.GroupShoppingList = append(groupShoppingList.GroupShoppingList, groupShoppingItem)
+	}
+
+	if err := rows.Err(); err != nil {
+		return groupShoppingList, err
+	}
+
+	return groupShoppingList, nil
+}
+
+func (r *GroupShoppingListRepository) GetMonthlyGroupShoppingListByDay(firstDay time.Time, lastDay time.Time, groupID int) (model.GroupShoppingList, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            updated_date,
+            expected_purchase_date,
+            complete_flag,
+            purchase,
+            shop,
+            amount,
+            big_category_id,
+            medium_category_id,
+            custom_category_id,
+            regular_shopping_list_id,
+            payment_user_id,
+            transaction_auto_add,
+            transaction_id
+        FROM
+            group_shopping_list
+        WHERE
+            group_id = ?
+        AND
+            expected_purchase_date >= ?
+        AND
+            expected_purchase_date <= ?
+        ORDER BY
+            expected_purchase_date, updated_date DESC`
+
+	groupShoppingList := model.GroupShoppingList{
+		GroupShoppingList: make([]model.GroupShoppingItem, 0),
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, firstDay, lastDay)
+	if err != nil {
+		return groupShoppingList, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var groupShoppingItem model.GroupShoppingItem
+		if err := rows.StructScan(&groupShoppingItem); err != nil {
+			return groupShoppingList, err
+		}
+
+		groupShoppingList.GroupShoppingList = append(groupShoppingList.GroupShoppingList, groupShoppingItem)
+	}
+
+	if err := rows.Err(); err != nil {
+		return groupShoppingList, err
+	}
+
+	return groupShoppingList, nil
+}
+
+func (r *GroupShoppingListRepository) GetMonthlyGroupShoppingListByCategory(firstDay time.Time, lastDay time.Time, groupID int) (model.GroupShoppingList, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            updated_date,
+            expected_purchase_date,
+            complete_flag,
+            purchase,
+            shop,
+            amount,
+            big_category_id,
+            medium_category_id,
+            custom_category_id,
+            regular_shopping_list_id,
+            payment_user_id,
+            transaction_auto_add,
+            transaction_id
+        FROM
+            group_shopping_list
+        WHERE
+            group_id = ?
+        AND
+            expected_purchase_date >= ?
+        AND
+            expected_purchase_date <= ?
+        ORDER BY
+            big_category_id, expected_purchase_date, updated_date DESC`
+
+	groupShoppingList := model.GroupShoppingList{
+		GroupShoppingList: make([]model.GroupShoppingItem, 0),
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, firstDay, lastDay)
+	if err != nil {
+		return groupShoppingList, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var groupShoppingItem model.GroupShoppingItem
+		if err := rows.StructScan(&groupShoppingItem); err != nil {
+			return groupShoppingList, err
+		}
+
+		groupShoppingList.GroupShoppingList = append(groupShoppingList.GroupShoppingList, groupShoppingItem)
+	}
+
+	if err := rows.Err(); err != nil {
+		return groupShoppingList, err
+	}
+
+	return groupShoppingList, nil
+}
+
+func (r *GroupShoppingListRepository) GetExpiredGroupShoppingList(dueDate time.Time, groupID int) (model.ExpiredGroupShoppingList, error) {
+	query := `
+        SELECT
+            id,
+            posted_date,
+            updated_date,
+            expected_purchase_date,
+            complete_flag,
+            purchase,
+            shop,
+            amount,
+            big_category_id,
+            medium_category_id,
+            custom_category_id,
+            regular_shopping_list_id,
+            payment_user_id,
+            transaction_auto_add,
+            transaction_id
+        FROM
+            group_shopping_list
+        WHERE
+            group_id = ?
+        AND
+            complete_flag = false
+        AND
+            expected_purchase_date <= ?
+        ORDER BY
+            expected_purchase_date, updated_date DESC`
+
+	expiredGroupShoppingList := model.ExpiredGroupShoppingList{
+		ExpiredGroupShoppingList: make([]model.GroupShoppingItem, 0),
+	}
+
+	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, dueDate)
+	if err != nil {
+		return expiredGroupShoppingList, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var expiredGroupShoppingItem model.GroupShoppingItem
+		if err := rows.StructScan(&expiredGroupShoppingItem); err != nil {
+			return expiredGroupShoppingList, err
+		}
+
+		expiredGroupShoppingList.ExpiredGroupShoppingList = append(expiredGroupShoppingList.ExpiredGroupShoppingList, expiredGroupShoppingItem)
+	}
+
+	if err := rows.Err(); err != nil {
+		return expiredGroupShoppingList, err
+	}
+
+	return expiredGroupShoppingList, nil
+}
+
 func (r *GroupShoppingListRepository) GetGroupShoppingItem(groupShoppingItemID int) (model.GroupShoppingItem, error) {
 	query := `
         SELECT

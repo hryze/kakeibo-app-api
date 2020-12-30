@@ -10,6 +10,16 @@ type GroupShoppingDataByDay struct {
 	GroupShoppingList
 }
 
+type GroupShoppingDataByCategory struct {
+	GroupRegularShoppingList
+	GroupShoppingListByCategory []GroupShoppingListByCategory `json:"shopping_list_by_categories"`
+}
+
+type GroupShoppingListByCategory struct {
+	BigCategoryName   string              `json:"big_category_name"`
+	GroupShoppingList []GroupShoppingItem `json:"shopping_list"`
+}
+
 type GroupRegularShoppingList struct {
 	GroupRegularShoppingList []GroupRegularShoppingItem `json:"regular_shopping_list"`
 }
@@ -36,6 +46,10 @@ type GroupRegularShoppingItem struct {
 
 type GroupShoppingList struct {
 	GroupShoppingList []GroupShoppingItem `json:"shopping_list"`
+}
+
+type ExpiredGroupShoppingList struct {
+	ExpiredGroupShoppingList []GroupShoppingItem `json:"expired_shopping_list"`
 }
 
 type GroupShoppingItem struct {

@@ -475,14 +475,14 @@ func (h *DBHandler) GetDailyShoppingDataByDay(w http.ResponseWriter, r *http.Req
 
 	shoppingList, err := h.ShoppingListRepo.GetDailyShoppingListByDay(date, userID)
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
 	if len(shoppingList.ShoppingList) != 0 {
 		shoppingList, err = generateShoppingList(shoppingList)
 		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
 	}
@@ -548,14 +548,14 @@ func (h *DBHandler) GetDailyShoppingDataByCategory(w http.ResponseWriter, r *htt
 
 	shoppingList, err := h.ShoppingListRepo.GetDailyShoppingListByCategory(date, userID)
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
 	if len(shoppingList.ShoppingList) != 0 {
 		shoppingList, err = generateShoppingList(shoppingList)
 		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
 	}
@@ -625,14 +625,14 @@ func (h *DBHandler) GetMonthlyShoppingDataByDay(w http.ResponseWriter, r *http.R
 
 	shoppingList, err := h.ShoppingListRepo.GetMonthlyShoppingListByDay(firstDay, lastDay, userID)
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
 	if len(shoppingList.ShoppingList) != 0 {
 		shoppingList, err = generateShoppingList(shoppingList)
 		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
 	}
@@ -700,14 +700,14 @@ func (h *DBHandler) GetMonthlyShoppingDataByCategory(w http.ResponseWriter, r *h
 
 	shoppingList, err := h.ShoppingListRepo.GetMonthlyShoppingListByCategory(firstDay, lastDay, userID)
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
 	if len(shoppingList.ShoppingList) != 0 {
 		shoppingList, err = generateShoppingList(shoppingList)
 		if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"年月を正しく指定してください。"}))
+			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
 		}
 	}
