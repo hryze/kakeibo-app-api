@@ -1,6 +1,6 @@
 # Tukecholl
 自身の転職活動用ポートフォリオとして制作した家計簿アプリです。  
-Go, React, Kubernetesを用いたマイクロサービスアーキテクチャとなっております。
+Go, React, Kubernetesを用いたマイクロサービスアーキテクチャです。
 
 ## 開発形態
 **<ins>開発者</ins>**
@@ -137,6 +137,16 @@ https://github.com/ryo-wens/kakeibo-front
 - todo削除
 - todo検索
 
+**<ins>買い物リスト機能</ins>**
+- 定期買い物リスト, 日別買い物リスト取得
+- 定期買い物リスト, 月別買い物リスト取得
+- 期限切れ買い物リスト取得
+- 買い物リスト更新, 家計簿トランザクション自動追加/自動削除
+- 買い物リスト削除
+- 定期買い物リスト追加
+- 定期買い物リスト更新
+- 定期買い物リスト削除
+
 ### 【 グループ利用機能 】
 **<ins>グループ機能</ins>**
 - 承認グループ, 未承認グループ一覧取得
@@ -154,6 +164,7 @@ https://github.com/ryo-wens/kakeibo-front
 - 家計簿取引更新
 - 家計簿取引削除
 - 家計簿取引検索
+- 年別家計簿取引会計状況一覧取得
 - 月別家計簿取引自動会計
 - 月別家計簿取引会計データ取得
 - 月別家計簿取引会計データ更新
@@ -182,6 +193,16 @@ https://github.com/ryo-wens/kakeibo-front
 - todo更新
 - todo削除
 - todo検索
+
+**<ins>グループ買い物リスト機能</ins>**
+- 定期買い物リスト, 日別買い物リスト取得
+- 定期買い物リスト, 月別買い物リスト取得
+- 期限切れ買い物リスト取得
+- 買い物リスト更新, 家計簿トランザクション自動追加/自動削除
+- 買い物リスト削除
+- 定期買い物リスト追加
+- 定期買い物リスト更新
+- 定期買い物リスト削除
 
 **<ins>グループシフト管理機能</ins>**
 - ユーザー別シフト一覧取得
@@ -249,6 +270,7 @@ https://github.com/ryo-wens/kakeibo-front
 | **PUT**<br>&emsp;/groups/{group_id}/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション更新 |
 | **DELETE**<br>&emsp;/groups/{group_id}/transactions/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション削除 |
 | **GET**<br>&emsp;/groups/{group_id}/transactions/search | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿トランザクション検索 |
+| **GET**<br>&emsp;/groups/{group_id}/transactions/{year}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 年別グループ家計簿トランザクション会計状況一覧取得 |
 | **GET**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ取得 |
 | **POST**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ追加 |
 | **PUT**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ更新 |
@@ -262,7 +284,13 @@ https://github.com/ryo-wens/kakeibo-front
 | **GET**<br>&emsp;/groups/{group_id}/budgets/{year} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ年別家計簿予算一覧取得 |
 | **GET**<br>&emsp;/readyz | <pre>200 OK<br>503 Service Unavailable</pre> | Kubernetesヘルスチェック<br>※ Backend専用 |
 | **POST**<br>&emsp;/standard-budgets | <pre>201 Created<br>500 Internal Server Error</pre> | 家計簿標準予算初期値追加<br>※ Backend専用 |
+| **GET**<br>&emsp;/categories/name | <pre>200 OK<br>500 Internal Server Error</pre> | カテゴリー名取得<br>※ Backend専用 |
+| **GET**<br>&emsp;/categories/names | <pre>200 OK<br>500 Internal Server Error</pre> | カテゴリー名リスト取得<br>※ Backend専用 |
+| **GET**<br>&emsp;/transactions/related-shopping-list | <pre>200 OK<br>500 Internal Server Error</pre> | 買い物リストに関連する家計簿トランザクション取得<br>※ Backend専用 |
 | **POST**<br>&emsp;/groups/{group_id}/standard-budgets | <pre>201 Created<br>400 Bad Request<br>500 Internal Server Error</pre> | グループ家計簿標準予算初期値追加<br>※ Backend専用 |
+| **GET**<br>&emsp;/groups/{group_id}/categories/name | <pre>200 OK<br>500 Internal Server Error</pre> | グループカテゴリー名取得<br>※ Backend専用 |
+| **GET**<br>&emsp;/groups/{group_id}/categories/names | <pre>200 OK<br>500 Internal Server Error</pre> | グループカテゴリー名リスト取得<br>※ Backend専用 |
+| **GET**<br>&emsp;/groups/{group_id}/transactions/related-shopping-list | <pre>200 OK<br>500 Internal Server Error</pre> | グループ買い物リストに関連する家計簿トランザクション取得<br>※ Backend専用 |
 
 ### todo-rest-service
 
@@ -275,6 +303,17 @@ https://github.com/ryo-wens/kakeibo-front
 | **PUT**<br>&emsp;/todo-list/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | todo更新 |
 | **DELETE**<br>&emsp;/todo-list/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | todo削除 |
 | **GET**<br>&emsp;/todo-list/search | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | todo検索 |
+| **GET**<br>&emsp;/shopping-list/{date}/daily | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 定期買い物リスト,<br>日別日順買い物リスト取得 |
+| **GET**<br>&emsp;/shopping-list/{date}/categories | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 定期買い物リスト,<br>日別カテゴリー順買い物リスト取得 |
+| **GET**<br>&emsp;/shopping-list/{year_month}/daily | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 定期買い物リスト,<br>月別日順買い物リスト取得 |
+| **GET**<br>&emsp;/shopping-list/{year_month}/categories | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 定期買い物リスト,<br>月別カテゴリー順買い物リスト取得 |
+| **GET**<br>&emsp;/shopping-list/expired | <pre>200 OK<br>401 Unauthorized<br>500 Internal Server Error</pre> | 期限切れ買い物リスト取得 |
+| **POST**<br>&emsp;/shopping-list | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 買い物リスト追加 |
+| **PUT**<br>&emsp;/shopping-list/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 買い物リスト更新,<br>家計簿トランザクション自動追加/自動削除 |
+| **DELETE**<br>&emsp;/shopping-list/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 買い物リスト削除 |
+| **POST**<br>&emsp;/shopping-list/regular | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 定期買い物リスト追加 |
+| **PUT**<br>&emsp;/shopping-list/regular/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 定期買い物リスト更新 |
+| **DELETE**<br>&emsp;/shopping-list/regular/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 定期買い物リスト削除 |
 | **GET**<br>&emsp;/groups/{group_id}/todo-list/{date} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ日別実施予定todo,<br>グループ締切予定todo一覧取得 |
 | **GET**<br>&emsp;/groups/{group_id}/todo-list/{year_month} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ月別実施予定todo,<br>グループ締切予定todo一覧取得 |
 | **GET**<br>&emsp;/groups/{group_id}/todo-list/expired | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ期限切れtodo一覧取得 |
@@ -282,6 +321,17 @@ https://github.com/ryo-wens/kakeibo-front
 | **PUT**<br>&emsp;/groups/{group_id}/todo-list/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループtodo更新 |
 | **DELETE**<br>&emsp;/groups/{group_id}/todo-list/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループtodo削除 |
 | **GET**<br>&emsp;/groups/{group_id}/todo-list/search | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループtodo検索 |
+| **GET**<br>&emsp;/groups/{group_id}/shopping-list/{date}/daily | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ定期買い物リスト,<br>日別日順買い物リスト取得 |
+| **GET**<br>&emsp;/groups/{group_id}/shopping-list/{date}/categories | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ定期買い物リスト,<br>日別カテゴリー順買い物リスト取得 |
+| **GET**<br>&emsp;/groups/{group_id}/shopping-list/{year_month}/daily | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ定期買い物リスト,<br>月別日順買い物リスト取得 |
+| **GET**<br>&emsp;/groups/{group_id}/shopping-list/{year_month}/categories | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ定期買い物リスト,<br>月別カテゴリー順買い物リスト取得 |
+| **GET**<br>&emsp;/groups/{group_id}/shopping-list/expired | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ期限切れ買い物リスト取得 |
+| **POST**<br>&emsp;/groups/{group_id}/shopping-list | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ買い物リスト追加 |
+| **PUT**<br>&emsp;/groups/{group_id}/shopping-list/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ買い物リスト更新,<br>家計簿トランザクション自動追加/自動削除 |
+| **DELETE**<br>&emsp;/groups/{group_id}/shopping-list/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ買い物リスト削除 |
+| **POST**<br>&emsp;/groups/{group_id}/shopping-list/regular | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ定期買い物リスト追加 |
+| **PUT**<br>&emsp;/groups/{group_id}/shopping-list/regular/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ定期買い物リスト更新 |
+| **DELETE**<br>&emsp;/groups/{group_id}/shopping-list/regular/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ定期買い物リスト削除 |
 | **GET**<br>&emsp;/groups/{group_id}/tasks/users | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | ユーザー別グループタスク一覧取得 |
 | **POST**<br>&emsp;/groups/{group_id}/tasks/users | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>409 Conflict<br>500 Internal Server Error</pre> | グループタスクユーザー追加 |
 | **DELETE**<br>&emsp;/groups/{group_id}/tasks/users | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループタスクユーザー削除 |
