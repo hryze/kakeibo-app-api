@@ -273,7 +273,7 @@ https://github.com/ryo-wens/kakeibo-front
 | **GET**<br>&emsp;/groups/{group_id}/transactions/{year}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | 年別グループ家計簿トランザクション会計状況一覧取得 |
 | **GET**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ取得 |
 | **POST**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>201 Created<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ追加 |
-| **PUT**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ更新 |
+| **PUT**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account/{id} | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ更新 |
 | **DELETE**<br>&emsp;/groups/{group_id}/transactions/{year_month}/account | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>404 Not Found<br>500 Internal Server Error</pre> | 月別グループ家計簿トランザクション会計データ削除 |
 | **GET**<br>&emsp;/groups/{group_id}/standard-budgets | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿標準予算取得 |
 | **PUT**<br>&emsp;/groups/{group_id}/standard-budgets | <pre>200 OK<br>400 Bad Request<br>401 Unauthorized<br>500 Internal Server Error</pre> | グループ家計簿標準予算更新 |

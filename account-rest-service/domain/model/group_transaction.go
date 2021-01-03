@@ -78,12 +78,18 @@ type ReceiptStatus struct {
 }
 
 type GroupAccountsList struct {
-	GroupID                   int            `json:"group_id"`
-	Month                     time.Time      `json:"month"`
-	GroupTotalPaymentAmount   int            `json:"group_total_payment_amount"`
-	GroupAveragePaymentAmount int            `json:"group_average_payment_amount"`
-	GroupRemainingAmount      int            `json:"group_remaining_amount"`
-	GroupAccountsList         []GroupAccount `json:"group_accounts_list"`
+	GroupID                       int                        `json:"group_id"`
+	Month                         time.Time                  `json:"month"`
+	GroupTotalPaymentAmount       int                        `json:"group_total_payment_amount"`
+	GroupAveragePaymentAmount     int                        `json:"group_average_payment_amount"`
+	GroupRemainingAmount          int                        `json:"group_remaining_amount"`
+	GroupAccountsListByPayersList []GroupAccountsListByPayer `json:"group_accounts_list_by_payer"`
+	GroupAccountsList             []GroupAccount             `json:"-"`
+}
+
+type GroupAccountsListByPayer struct {
+	Payer                    NullString     `json:"payer_user_id"`
+	GroupAccountsListByPayer []GroupAccount `json:"group_accounts_list"`
 }
 
 type GroupAccount struct {

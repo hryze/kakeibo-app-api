@@ -333,6 +333,26 @@ func paymentAmountSplitBill(groupAccountsList *model.GroupAccountsList, payerLis
 	}
 }
 
+func generateGroupAccountsListByPayer(groupAccountsList *model.GroupAccountsList) {
+	groupAccountsList.GroupAccountsListByPayersList = make([]model.GroupAccountsListByPayer, 0)
+
+L:
+	for _, groupAccount := range groupAccountsList.GroupAccountsList {
+		for i, groupAccountsListByPayer := range groupAccountsList.GroupAccountsListByPayersList {
+			if groupAccount.Payer.String == groupAccountsListByPayer.Payer.String {
+				groupAccountsList.GroupAccountsListByPayersList[i].GroupAccountsListByPayer = append(groupAccountsList.GroupAccountsListByPayersList[i].GroupAccountsListByPayer, groupAccount)
+
+				continue L
+			}
+		}
+
+		groupAccountsList.GroupAccountsListByPayersList = append(groupAccountsList.GroupAccountsListByPayersList, model.GroupAccountsListByPayer{
+			Payer:                    groupAccount.Payer,
+			GroupAccountsListByPayer: append(make([]model.GroupAccount, 0), groupAccount),
+		})
+	}
+}
+
 func (h *DBHandler) GetMonthlyGroupTransactionsList(w http.ResponseWriter, r *http.Request) {
 	userID, err := verifySessionID(h, w, r)
 	if err != nil {
@@ -902,22 +922,22 @@ func (h *DBHandler) GetMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 		userPaymentAmountList[i].PaymentAmountToUser = userPaymentAmountList[i].TotalPaymentAmount - groupAccountsList.GroupAveragePaymentAmount
 	}
 
-	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(firstDay, groupID)
+	groupAccountsList.GroupAccountsList, err = h.GroupTransactionsRepo.GetGroupAccountsList(firstDay, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	if len(dbGroupAccountsList) == 0 {
+	if len(groupAccountsList.GroupAccountsList) == 0 {
 		errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"当月は未会計です。"}))
 		return
 	}
 
-	groupAccountsList.GroupAccountsList = dbGroupAccountsList
+	generateGroupAccountsListByPayer(&groupAccountsList)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(groupAccountsList); err != nil {
+	if err := json.NewEncoder(w).Encode(&groupAccountsList); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -1032,17 +1052,17 @@ func (h *DBHandler) PostMonthlyGroupTransactionsAccount(w http.ResponseWriter, r
 		return
 	}
 
-	dbGroupAccountsList, err = h.GroupTransactionsRepo.GetGroupAccountsList(firstDay, groupID)
+	groupAccountsList.GroupAccountsList, err = h.GroupTransactionsRepo.GetGroupAccountsList(firstDay, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	groupAccountsList.GroupAccountsList = dbGroupAccountsList
+	generateGroupAccountsListByPayer(&groupAccountsList)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(groupAccountsList); err != nil {
+	if err := json.NewEncoder(w).Encode(&groupAccountsList); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -1094,20 +1114,26 @@ func (h *DBHandler) PutMonthlyGroupTransactionsAccount(w http.ResponseWriter, r 
 		return
 	}
 
-	var groupAccountsList model.GroupAccountsList
-	if err := json.NewDecoder(r.Body).Decode(&groupAccountsList); err != nil {
+	groupAccountID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"会計ID を正しく指定してください。"}))
+		return
+	}
+
+	var groupAccount model.GroupAccount
+	if err := json.NewDecoder(r.Body).Decode(&groupAccount); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	if err := h.GroupTransactionsRepo.PutGroupAccountsList(groupAccountsList.GroupAccountsList); err != nil {
+	if err := h.GroupTransactionsRepo.PutGroupAccount(groupAccount, groupAccountID); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(groupAccountsList); err != nil {
+	if err := json.NewEncoder(w).Encode(&groupAccount); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
