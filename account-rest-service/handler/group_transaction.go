@@ -334,21 +334,19 @@ func paymentAmountSplitBill(groupAccountsList *model.GroupAccountsList, payerLis
 }
 
 func generateGroupAccountsListByPayer(groupAccountsList *model.GroupAccountsList) {
-	groupAccountsList.GroupAccountsListByPayersList = make([]model.GroupAccountsListByPayer, 0)
-
 L:
 	for _, groupAccount := range groupAccountsList.GroupAccountsList {
 		for i, groupAccountsListByPayer := range groupAccountsList.GroupAccountsListByPayersList {
 			if groupAccount.Payer.String == groupAccountsListByPayer.Payer.String {
-				groupAccountsList.GroupAccountsListByPayersList[i].GroupAccountsListByPayer = append(groupAccountsList.GroupAccountsListByPayersList[i].GroupAccountsListByPayer, groupAccount)
+				groupAccountsList.GroupAccountsListByPayersList[i].GroupAccountsList = append(groupAccountsList.GroupAccountsListByPayersList[i].GroupAccountsList, groupAccount)
 
 				continue L
 			}
 		}
 
 		groupAccountsList.GroupAccountsListByPayersList = append(groupAccountsList.GroupAccountsListByPayersList, model.GroupAccountsListByPayer{
-			Payer:                    groupAccount.Payer,
-			GroupAccountsListByPayer: append(make([]model.GroupAccount, 0), groupAccount),
+			Payer:             groupAccount.Payer,
+			GroupAccountsList: []model.GroupAccount{groupAccount},
 		})
 	}
 }

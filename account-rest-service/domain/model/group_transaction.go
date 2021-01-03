@@ -88,8 +88,8 @@ type GroupAccountsList struct {
 }
 
 type GroupAccountsListByPayer struct {
-	Payer                    NullString     `json:"payer_user_id"`
-	GroupAccountsListByPayer []GroupAccount `json:"group_accounts_list"`
+	Payer             NullString     `json:"payer_user_id"`
+	GroupAccountsList []GroupAccount `json:"group_accounts_list"`
 }
 
 type GroupAccount struct {
@@ -177,11 +177,12 @@ func NewGroupAccountsList(userPaymentAmountList []UserPaymentAmount, groupID int
 	remainingAmount := totalPaymentAmount - averagePaymentAmount*len(userPaymentAmountList)
 
 	return GroupAccountsList{
-		GroupID:                   groupID,
-		Month:                     month,
-		GroupTotalPaymentAmount:   totalPaymentAmount,
-		GroupAveragePaymentAmount: averagePaymentAmount,
-		GroupRemainingAmount:      remainingAmount,
+		GroupID:                       groupID,
+		Month:                         month,
+		GroupTotalPaymentAmount:       totalPaymentAmount,
+		GroupAveragePaymentAmount:     averagePaymentAmount,
+		GroupRemainingAmount:          remainingAmount,
+		GroupAccountsListByPayersList: make([]GroupAccountsListByPayer, 0),
 	}
 }
 
