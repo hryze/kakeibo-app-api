@@ -546,7 +546,7 @@ func (m MockGroupTransactionsRepository) PostGroupAccountsList(groupAccountsList
 	return nil
 }
 
-func (m MockGroupTransactionsRepository) PutGroupAccountsList(groupAccountsList []model.GroupAccount) error {
+func (m MockGroupTransactionsRepository) PutGroupAccount(groupAccount model.GroupAccount, groupAccountID int) error {
 	return nil
 }
 
@@ -978,12 +978,13 @@ func TestDBHandler_PutMonthlyGroupTransactionsAccount(t *testing.T) {
 		GroupTransactionsRepo: MockGroupTransactionsRepository{},
 	}
 
-	r := httptest.NewRequest("PUT", "/groups/3/transactions/2020-07/account", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest("PUT", "/groups/3/transactions/2020-07/account/1", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
 		"group_id":   "2",
 		"year_month": "2020-07",
+		"id":         "1",
 	})
 
 	cookie := &http.Cookie{

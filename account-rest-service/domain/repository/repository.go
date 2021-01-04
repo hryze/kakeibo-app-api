@@ -79,7 +79,7 @@ type GroupTransactionsRepository interface {
 	GetUserPaymentAmountList(groupID int, groupUserIDList []string, firstDay time.Time, lastDay time.Time) ([]model.UserPaymentAmount, error)
 	GetGroupAccountsList(yearMonth time.Time, groupID int) ([]model.GroupAccount, error)
 	PostGroupAccountsList(groupAccountsList []model.GroupAccount) error
-	PutGroupAccountsList(groupAccountsList []model.GroupAccount) error
+	PutGroupAccount(groupAccount model.GroupAccount, groupAccountID int) error
 	DeleteGroupAccountsList(yearMonth time.Time, groupID int) error
 	GetMonthlyGroupTransactionTotalAmountByBigCategory(groupID int, firstDay time.Time, lastDay time.Time) ([]model.GroupTransactionTotalAmountByBigCategory, error)
 	YearlyGroupTransactionExistenceConfirmation(firstDayOfYear time.Time, groupID int) ([]time.Time, error)

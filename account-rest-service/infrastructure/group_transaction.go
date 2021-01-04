@@ -452,7 +452,7 @@ func (r *GroupTransactionsRepository) PostGroupAccountsList(groupAccountsList []
 
 	transactions := func(tx *sql.Tx) error {
 		for _, groupAccount := range groupAccountsList {
-			if _, err := r.MySQLHandler.conn.Exec(query, groupAccount.Month, groupAccount.Payer, groupAccount.Recipient, groupAccount.PaymentAmount, groupAccount.PaymentConfirmation, groupAccount.ReceiptConfirmation, groupAccount.GroupID); err != nil {
+			if _, err := tx.Exec(query, groupAccount.Month, groupAccount.Payer, groupAccount.Recipient, groupAccount.PaymentAmount, groupAccount.PaymentConfirmation, groupAccount.ReceiptConfirmation, groupAccount.GroupID); err != nil {
 				return err
 			}
 		}
@@ -475,7 +475,7 @@ func (r *GroupTransactionsRepository) PostGroupAccountsList(groupAccountsList []
 	return nil
 }
 
-func (r *GroupTransactionsRepository) PutGroupAccountsList(groupAccountsList []model.GroupAccount) error {
+func (r *GroupTransactionsRepository) PutGroupAccount(groupAccount model.GroupAccount, groupAccountID int) error {
 	query := `
         UPDATE
             group_accounts
@@ -485,34 +485,9 @@ func (r *GroupTransactionsRepository) PutGroupAccountsList(groupAccountsList []m
         WHERE
             id = ?`
 
-	tx, err := r.MySQLHandler.conn.Begin()
-	if err != nil {
-		return err
-	}
+	_, err := r.MySQLHandler.conn.Exec(query, groupAccount.PaymentConfirmation, groupAccount.ReceiptConfirmation, groupAccountID)
 
-	transactions := func(tx *sql.Tx) error {
-		for _, groupAccount := range groupAccountsList {
-			if _, err := r.MySQLHandler.conn.Exec(query, groupAccount.PaymentConfirmation, groupAccount.ReceiptConfirmation, groupAccount.ID); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-
-	if err := transactions(tx); err != nil {
-		if err := tx.Rollback(); err != nil {
-			return err
-		}
-
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (r *GroupTransactionsRepository) DeleteGroupAccountsList(yearMonth time.Time, groupID int) error {

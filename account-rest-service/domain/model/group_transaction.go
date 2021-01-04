@@ -78,12 +78,18 @@ type ReceiptStatus struct {
 }
 
 type GroupAccountsList struct {
-	GroupID                   int            `json:"group_id"`
-	Month                     time.Time      `json:"month"`
-	GroupTotalPaymentAmount   int            `json:"group_total_payment_amount"`
-	GroupAveragePaymentAmount int            `json:"group_average_payment_amount"`
-	GroupRemainingAmount      int            `json:"group_remaining_amount"`
-	GroupAccountsList         []GroupAccount `json:"group_accounts_list"`
+	GroupID                       int                        `json:"group_id"`
+	Month                         time.Time                  `json:"month"`
+	GroupTotalPaymentAmount       int                        `json:"group_total_payment_amount"`
+	GroupAveragePaymentAmount     int                        `json:"group_average_payment_amount"`
+	GroupRemainingAmount          int                        `json:"group_remaining_amount"`
+	GroupAccountsListByPayersList []GroupAccountsListByPayer `json:"group_accounts_list_by_payer"`
+	GroupAccountsList             []GroupAccount             `json:"-"`
+}
+
+type GroupAccountsListByPayer struct {
+	Payer             NullString     `json:"payer_user_id"`
+	GroupAccountsList []GroupAccount `json:"group_accounts_list"`
 }
 
 type GroupAccount struct {
@@ -171,11 +177,12 @@ func NewGroupAccountsList(userPaymentAmountList []UserPaymentAmount, groupID int
 	remainingAmount := totalPaymentAmount - averagePaymentAmount*len(userPaymentAmountList)
 
 	return GroupAccountsList{
-		GroupID:                   groupID,
-		Month:                     month,
-		GroupTotalPaymentAmount:   totalPaymentAmount,
-		GroupAveragePaymentAmount: averagePaymentAmount,
-		GroupRemainingAmount:      remainingAmount,
+		GroupID:                       groupID,
+		Month:                         month,
+		GroupTotalPaymentAmount:       totalPaymentAmount,
+		GroupAveragePaymentAmount:     averagePaymentAmount,
+		GroupRemainingAmount:          remainingAmount,
+		GroupAccountsListByPayersList: make([]GroupAccountsListByPayer, 0),
 	}
 }
 
