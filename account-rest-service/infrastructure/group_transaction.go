@@ -347,6 +347,8 @@ func (r *GroupTransactionsRepository) GetUserPaymentAmountList(groupID int, grou
             transaction_date >= ?
         AND
             transaction_date < ?
+        AND
+            transaction_type = "expense"
         GROUP BY
             payment_user_id`
 
