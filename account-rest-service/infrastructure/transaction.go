@@ -54,7 +54,7 @@ func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string, first
         AND
             transactions.transaction_date <= ?
         ORDER BY
-            transactions.transaction_date, transactions.updated_date DESC`
+            transactions.transaction_date`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, firstDay, lastDay)
 	if err != nil {

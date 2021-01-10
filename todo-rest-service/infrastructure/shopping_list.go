@@ -305,7 +305,7 @@ func (r *ShoppingListRepository) GetShoppingListRelatedToUpdatedRegularShoppingI
         WHERE
             regular_shopping_list_id = ?
         ORDER BY
-            expected_purchase_date, updated_date DESC`
+            expected_purchase_date`
 
 	shoppingList := model.ShoppingList{
 		ShoppingList: make([]model.ShoppingItem, 0),
@@ -641,9 +641,7 @@ func (r *ShoppingListRepository) GetDailyShoppingListByDay(date time.Time, userI
         WHERE
             user_id = ?
         AND
-            expected_purchase_date = ?
-        ORDER BY
-            updated_date DESC`
+            expected_purchase_date = ?`
 
 	shoppingList := model.ShoppingList{
 		ShoppingList: make([]model.ShoppingItem, 0),
@@ -695,7 +693,7 @@ func (r *ShoppingListRepository) GetDailyShoppingListByCategory(date time.Time, 
         AND
             expected_purchase_date = ?
         ORDER BY
-            big_category_id, updated_date DESC`
+            big_category_id`
 
 	shoppingList := model.ShoppingList{
 		ShoppingList: make([]model.ShoppingItem, 0),
@@ -749,7 +747,7 @@ func (r *ShoppingListRepository) GetMonthlyShoppingListByDay(firstDay time.Time,
         AND
             expected_purchase_date <= ?
         ORDER BY
-            expected_purchase_date, updated_date DESC`
+            expected_purchase_date`
 
 	shoppingList := model.ShoppingList{
 		ShoppingList: make([]model.ShoppingItem, 0),
@@ -803,7 +801,7 @@ func (r *ShoppingListRepository) GetMonthlyShoppingListByCategory(firstDay time.
         AND
             expected_purchase_date <= ?
         ORDER BY
-            big_category_id, expected_purchase_date, updated_date DESC`
+            big_category_id, expected_purchase_date`
 
 	shoppingList := model.ShoppingList{
 		ShoppingList: make([]model.ShoppingItem, 0),
@@ -857,7 +855,7 @@ func (r *ShoppingListRepository) GetExpiredShoppingList(dueDate time.Time, userI
         AND
             expected_purchase_date <= ?
         ORDER BY
-            expected_purchase_date, updated_date DESC`
+            expected_purchase_date`
 
 	expiredShoppingList := model.ExpiredShoppingList{
 		ExpiredShoppingList: make([]model.ShoppingItem, 0),

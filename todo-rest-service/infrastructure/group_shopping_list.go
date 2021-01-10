@@ -313,7 +313,7 @@ func (r *GroupShoppingListRepository) GetGroupShoppingListRelatedToUpdatedGroupR
         WHERE
             regular_shopping_list_id = ?
         ORDER BY
-            expected_purchase_date, updated_date DESC`
+            expected_purchase_date`
 
 	groupShoppingList := model.GroupShoppingList{
 		GroupShoppingList: make([]model.GroupShoppingItem, 0),
@@ -653,9 +653,7 @@ func (r *GroupShoppingListRepository) GetDailyGroupShoppingListByDay(date time.T
         WHERE
             group_id = ?
         AND
-            expected_purchase_date = ?
-        ORDER BY
-            updated_date DESC`
+            expected_purchase_date = ?`
 
 	groupShoppingList := model.GroupShoppingList{
 		GroupShoppingList: make([]model.GroupShoppingItem, 0),
@@ -708,7 +706,7 @@ func (r *GroupShoppingListRepository) GetDailyGroupShoppingListByCategory(date t
         AND
             expected_purchase_date = ?
         ORDER BY
-            big_category_id, updated_date DESC`
+            big_category_id`
 
 	groupShoppingList := model.GroupShoppingList{
 		GroupShoppingList: make([]model.GroupShoppingItem, 0),
@@ -763,7 +761,7 @@ func (r *GroupShoppingListRepository) GetMonthlyGroupShoppingListByDay(firstDay 
         AND
             expected_purchase_date <= ?
         ORDER BY
-            expected_purchase_date, updated_date DESC`
+            expected_purchase_date`
 
 	groupShoppingList := model.GroupShoppingList{
 		GroupShoppingList: make([]model.GroupShoppingItem, 0),
@@ -818,7 +816,7 @@ func (r *GroupShoppingListRepository) GetMonthlyGroupShoppingListByCategory(firs
         AND
             expected_purchase_date <= ?
         ORDER BY
-            big_category_id, expected_purchase_date, updated_date DESC`
+            big_category_id, expected_purchase_date`
 
 	groupShoppingList := model.GroupShoppingList{
 		GroupShoppingList: make([]model.GroupShoppingItem, 0),
@@ -873,7 +871,7 @@ func (r *GroupShoppingListRepository) GetExpiredGroupShoppingList(dueDate time.T
         AND
             expected_purchase_date <= ?
         ORDER BY
-            expected_purchase_date, updated_date DESC`
+            expected_purchase_date`
 
 	expiredGroupShoppingList := model.ExpiredGroupShoppingList{
 		ExpiredGroupShoppingList: make([]model.GroupShoppingItem, 0),
