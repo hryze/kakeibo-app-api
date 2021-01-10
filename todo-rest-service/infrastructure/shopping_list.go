@@ -480,7 +480,7 @@ func (r *ShoppingListRepository) PutRegularShoppingList(regularShoppingList mode
         UPDATE
             regular_shopping_list
         SET
-            expected_purchase_date = ?,
+            expected_purchase_date = ?
         WHERE
             id = ?`
 
