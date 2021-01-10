@@ -20,9 +20,7 @@ func (r *GroupCategoriesRepository) GetGroupBigCategoriesList() ([]model.GroupBi
         SELECT
             id, category_name, transaction_type 
         FROM 
-            big_categories
-        ORDER BY
-            id`
+            big_categories`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query)
 	if err != nil {
@@ -88,8 +86,7 @@ func (r *GroupCategoriesRepository) GetGroupCustomCategoriesList(groupID int) ([
         WHERE
             group_id = ?
         ORDER BY
-            id
-        DESC`
+            id DESC`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID)
 	if err != nil {

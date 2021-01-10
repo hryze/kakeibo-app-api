@@ -30,9 +30,7 @@ func (r *TodoRepository) GetDailyImplementationTodoList(date time.Time, userID s
         WHERE
             user_id = ?
         AND
-            implementation_date = ?
-        ORDER BY
-            implementation_date, updated_date DESC`
+            implementation_date = ?`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, date)
 	if err != nil {
@@ -72,9 +70,7 @@ func (r *TodoRepository) GetDailyDueTodoList(date time.Time, userID string) ([]m
         WHERE
             user_id = ?
         AND
-            due_date = ?
-        ORDER BY
-            due_date, updated_date DESC`
+            due_date = ?`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, date)
 	if err != nil {
@@ -118,7 +114,7 @@ func (r *TodoRepository) GetMonthlyImplementationTodoList(firstDay time.Time, la
         AND
             implementation_date <= ?
         ORDER BY
-            implementation_date, updated_date DESC`
+            implementation_date`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, firstDay, lastDay)
 	if err != nil {
@@ -162,7 +158,7 @@ func (r *TodoRepository) GetMonthlyDueTodoList(firstDay time.Time, lastDay time.
         AND
             due_date <= ?
         ORDER BY
-            due_date, updated_date DESC`
+            due_date`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, firstDay, lastDay)
 	if err != nil {
@@ -206,7 +202,7 @@ func (r *TodoRepository) GetExpiredTodoList(dueDate time.Time, userID string) (*
         AND
             due_date <= ?
         ORDER BY
-            due_date, updated_date`
+            due_date`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID, dueDate)
 	if err != nil {

@@ -20,9 +20,7 @@ func (r *CategoriesRepository) GetBigCategoriesList() ([]model.BigCategory, erro
         SELECT
             id, category_name, transaction_type 
         FROM 
-            big_categories
-        ORDER BY
-            id`
+            big_categories`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query)
 	if err != nil {
@@ -88,8 +86,7 @@ func (r *CategoriesRepository) GetCustomCategoriesList(userID string) ([]model.A
         WHERE 
             user_id = ? 
         ORDER BY 
-            id 
-        DESC`
+            id DESC`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, userID)
 	if err != nil {

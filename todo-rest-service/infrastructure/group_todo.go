@@ -31,9 +31,7 @@ func (r *GroupTodoRepository) GetDailyImplementationGroupTodoList(date time.Time
         WHERE
             group_id = ?
         AND
-            implementation_date = ?
-        ORDER BY
-            implementation_date, updated_date DESC`
+            implementation_date = ?`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, date)
 	if err != nil {
@@ -74,9 +72,7 @@ func (r *GroupTodoRepository) GetDailyDueGroupTodoList(date time.Time, groupID i
         WHERE
             group_id = ?
         AND
-            due_date = ?
-        ORDER BY
-            due_date, updated_date DESC`
+            due_date = ?`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, date)
 	if err != nil {
@@ -121,7 +117,7 @@ func (r *GroupTodoRepository) GetMonthlyImplementationGroupTodoList(firstDay tim
         AND
             implementation_date <= ?
         ORDER BY
-            implementation_date, updated_date DESC`
+            implementation_date`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, firstDay, lastDay)
 	if err != nil {
@@ -166,7 +162,7 @@ func (r *GroupTodoRepository) GetMonthlyDueGroupTodoList(firstDay time.Time, las
         AND
             due_date <= ?
         ORDER BY
-            due_date, updated_date DESC`
+            due_date`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, firstDay, lastDay)
 	if err != nil {
@@ -211,7 +207,7 @@ func (r *GroupTodoRepository) GetExpiredGroupTodoList(dueDate time.Time, groupID
         AND
             due_date <= ?
         ORDER BY
-            due_date, updated_date`
+            due_date`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, dueDate)
 	if err != nil {

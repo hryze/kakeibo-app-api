@@ -57,7 +57,7 @@ func (r *GroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID in
         AND
             group_transactions.transaction_date <= ?
         ORDER BY
-            group_transactions.transaction_date, group_transactions.updated_date DESC`
+            group_transactions.transaction_date`
 
 	rows, err := r.MySQLHandler.conn.Queryx(query, groupID, firstDay, lastDay)
 	if err != nil {
