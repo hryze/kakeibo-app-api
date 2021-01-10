@@ -489,7 +489,7 @@ func (r *GroupShoppingListRepository) PutGroupRegularShoppingList(groupRegularSh
         UPDATE
             group_regular_shopping_list
         SET
-            expected_purchase_date = ?,
+            expected_purchase_date = ?
         WHERE
             id = ?`
 
