@@ -21,7 +21,8 @@ https://www.shakepiper.com
 **<ins>開発者</ins>**
 - 平 侑祐  
 - 安樂 亮佑（共同開発者）  
-- 古澤 宏弥（共同開発者）
+- 古澤 宏弥（共同開発者）  
+- 伊藤 稜悟（共同開発者）
 
 **<ins>制作物 / 担当</ins>**
 - API / 平 侑祐  
@@ -33,7 +34,7 @@ https://github.com/paypay3/kakeibo-app-terraform
 - Kubernetes / 平 侑祐  
 https://github.com/paypay3/kakeibo-app-kubernetes
 
-- Frontend / 安樂 亮佑（共同開発者）, 古澤 宏弥（共同開発者）  
+- Frontend / 安樂 亮佑（共同開発者）, 古澤 宏弥（共同開発者）, 伊藤 稜悟（共同開発者）  
 https://github.com/ryo-wens/kakeibo-front
 
 **<ins>開発手法</ins>**
