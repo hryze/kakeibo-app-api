@@ -504,6 +504,7 @@ func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// Check if the transaction date of the json request transaction has been settled.
 	yearMonth := time.Date(groupTransactionReceiver.TransactionDate.Time.Year(), groupTransactionReceiver.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
 
 	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(yearMonth, groupID)
@@ -511,7 +512,8 @@ func (h *DBHandler) PostGroupTransaction(w http.ResponseWriter, r *http.Request)
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	} else if len(dbGroupAccountsList) != 0 {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{"当月のグループでの取引は会計済みのため追加できません。"}))
+		message := fmt.Sprintf("%d年%d月の取引は精算済みのため追加できません。", yearMonth.Year(), yearMonth.Month())
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{Message: message}))
 		return
 	}
 
@@ -575,31 +577,57 @@ func (h *DBHandler) PutGroupTransaction(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var groupTransactionReceiver model.GroupTransactionReceiver
-	if err := json.NewDecoder(r.Body).Decode(&groupTransactionReceiver); err != nil {
+	groupTransactionID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"transaction ID を正しく指定してください。"}))
+		return
+	}
+
+	dbGroupTransaction, err := h.GroupTransactionsRepo.GetGroupTransaction(groupTransactionID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"該当する取引が見つかりませんでした。"}))
+			return
+		}
+
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	}
 
-	yearMonth := time.Date(groupTransactionReceiver.TransactionDate.Time.Year(), groupTransactionReceiver.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
+	// Check if the transaction date of the transaction retrieved from the Database has been settled.
+	yearMonth := time.Date(dbGroupTransaction.TransactionDate.Time.Year(), dbGroupTransaction.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
 
 	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(yearMonth, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	} else if len(dbGroupAccountsList) != 0 {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{"当月のグループでの取引は会計済みのため更新できません。"}))
+		message := fmt.Sprintf("%d年%d月の取引は精算済みのため更新できません。", yearMonth.Year(), yearMonth.Month())
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{Message: message}))
+		return
+	}
+
+	var groupTransactionReceiver model.GroupTransactionReceiver
+	if err := json.NewDecoder(r.Body).Decode(&groupTransactionReceiver); err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	}
+
+	// Check if the transaction date of the json request transaction has been settled.
+	yearMonth = time.Date(groupTransactionReceiver.TransactionDate.Time.Year(), groupTransactionReceiver.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+	dbGroupAccountsList, err = h.GroupTransactionsRepo.GetGroupAccountsList(yearMonth, groupID)
+	if err != nil {
+		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		return
+	} else if len(dbGroupAccountsList) != 0 {
+		message := fmt.Sprintf("%d年%d月の取引は精算済みのため更新できません。", yearMonth.Year(), yearMonth.Month())
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{Message: message}))
 		return
 	}
 
 	if err := validateTransaction(&groupTransactionReceiver); err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
-		return
-	}
-
-	groupTransactionID, err := strconv.Atoi(mux.Vars(r)["id"])
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"transaction ID を正しく指定してください。"}))
 		return
 	}
 
@@ -662,10 +690,10 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	groupTransaction, err := h.GroupTransactionsRepo.GetGroupTransaction(groupTransactionID)
+	dbGroupTransaction, err := h.GroupTransactionsRepo.GetGroupTransaction(groupTransactionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"こちらのトランザクションは既に削除されています。"}))
+			errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"該当する取引が見つかりませんでした。"}))
 			return
 		}
 
@@ -673,14 +701,16 @@ func (h *DBHandler) DeleteGroupTransaction(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	yearMonth := time.Date(groupTransaction.TransactionDate.Time.Year(), groupTransaction.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
+	// Check if the transaction date of the transaction retrieved from the Database has been settled.
+	yearMonth := time.Date(dbGroupTransaction.TransactionDate.Time.Year(), dbGroupTransaction.TransactionDate.Time.Month(), 1, 0, 0, 0, 0, time.UTC)
 
 	dbGroupAccountsList, err := h.GroupTransactionsRepo.GetGroupAccountsList(yearMonth, groupID)
 	if err != nil {
 		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 		return
 	} else if len(dbGroupAccountsList) != 0 {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{"当月のグループでの取引は会計済みのため削除できません。"}))
+		message := fmt.Sprintf("%d年%d月の取引は精算済みのため削除できません。", yearMonth.Year(), yearMonth.Month())
+		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &GroupTransactionProcessLockErrorMsg{Message: message}))
 		return
 	}
 
