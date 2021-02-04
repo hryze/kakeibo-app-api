@@ -15,6 +15,9 @@ import (
 	"time"
 	"unicode/utf8"
 
+	merrors "github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model/errors"
+	"golang.org/x/xerrors"
+
 	"github.com/gorilla/mux"
 
 	"github.com/garyburd/redigo/redis"
@@ -421,9 +424,10 @@ func (h *DBHandler) PostGroupUnapprovedUser(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if err := h.UserRepo.FindUserID(groupUnapprovedUser.UserID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"該当するユーザーが見つかりませんでした。"}))
+	if _, err := h.UserRepo.FindSignUpUserByUserID(groupUnapprovedUser.UserID); err != nil {
+		var userNotFoundError *merrors.UserNotFoundError
+		if xerrors.As(err, &userNotFoundError) {
+			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &NotFoundErrorMsg{"該当するユーザーが見つかりませんでした。"}))
 			return
 		}
 

@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
+
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/handler"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure"
 )
 
-func InjectMySQL() *infrastructure.MySQLHandler {
-	mySQLHandler, err := infrastructure.NewMySQLHandler()
+func InjectMySQL() *config.MySQLHandler {
+	mySQLHandler, err := config.NewMySQLHandler()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -18,8 +20,8 @@ func InjectMySQL() *infrastructure.MySQLHandler {
 	return mySQLHandler
 }
 
-func InjectRedis() *infrastructure.RedisHandler {
-	redisHandler, err := infrastructure.NewRedisHandler()
+func InjectRedis() *config.RedisHandler {
+	redisHandler, err := config.NewRedisHandler()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

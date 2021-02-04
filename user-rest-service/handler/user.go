@@ -1,18 +1,21 @@
 package handler
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
-	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"time"
+
+	uerrors "github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/errors"
+
+	herrors "github.com/paypay3/kakeibo-app-api/user-rest-service/handler/errors"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
+	"golang.org/x/xerrors"
 
 	"github.com/garyburd/redigo/redis"
 
@@ -82,130 +85,32 @@ func validateUser(users Users) error {
 	return &userValidationErrorMsg
 }
 
-func checkForUniqueUser(h *DBHandler, signUpUser *model.SignUpUser) error {
-	var userConflictErrorMsg UserConflictErrorMsg
-
-	errID := h.UserRepo.FindUserID(signUpUser.ID)
-	if errID != nil && errID != sql.ErrNoRows {
-		return errID
-	}
-
-	errEmail := h.UserRepo.FindEmail(signUpUser.Email)
-	if errEmail != nil && errEmail != sql.ErrNoRows {
-		return errEmail
-	}
-
-	if errors.Is(errID, sql.ErrNoRows) && errors.Is(errEmail, sql.ErrNoRows) {
-		return nil
-	}
-
-	if errID == nil && errEmail != nil {
-		userConflictErrorMsg.ID = "このIDは既に利用されています"
-		return &userConflictErrorMsg
-	}
-
-	if errEmail == nil && errID != nil {
-		userConflictErrorMsg.Email = "このメールアドレスは既に利用されています"
-		return &userConflictErrorMsg
-	}
-
-	userConflictErrorMsg.ID = "このIDは既に利用されています"
-	userConflictErrorMsg.Email = "このメールアドレスは既に利用されています"
-
-	return &userConflictErrorMsg
+type userHandler struct {
+	userUsecase usecase.UserUsecase
 }
 
-func postInitStandardBudgets(userID string) error {
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/standard-budgets", accountHost)
-
-	request, err := http.NewRequest(
-		"POST",
-		requestURL,
-		bytes.NewBuffer([]byte(`{"user_id":"`+userID+`"}`)),
-	)
-	if err != nil {
-		return err
+func NewUserHandler(userUsecase usecase.UserUsecase) *userHandler {
+	return &userHandler{
+		userUsecase: userUsecase,
 	}
-
-	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).DialContext,
-			MaxIdleConns:          500,
-			MaxIdleConnsPerHost:   100,
-			IdleConnTimeout:       90 * time.Second,
-			ResponseHeaderTimeout: 10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-		},
-		Timeout: 60 * time.Second,
-	}
-
-	response, err := client.Do(request)
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		_, _ = io.Copy(ioutil.Discard, response.Body)
-		response.Body.Close()
-	}()
-
-	if response.StatusCode == http.StatusCreated {
-		return nil
-	}
-
-	return errors.New("couldn't create a standard budget")
 }
 
-func (h *DBHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	var signUpUser model.SignUpUser
-	if err := json.NewDecoder(r.Body).Decode(&signUpUser); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+func (h *userHandler) SignUp(w http.ResponseWriter, r *http.Request) {
+	var in input.SignUpUser
+	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+		herrors.ErrorResponseByJSON(w, uerrors.NewInternalServerError(uerrors.NewErrorString("ユーザー登録に失敗しました")))
 		return
 	}
 
-	if err := validateUser(&signUpUser); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
-		return
-	}
-
-	if err := checkForUniqueUser(h, &signUpUser); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusConflict, err))
-		return
-	}
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(signUpUser.Password), 10)
+	out, err := h.userUsecase.SignUp(&in)
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		herrors.ErrorResponseByJSON(w, err)
 		return
 	}
-
-	signUpUser.Password = string(hash)
-	if err := h.UserRepo.CreateUser(&signUpUser); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	if err := postInitStandardBudgets(signUpUser.ID); err != nil {
-		if err := h.UserRepo.DeleteUser(&signUpUser); err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	signUpUser.Password = ""
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(&signUpUser); err != nil {
+	if err := json.NewEncoder(w).Encode(out); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -227,7 +132,7 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	dbUser, err := h.UserRepo.FindUser(&loginUser)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if xerrors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"認証に失敗しました"}))
 			return
 		} else if err != nil {
@@ -278,7 +183,7 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 func (h *DBHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_id")
-	if errors.Is(err, http.ErrNoCookie) {
+	if xerrors.Is(err, http.ErrNoCookie) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"ログアウト済みです"}))
 		return
 	}
@@ -318,7 +223,7 @@ func (h *DBHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.UserRepo.GetUser(userID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if xerrors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"ユーザーが存在しません。"}))
 			return
 		} else if err != nil {

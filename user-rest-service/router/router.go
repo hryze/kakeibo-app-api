@@ -11,6 +11,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/handler"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/externalapi"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence"
+
 	"github.com/joho/godotenv"
 
 	"github.com/gorilla/mux"
@@ -32,30 +40,47 @@ func Run() error {
 		return errors.New("environment variable not defined")
 	}
 
+	redisHandler, err := config.NewRedisHandler()
+	if err != nil {
+		return err
+	}
+
+	mySQLHandler, err := config.NewMySQLHandler()
+	if err != nil {
+		return err
+	}
+
+	accountApiHandler := config.NewAccountApiHandler()
+
+	userRepository := persistence.NewUserRepository(redisHandler, mySQLHandler)
+	accountApi := externalapi.NewAccountApi(accountApiHandler)
+	userUsecase := usecase.NewUserUsecase(userRepository, accountApi)
+	userHandler := handler.NewUserHandler(userUsecase)
+
 	h := injector.InjectDBHandler()
 
 	router := mux.NewRouter()
-	router.HandleFunc("/readyz", h.Readyz).Methods("GET")
-	router.HandleFunc("/signup", h.SignUp).Methods("POST")
-	router.HandleFunc("/login", h.Login).Methods("POST")
-	router.HandleFunc("/logout", h.Logout).Methods("DELETE")
-	router.HandleFunc("/user", h.GetUser).Methods("GET")
-	router.HandleFunc("/groups", h.GetGroupList).Methods("GET")
-	router.HandleFunc("/groups", h.PostGroup).Methods("POST")
-	router.HandleFunc("/groups/{group_id:[0-9]+}", h.PutGroup).Methods("PUT")
-	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.GetGroupUserIDList).Methods("GET")
-	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.PostGroupUnapprovedUser).Methods("POST")
-	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.DeleteGroupApprovedUser).Methods("DELETE")
-	router.HandleFunc("/groups/{group_id:[0-9]+}/users/approved", h.PostGroupApprovedUser).Methods("POST")
-	router.HandleFunc("/groups/{group_id:[0-9]+}/users/unapproved", h.DeleteGroupUnapprovedUser).Methods("DELETE")
-	router.HandleFunc("/groups/{group_id:[0-9]+}/users/{user_id:[\\S]{1,10}}/verify", h.VerifyGroupAffiliation).Methods("GET")
-	router.HandleFunc("/groups/{group_id:[0-9]+}/users/verify", h.VerifyGroupAffiliationOfUsersList).Methods("GET")
+	router.HandleFunc("/readyz", h.Readyz).Methods(http.MethodGet)
+	router.HandleFunc("/signup", userHandler.SignUp).Methods(http.MethodPost)
+	router.HandleFunc("/login", h.Login).Methods(http.MethodPost)
+	router.HandleFunc("/logout", h.Logout).Methods(http.MethodDelete)
+	router.HandleFunc("/user", h.GetUser).Methods(http.MethodGet)
+	router.HandleFunc("/groups", h.GetGroupList).Methods(http.MethodGet)
+	router.HandleFunc("/groups", h.PostGroup).Methods(http.MethodPost)
+	router.HandleFunc("/groups/{group_id:[0-9]+}", h.PutGroup).Methods(http.MethodPut)
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.GetGroupUserIDList).Methods(http.MethodGet)
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.PostGroupUnapprovedUser).Methods(http.MethodPost)
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.DeleteGroupApprovedUser).Methods(http.MethodDelete)
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users/approved", h.PostGroupApprovedUser).Methods(http.MethodPost)
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users/unapproved", h.DeleteGroupUnapprovedUser).Methods(http.MethodDelete)
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users/{user_id:[\\S]{1,10}}/verify", h.VerifyGroupAffiliation).Methods(http.MethodGet)
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users/verify", h.VerifyGroupAffiliationOfUsersList).Methods(http.MethodGet)
 
 	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
 
 	corsWrapper := cors.New(cors.Options{
 		AllowedOrigins:   []string{allowedOrigin},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Accept-Language"},
 		AllowCredentials: true,
 	})

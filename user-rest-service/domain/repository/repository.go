@@ -16,10 +16,10 @@ type AuthRepository interface {
 }
 
 type UserRepository interface {
-	FindUserID(userID string) error
-	FindEmail(email string) error
-	CreateUser(user *model.SignUpUser) error
-	DeleteUser(signUpUser *model.SignUpUser) error
+	FindSignUpUserByUserID(userID string) (*model.SignUpUser, error)
+	FindSignUpUserByEmail(email string) (*model.SignUpUser, error)
+	CreateSignUpUser(user *model.SignUpUser) error
+	DeleteSignUpUser(signUpUser *model.SignUpUser) error
 	FindUser(user *model.LoginUser) (*model.LoginUser, error)
 	GetUser(userID string) (*model.LoginUser, error)
 	SetSessionID(sessionID string, loginUserID string, expiration int) error

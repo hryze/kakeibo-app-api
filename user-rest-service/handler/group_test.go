@@ -32,8 +32,10 @@ type MockSqlResult struct {
 	sql.Result
 }
 
-func (t MockUserRepositoryForGroup) FindUserID(userID string) error {
-	return nil
+func (t MockUserRepositoryForGroup) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
+	signUpUser := model.NewSignUpUserFromDataSource("testID", "testName", "test@icloud.com", "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy")
+
+	return signUpUser, nil
 }
 
 func (r MockSqlResult) LastInsertId() (int64, error) {

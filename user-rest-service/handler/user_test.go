@@ -1,13 +1,15 @@
 package handler
 
 import (
-	"database/sql"
-	"net"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
+
+	merrors "github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model/errors"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
 
@@ -18,19 +20,23 @@ import (
 
 type MockUserRepository struct{}
 
-func (t MockUserRepository) FindUserID(userID string) error {
-	return sql.ErrNoRows
+func (t MockUserRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
+	return nil, &merrors.UserNotFoundError{
+		Message: "ユーザーが見つかりませんでした",
+	}
 }
 
-func (t MockUserRepository) FindEmail(email string) error {
-	return sql.ErrNoRows
+func (t MockUserRepository) FindSignUpUserByEmail(email string) (*model.SignUpUser, error) {
+	return nil, &merrors.UserNotFoundError{
+		Message: "ユーザーが見つかりませんでした",
+	}
 }
 
-func (t MockUserRepository) CreateUser(user *model.SignUpUser) error {
+func (t MockUserRepository) CreateSignUpUser(user *model.SignUpUser) error {
 	return nil
 }
 
-func (t MockUserRepository) DeleteUser(signUpUser *model.SignUpUser) error {
+func (t MockUserRepository) DeleteSignUpUser(signUpUser *model.SignUpUser) error {
 	return nil
 }
 
@@ -59,28 +65,38 @@ func (t MockUserRepository) DeleteSessionID(sessionID string) error {
 	return nil
 }
 
-func TestDBHandler_SignUp(t *testing.T) {
-	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
+type mockUserUsecase struct{}
 
-	postInitStandardBudgetsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusCreated)
-	})
+func (u *mockUserUsecase) SignUp(inSignUpUser *input.SignUpUser) (*output.SignUpUser, error) {
+	return &output.SignUpUser{
+		UserID: "testID",
+		Name:   "testName",
+		Email:  "test@icloud.com",
+	}, nil
+}
 
-	listener, err := net.Listen("tcp", "127.0.0.1:8081")
-	if err != nil {
-		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
-	}
+func Test_userHandler_SignUp(t *testing.T) {
+	//if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
+	//	t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
+	//}
+	//
+	//postInitStandardBudgetsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	//	w.WriteHeader(http.StatusCreated)
+	//})
+	//
+	//listener, err := net.Listen("tcp", "127.0.0.1:8081")
+	//if err != nil {
+	//	t.Fatalf("unexpected error by net.Listen() '%#v'", err)
+	//}
+	//
+	//ts := httptest.Server{
+	//	Listener: listener,
+	//	Config:   &http.Server{Handler: postInitStandardBudgetsHandler},
+	//}
+	//ts.Start()
+	//defer ts.Close()
 
-	ts := httptest.Server{
-		Listener: listener,
-		Config:   &http.Server{Handler: postInitStandardBudgetsHandler},
-	}
-	ts.Start()
-	defer ts.Close()
-
-	h := DBHandler{UserRepo: MockUserRepository{}}
+	h := NewUserHandler(&mockUserUsecase{})
 
 	r := httptest.NewRequest("POST", "/signup", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
@@ -91,7 +107,7 @@ func TestDBHandler_SignUp(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, &model.SignUpUser{}, &model.SignUpUser{})
+	testutil.AssertResponseBody(t, res, &output.SignUpUser{}, &output.SignUpUser{})
 }
 
 func TestDBHandler_Login(t *testing.T) {

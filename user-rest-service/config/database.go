@@ -1,4 +1,4 @@
-package infrastructure
+package config
 
 import (
 	"os"
@@ -9,11 +9,7 @@ import (
 )
 
 type MySQLHandler struct {
-	conn *sqlx.DB
-}
-
-type RedisHandler struct {
-	pool *redis.Pool
+	Conn *sqlx.DB
 }
 
 func NewMySQLHandler() (*MySQLHandler, error) {
@@ -25,16 +21,20 @@ func NewMySQLHandler() (*MySQLHandler, error) {
 	}
 
 	mySQLHandler := new(MySQLHandler)
-	mySQLHandler.conn = conn
+	mySQLHandler.Conn = conn
 
 	return mySQLHandler, nil
+}
+
+type RedisHandler struct {
+	Pool *redis.Pool
 }
 
 func NewRedisHandler() (*RedisHandler, error) {
 	dsn := os.Getenv("REDIS_DSN")
 
 	redisHandler := new(RedisHandler)
-	redisHandler.pool = &redis.Pool{
+	redisHandler.Pool = &redis.Pool{
 		Dial: func() (redis.Conn, error) {
 			conn, err := redis.Dial("tcp", dsn)
 			if err != nil {
