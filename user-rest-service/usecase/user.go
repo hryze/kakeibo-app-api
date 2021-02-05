@@ -1,6 +1,9 @@
 package usecase
 
 import (
+	"time"
+
+	"github.com/google/uuid"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	merrors "github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model/errors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
@@ -13,7 +16,8 @@ import (
 )
 
 type UserUsecase interface {
-	SignUp(inSignUpUser *input.SignUpUser) (*output.SignUpUser, error)
+	SignUp(in *input.SignUpUser) (*output.SignUpUser, error)
+	Login(in *input.LoginUser) (*output.LoginUser, error)
 }
 
 type userUsecase struct {
@@ -40,26 +44,26 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 			return nil, uerrors.NewConflictError(userConflictError)
 		}
 
-		return nil, uerrors.NewInternalServerError(uerrors.NewErrorString("ユーザー登録に失敗しました"))
+		return nil, uerrors.NewInternalServerError(uerrors.NewErrorString("Internal Server Error"))
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(signUpUser.Password()), 10)
 	if err != nil {
-		return nil, uerrors.NewInternalServerError(uerrors.NewErrorString("ユーザー登録に失敗しました"))
+		return nil, uerrors.NewInternalServerError(uerrors.NewErrorString("Internal Server Error"))
 	}
 
 	signUpUser.SetPassword(string(hash))
 
 	if err := u.userRepository.CreateSignUpUser(signUpUser); err != nil {
-		return nil, uerrors.NewInternalServerError(uerrors.NewErrorString("ユーザー登録に失敗しました"))
+		return nil, uerrors.NewInternalServerError(uerrors.NewErrorString("Internal Server Error"))
 	}
 
 	if err := u.accountApi.PostInitStandardBudgets(signUpUser.UserID()); err != nil {
 		if err := u.userRepository.DeleteSignUpUser(signUpUser); err != nil {
-			return nil, uerrors.NewInternalServerError(uerrors.NewErrorString("ユーザー登録に失敗しました"))
+			return nil, uerrors.NewInternalServerError(uerrors.NewErrorString("Internal Server Error"))
 		}
 
-		return nil, uerrors.NewInternalServerError(uerrors.NewErrorString("ユーザー登録に失敗しました"))
+		return nil, uerrors.NewInternalServerError(uerrors.NewErrorString("Internal Server Error"))
 	}
 
 	return &output.SignUpUser{
@@ -69,20 +73,57 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 	}, nil
 }
 
-func checkForUniqueUser(u *userUsecase, signUpUser *model.SignUpUser) error {
-	var userNotFoundError *merrors.UserNotFoundError
+func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
+	loginUser, err := model.NewLoginUser(in.Email, in.Password)
+	if err != nil {
+		return nil, uerrors.NewBadRequestError(err)
+	}
 
+	dbLoginUser, err := u.userRepository.FindLoginUserByEmail(loginUser.Email())
+	if err != nil {
+		if xerrors.Is(err, merrors.UserNotFoundError) {
+			return nil, uerrors.NewAuthenticationError(uerrors.NewErrorString("認証に失敗しました"))
+		}
+
+		return nil, uerrors.NewInternalServerError(uerrors.NewErrorString("Internal Server Error"))
+	}
+
+	hashedPassword := dbLoginUser.Password()
+	password := loginUser.Password()
+
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
+		return nil, uerrors.NewAuthenticationError(uerrors.NewErrorString("認証に失敗しました"))
+	}
+
+	sessionID := uuid.New().String()
+	expiration := 86400 * 30
+
+	if err := u.userRepository.AddSessionID(sessionID, dbLoginUser.UserID(), expiration); err != nil {
+		return nil, uerrors.NewInternalServerError(uerrors.NewErrorString("Internal Server Error"))
+	}
+
+	return &output.LoginUser{
+		UserID:    dbLoginUser.UserID(),
+		Name:      dbLoginUser.Name(),
+		Email:     dbLoginUser.Email(),
+		SessionID: sessionID,
+		Expires:   time.Now().Add(time.Duration(expiration) * time.Second),
+	}, nil
+}
+
+func checkForUniqueUser(u *userUsecase, signUpUser *model.SignUpUser) error {
 	_, errUserID := u.userRepository.FindSignUpUserByUserID(signUpUser.UserID())
-	existsUserByUserID := !xerrors.As(errUserID, &userNotFoundError)
-	if errUserID != nil && existsUserByUserID {
+	if errUserID != nil && !xerrors.Is(errUserID, merrors.UserNotFoundError) {
 		return errUserID
 	}
 
 	_, errEmail := u.userRepository.FindSignUpUserByEmail(signUpUser.Email())
-	existsUserByEmail := !xerrors.As(errEmail, &userNotFoundError)
-	if errEmail != nil && existsUserByEmail {
+	if errEmail != nil && !xerrors.Is(errEmail, merrors.UserNotFoundError) {
 		return errEmail
 	}
+
+	existsUserByUserID := !xerrors.Is(errUserID, merrors.UserNotFoundError)
+	existsUserByEmail := !xerrors.Is(errEmail, merrors.UserNotFoundError)
 
 	if !existsUserByUserID && !existsUserByEmail {
 		return nil

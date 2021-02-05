@@ -20,9 +20,9 @@ type UserRepository interface {
 	FindSignUpUserByEmail(email string) (*model.SignUpUser, error)
 	CreateSignUpUser(user *model.SignUpUser) error
 	DeleteSignUpUser(signUpUser *model.SignUpUser) error
-	FindUser(user *model.LoginUser) (*model.LoginUser, error)
+	FindLoginUserByEmail(email string) (*model.LoginUser, error)
 	GetUser(userID string) (*model.LoginUser, error)
-	SetSessionID(sessionID string, loginUserID string, expiration int) error
+	AddSessionID(sessionID string, userID string, expiration int) error
 	DeleteSessionID(sessionID string) error
 }
 

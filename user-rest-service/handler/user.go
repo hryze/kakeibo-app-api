@@ -3,10 +3,11 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
 
 	uerrors "github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/errors"
 
@@ -18,72 +19,7 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/garyburd/redigo/redis"
-
-	"github.com/google/uuid"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
-
-	"github.com/go-playground/validator"
-	"golang.org/x/crypto/bcrypt"
 )
-
-type Users interface {
-	ShowUser() (string, error)
-}
-
-type UserValidationErrorMsg struct {
-	ID       string `json:"id,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Email    string `json:"email,omitempty"`
-	Password string `json:"password,omitempty"`
-}
-
-type UserConflictErrorMsg struct {
-	ID    string `json:"id,omitempty"`
-	Email string `json:"email,omitempty"`
-}
-
-func (e *UserValidationErrorMsg) Error() string {
-	b, err := json.Marshal(e)
-	if err != nil {
-		log.Println(err)
-	}
-
-	return string(b)
-}
-
-func (e *UserConflictErrorMsg) Error() string {
-	b, err := json.Marshal(e)
-	if err != nil {
-		log.Println(err)
-	}
-
-	return string(b)
-}
-
-func validateUser(users Users) error {
-	validate := validator.New()
-	err := validate.Struct(users)
-	if err == nil {
-		return nil
-	}
-
-	var userValidationErrorMsg UserValidationErrorMsg
-	for _, err := range err.(validator.ValidationErrors) {
-		fieldName := err.Field()
-		switch fieldName {
-		case "ID":
-			userValidationErrorMsg.ID = "IDを正しく入力してください"
-		case "Name":
-			userValidationErrorMsg.Name = "名前を正しく入力してください"
-		case "Email":
-			userValidationErrorMsg.Email = "メールアドレスを正しく入力してください"
-		case "Password":
-			userValidationErrorMsg.Password = "パスワードを正しく入力してください"
-		}
-	}
-
-	return &userValidationErrorMsg
-}
 
 type userHandler struct {
 	userUsecase usecase.UserUsecase
@@ -98,7 +34,7 @@ func NewUserHandler(userUsecase usecase.UserUsecase) *userHandler {
 func (h *userHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var in input.SignUpUser
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-		herrors.ErrorResponseByJSON(w, uerrors.NewInternalServerError(uerrors.NewErrorString("ユーザー登録に失敗しました")))
+		herrors.ErrorResponseByJSON(w, uerrors.NewInternalServerError(uerrors.NewErrorString("Internal Server Error")))
 		return
 	}
 
@@ -116,44 +52,16 @@ func (h *userHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
-	var loginUser model.LoginUser
-	if err := json.NewDecoder(r.Body).Decode(&loginUser); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var in input.LoginUser
+	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+		herrors.ErrorResponseByJSON(w, uerrors.NewInternalServerError(uerrors.NewErrorString("Internal Server Error")))
 		return
 	}
 
-	if err := validateUser(&loginUser); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
-		return
-	}
-
-	password := loginUser.Password
-
-	dbUser, err := h.UserRepo.FindUser(&loginUser)
+	out, err := h.userUsecase.Login(&in)
 	if err != nil {
-		if xerrors.Is(err, sql.ErrNoRows) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"認証に失敗しました"}))
-			return
-		} else if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-	}
-
-	hashedPassword := dbUser.Password
-
-	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"認証に失敗しました"}))
-		return
-	}
-
-	dbUser.Password = ""
-
-	sessionID := uuid.New().String()
-	expiration := 86400 * 30
-	if err := h.UserRepo.SetSessionID(sessionID, dbUser.ID, expiration); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		herrors.ErrorResponseByJSON(w, err)
 		return
 	}
 
@@ -166,16 +74,16 @@ func (h *DBHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
-		Value:    sessionID,
+		Value:    out.SessionID,
+		Expires:  out.Expires,
 		Domain:   domain,
-		Expires:  time.Now().Add(time.Duration(expiration) * time.Second),
 		Secure:   secure,
 		HttpOnly: true,
 	})
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(&dbUser); err != nil {
+	if err := json.NewEncoder(w).Encode(out); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -232,9 +140,15 @@ func (h *DBHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	out := &output.LoginUser{
+		UserID: user.UserID(),
+		Name:   user.Name(),
+		Email:  user.Email(),
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&user); err != nil {
+	if err := json.NewEncoder(w).Encode(out); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

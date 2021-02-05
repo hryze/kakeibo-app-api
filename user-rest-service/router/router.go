@@ -62,7 +62,7 @@ func Run() error {
 	router := mux.NewRouter()
 	router.HandleFunc("/readyz", h.Readyz).Methods(http.MethodGet)
 	router.HandleFunc("/signup", userHandler.SignUp).Methods(http.MethodPost)
-	router.HandleFunc("/login", h.Login).Methods(http.MethodPost)
+	router.HandleFunc("/login", userHandler.Login).Methods(http.MethodPost)
 	router.HandleFunc("/logout", h.Logout).Methods(http.MethodDelete)
 	router.HandleFunc("/user", h.GetUser).Methods(http.MethodGet)
 	router.HandleFunc("/groups", h.GetGroupList).Methods(http.MethodGet)
