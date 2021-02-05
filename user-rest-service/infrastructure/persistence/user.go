@@ -2,7 +2,6 @@ package persistence
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 
@@ -38,7 +37,7 @@ func (r *userRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUse
 	var signUpUserDto datasource.SignUpUser
 	if err := r.MySQLHandler.Conn.QueryRowx(query, userID).StructScan(&signUpUserDto); err != nil {
 		if xerrors.Is(err, sql.ErrNoRows) {
-			return nil, &merrors.UserNotFoundError{Message: "ユーザーが見つかりませんでした"}
+			return nil, merrors.UserNotFoundError
 		}
 
 		return nil, err
@@ -64,7 +63,7 @@ func (r *userRepository) FindSignUpUserByEmail(email string) (*model.SignUpUser,
 	var signUpUserDto datasource.SignUpUser
 	if err := r.MySQLHandler.Conn.QueryRowx(query, email).StructScan(&signUpUserDto); err != nil {
 		if xerrors.Is(err, sql.ErrNoRows) {
-			return nil, &merrors.UserNotFoundError{Message: "ユーザーが見つかりませんでした"}
+			return nil, merrors.UserNotFoundError
 		}
 
 		return nil, err
@@ -102,7 +101,7 @@ func (r *userRepository) DeleteSignUpUser(signUpUser *model.SignUpUser) error {
 	return err
 }
 
-func (r *userRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUser, error) {
+func (r *userRepository) FindLoginUserByEmail(email string) (*model.LoginUser, error) {
 	query := `
         SELECT
             user_id,
@@ -114,9 +113,12 @@ func (r *userRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUser,
         WHERE
             email = ?`
 
-	if err := r.MySQLHandler.Conn.QueryRowx(query, loginUser.Email).StructScan(loginUser); err != nil {
+	var loginUserDto datasource.LoginUser
+	if err := r.MySQLHandler.Conn.QueryRowx(query, email).StructScan(&loginUserDto); err != nil {
 		return nil, err
 	}
+
+	loginUser := model.NewLoginUserFromDataSource(loginUserDto.UserID, loginUserDto.Name, loginUserDto.Email, loginUserDto.Password)
 
 	return loginUser, nil
 }
@@ -134,18 +136,17 @@ func (r *userRepository) GetUser(userID string) (*model.LoginUser, error) {
 
 	var user model.LoginUser
 	if err := r.MySQLHandler.Conn.QueryRowx(query, userID).StructScan(&user); err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-func (r *userRepository) SetSessionID(sessionID string, loginUserID string, expiration int) error {
+func (r *userRepository) AddSessionID(sessionID string, userID string, expiration int) error {
 	conn := r.RedisHandler.Pool.Get()
 	defer conn.Close()
 
-	_, err := conn.Do("SET", sessionID, loginUserID, "EX", expiration)
+	_, err := conn.Do("SET", sessionID, userID, "EX", expiration)
 
 	return err
 }

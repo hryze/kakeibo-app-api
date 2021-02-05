@@ -3,6 +3,8 @@ package usecase
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	merrors "github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model/errors"
 
 	"github.com/google/go-cmp/cmp"
@@ -17,15 +19,11 @@ import (
 type mockUserRepository struct{}
 
 func (t *mockUserRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
-	return nil, &merrors.UserNotFoundError{
-		Message: "ユーザーが見つかりませんでした",
-	}
+	return nil, merrors.UserNotFoundError
 }
 
 func (t *mockUserRepository) FindSignUpUserByEmail(email string) (*model.SignUpUser, error) {
-	return nil, &merrors.UserNotFoundError{
-		Message: "ユーザーが見つかりませんでした",
-	}
+	return nil, merrors.UserNotFoundError
 }
 
 func (t *mockUserRepository) CreateSignUpUser(user *model.SignUpUser) error {
@@ -36,24 +34,19 @@ func (t *mockUserRepository) DeleteSignUpUser(signUpUser *model.SignUpUser) erro
 	return nil
 }
 
-func (t *mockUserRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUser, error) {
-	return &model.LoginUser{
-		ID:       "testID",
-		Name:     "testName",
-		Email:    "test@icloud.com",
-		Password: "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy",
-	}, nil
+func (t *mockUserRepository) FindLoginUserByEmail(email string) (*model.LoginUser, error) {
+	loginUser := model.NewLoginUserFromDataSource("testUserID", "testName", "test@icloud.com", "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy")
+
+	return loginUser, nil
 }
 
 func (t *mockUserRepository) GetUser(userID string) (*model.LoginUser, error) {
-	return &model.LoginUser{
-		ID:    "testID",
-		Name:  "testName",
-		Email: "test@icloud.com",
-	}, nil
+	loginUser := model.NewLoginUserFromDataSource("testID", "testName", "test@icloud.com", "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy")
+
+	return loginUser, nil
 }
 
-func (t *mockUserRepository) SetSessionID(sessionID string, loginUserID string, expiration int) error {
+func (t *mockUserRepository) AddSessionID(sessionID string, loginUserID string, expiration int) error {
 	return nil
 }
 
@@ -89,6 +82,32 @@ func Test_userUsecase_SignUp(t *testing.T) {
 	}
 
 	if diff := cmp.Diff(&wantOut, &gotOut); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
+}
+
+func Test_userUsecase_Login(t *testing.T) {
+	u := NewUserUsecase(&mockUserRepository{}, &mockAccountApi{})
+
+	in := input.LoginUser{
+		Email:    "test@icloud.com",
+		Password: "testPassword",
+	}
+
+	gotOut, err := u.Login(&in)
+	if err != nil {
+		t.Errorf("unexpected error by userUsecase.SignUp '%#v'", err)
+	}
+
+	wantOut := &output.LoginUser{
+		UserID: "testUserID",
+		Name:   "testName",
+		Email:  "test@icloud.com",
+	}
+
+	ignoreFieldsOption := cmpopts.IgnoreFields(output.LoginUser{}, "SessionID", "Expires")
+
+	if diff := cmp.Diff(&wantOut, &gotOut, ignoreFieldsOption); len(diff) != 0 {
 		t.Errorf("differs: (-want +got)\n%s", diff)
 	}
 }

@@ -3,7 +3,11 @@ package errors
 import (
 	"encoding/json"
 	"log"
+
+	"golang.org/x/xerrors"
 )
+
+var UserNotFoundError = xerrors.New("not exists user")
 
 type UserValidationError struct {
 	UserID   string `json:"user_id,omitempty"`
@@ -19,14 +23,6 @@ func (e *UserValidationError) Error() string {
 	}
 
 	return string(b)
-}
-
-type UserNotFoundError struct {
-	Message string `json:"message"`
-}
-
-func (e *UserNotFoundError) Error() string {
-	return e.Message
 }
 
 type UserConflictError struct {

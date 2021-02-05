@@ -1,7 +1,6 @@
 package model
 
 import (
-	"encoding/json"
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -107,17 +106,66 @@ func NewSignUpUserFromDataSource(userID, name, email, password string) *SignUpUs
 }
 
 type LoginUser struct {
-	ID       string `json:"id"                 db:"user_id"`
-	Name     string `json:"name"               db:"name"`
-	Email    string `json:"email"              db:"email"    validate:"required,email,min=5,max=50,excludesall= "`
-	Password string `json:"password,omitempty" db:"password" validate:"required,min=8,max=50,excludesall= "`
+	userID   string
+	name     string
+	email    string
+	password string
 }
 
-func (u LoginUser) ShowUser() (string, error) {
-	b, err := json.Marshal(u)
-	if err != nil {
-		return string(b), err
+func (u *LoginUser) UserID() string {
+	return u.userID
+}
+
+func (u *LoginUser) Email() string {
+	return u.email
+}
+
+func (u *LoginUser) Name() string {
+	return u.name
+}
+
+func (u *LoginUser) Password() string {
+	return u.password
+}
+
+func (u *LoginUser) SetPassword(hashStr string) {
+	u.password = hashStr
+}
+
+func NewLoginUser(email, password string) (*LoginUser, error) {
+	var userValidationError merrors.UserValidationError
+
+	if len(email) < minEmailLength ||
+		len(email) > maxEmailLength ||
+		strings.Contains(email, " ") ||
+		strings.Contains(email, "　") ||
+		!emailRegex.MatchString(email) {
+		userValidationError.Email = "メールアドレスを正しく入力してください"
 	}
 
-	return string(b), nil
+	if len(password) < minPasswordLength ||
+		len(password) > maxPasswordLength ||
+		strings.Contains(password, " ") ||
+		strings.Contains(password, "　") {
+		userValidationError.Password = "パスワードを正しく入力してください"
+	}
+
+	if userValidationError.Email != "" ||
+		userValidationError.Password != "" {
+		return nil, &userValidationError
+	}
+
+	return &LoginUser{
+		email:    email,
+		password: password,
+	}, nil
+}
+
+func NewLoginUserFromDataSource(userID, name, email, password string) *LoginUser {
+	return &LoginUser{
+		userID:   userID,
+		name:     name,
+		email:    email,
+		password: password,
+	}
 }

@@ -38,7 +38,7 @@ func (r *userRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUse
 	var signUpUserDto datasource.SignUpUser
 	if err := r.MySQLHandler.Conn.QueryRowx(query, userID).StructScan(&signUpUserDto); err != nil {
 		if xerrors.Is(err, sql.ErrNoRows) {
-			return nil, &merrors.UserNotFoundError{Message: "ユーザーが見つかりませんでした"}
+			return nil, merrors.UserNotFoundError
 		}
 
 		return nil, err
@@ -64,7 +64,7 @@ func (r *userRepository) FindSignUpUserByEmail(email string) (*model.SignUpUser,
 	var signUpUserDto datasource.SignUpUser
 	if err := r.MySQLHandler.Conn.QueryRowx(query, email).StructScan(&signUpUserDto); err != nil {
 		if xerrors.Is(err, sql.ErrNoRows) {
-			return nil, &merrors.UserNotFoundError{Message: "ユーザーが見つかりませんでした"}
+			return nil, merrors.UserNotFoundError
 		}
 
 		return nil, err
@@ -102,7 +102,7 @@ func (r *userRepository) DeleteSignUpUser(signUpUser *model.SignUpUser) error {
 	return err
 }
 
-func (r *userRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUser, error) {
+func (r *userRepository) FindLoginUserByEmail(email string) (*model.LoginUser, error) {
 	query := `
         SELECT
             user_id,
@@ -114,7 +114,8 @@ func (r *userRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUser,
         WHERE
             email = ?`
 
-	if err := r.MySQLHandler.Conn.QueryRowx(query, loginUser.Email).StructScan(loginUser); err != nil {
+	var loginUser *model.LoginUser
+	if err := r.MySQLHandler.Conn.QueryRowx(query, email).StructScan(loginUser); err != nil {
 		return nil, err
 	}
 
@@ -141,7 +142,7 @@ func (r *userRepository) GetUser(userID string) (*model.LoginUser, error) {
 	return &user, nil
 }
 
-func (r *userRepository) SetSessionID(sessionID string, loginUserID string, expiration int) error {
+func (r *userRepository) AddSessionID(sessionID string, loginUserID string, expiration int) error {
 	conn := r.RedisHandler.Pool.Get()
 	defer conn.Close()
 

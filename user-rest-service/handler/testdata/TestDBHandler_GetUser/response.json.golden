@@ -1,5 +1,5 @@
 {
-  "id": "testID",
+  "user_id": "testID",
   "name": "testName",
   "email": "test@icloud.com"
 }
