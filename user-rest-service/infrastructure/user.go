@@ -6,12 +6,12 @@ import (
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 
-	merrors "github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model/errors"
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/datasource"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
 )
 
 type userRepository struct {
@@ -38,7 +38,7 @@ func (r *userRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUse
 	var signUpUserDto datasource.SignUpUser
 	if err := r.MySQLHandler.Conn.QueryRowx(query, userID).StructScan(&signUpUserDto); err != nil {
 		if xerrors.Is(err, sql.ErrNoRows) {
-			return nil, merrors.UserNotFoundError
+			return nil, errors.ErrUserNotFound
 		}
 
 		return nil, err
@@ -64,7 +64,7 @@ func (r *userRepository) FindSignUpUserByEmail(email string) (*model.SignUpUser,
 	var signUpUserDto datasource.SignUpUser
 	if err := r.MySQLHandler.Conn.QueryRowx(query, email).StructScan(&signUpUserDto); err != nil {
 		if xerrors.Is(err, sql.ErrNoRows) {
-			return nil, merrors.UserNotFoundError
+			return nil, errors.ErrUserNotFound
 		}
 
 		return nil, err

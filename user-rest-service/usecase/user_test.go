@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	merrors "github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model/errors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
 
 	"github.com/google/go-cmp/cmp"
 
@@ -19,11 +19,11 @@ import (
 type mockUserRepository struct{}
 
 func (t *mockUserRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
-	return nil, merrors.UserNotFoundError
+	return nil, errors.ErrUserNotFound
 }
 
 func (t *mockUserRepository) FindSignUpUserByEmail(email string) (*model.SignUpUser, error) {
-	return nil, merrors.UserNotFoundError
+	return nil, errors.ErrUserNotFound
 }
 
 func (t *mockUserRepository) CreateSignUpUser(user *model.SignUpUser) error {

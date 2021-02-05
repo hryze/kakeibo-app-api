@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	merrors "github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model/errors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
@@ -22,11 +22,11 @@ import (
 type MockUserRepository struct{}
 
 func (t MockUserRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
-	return nil, merrors.UserNotFoundError
+	return nil, errors.ErrUserNotFound
 }
 
 func (t MockUserRepository) FindSignUpUserByEmail(email string) (*model.SignUpUser, error) {
-	return nil, merrors.UserNotFoundError
+	return nil, errors.ErrUserNotFound
 }
 
 func (t MockUserRepository) CreateSignUpUser(user *model.SignUpUser) error {

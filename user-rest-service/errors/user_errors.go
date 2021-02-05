@@ -7,7 +7,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-var UserNotFoundError = xerrors.New("not exists user")
+var ErrUserNotFound = xerrors.New("user not found")
 
 type UserValidationError struct {
 	UserID   string `json:"user_id,omitempty"`

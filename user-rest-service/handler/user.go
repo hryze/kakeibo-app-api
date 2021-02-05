@@ -7,11 +7,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
+
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
-
-	uerrors "github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/errors"
-
-	herrors "github.com/paypay3/kakeibo-app-api/user-rest-service/handler/errors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 
@@ -34,13 +32,13 @@ func NewUserHandler(userUsecase usecase.UserUsecase) *userHandler {
 func (h *userHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var in input.SignUpUser
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-		herrors.ErrorResponseByJSON(w, uerrors.NewInternalServerError(uerrors.NewErrorString("Internal Server Error")))
+		errors.ErrorResponseByJSON(w, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error")))
 		return
 	}
 
 	out, err := h.userUsecase.SignUp(&in)
 	if err != nil {
-		herrors.ErrorResponseByJSON(w, err)
+		errors.ErrorResponseByJSON(w, err)
 		return
 	}
 
@@ -55,13 +53,13 @@ func (h *userHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var in input.LoginUser
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-		herrors.ErrorResponseByJSON(w, uerrors.NewInternalServerError(uerrors.NewErrorString("Internal Server Error")))
+		errors.ErrorResponseByJSON(w, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error")))
 		return
 	}
 
 	out, err := h.userUsecase.Login(&in)
 	if err != nil {
-		herrors.ErrorResponseByJSON(w, err)
+		errors.ErrorResponseByJSON(w, err)
 		return
 	}
 
