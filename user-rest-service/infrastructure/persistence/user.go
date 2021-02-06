@@ -3,6 +3,8 @@ package persistence
 import (
 	"database/sql"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
+
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
@@ -23,7 +25,7 @@ func NewUserRepository(redisHandler *config.RedisHandler, mysqlHandler *config.M
 	return &userRepository{redisHandler, mysqlHandler}
 }
 
-func (r *userRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
+func (r *userRepository) FindSignUpUserByUserID(userID string) (*userdomain.SignUpUser, error) {
 	query := `
         SELECT
             user_id,
@@ -44,12 +46,12 @@ func (r *userRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUse
 		return nil, err
 	}
 
-	signUpUser := model.NewSignUpUserFromDataSource(signUpUserDto.UserID, signUpUserDto.Name, signUpUserDto.Email, signUpUserDto.Password)
+	signUpUser := userdomain.NewSignUpUserFromDataSource(signUpUserDto.UserID, signUpUserDto.Name, signUpUserDto.Email, signUpUserDto.Password)
 
 	return signUpUser, nil
 }
 
-func (r *userRepository) FindSignUpUserByEmail(email string) (*model.SignUpUser, error) {
+func (r *userRepository) FindSignUpUserByEmail(email string) (*userdomain.SignUpUser, error) {
 	query := `
         SELECT
             user_id,
@@ -70,12 +72,12 @@ func (r *userRepository) FindSignUpUserByEmail(email string) (*model.SignUpUser,
 		return nil, err
 	}
 
-	signUpUser := model.NewSignUpUserFromDataSource(signUpUserDto.UserID, signUpUserDto.Name, signUpUserDto.Email, signUpUserDto.Password)
+	signUpUser := userdomain.NewSignUpUserFromDataSource(signUpUserDto.UserID, signUpUserDto.Name, signUpUserDto.Email, signUpUserDto.Password)
 
 	return signUpUser, nil
 }
 
-func (r *userRepository) CreateSignUpUser(signUpUser *model.SignUpUser) error {
+func (r *userRepository) CreateSignUpUser(signUpUser *userdomain.SignUpUser) error {
 	query := `
         INSERT INTO users
             (user_id, name, email, password)
@@ -89,7 +91,7 @@ func (r *userRepository) CreateSignUpUser(signUpUser *model.SignUpUser) error {
 	return nil
 }
 
-func (r *userRepository) DeleteSignUpUser(signUpUser *model.SignUpUser) error {
+func (r *userRepository) DeleteSignUpUser(signUpUser *userdomain.SignUpUser) error {
 	query := `
         DELETE
         FROM

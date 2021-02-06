@@ -37,10 +37,10 @@ func (a *accountApi) PostInitStandardBudgets(userID string) error {
 
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 600*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	response, err := a.fetch(ctx, request)
+	response, err := a.HttpClient.Do(request.WithContext(ctx))
 	if err != nil {
 		return err
 	}
@@ -54,32 +54,4 @@ func (a *accountApi) PostInitStandardBudgets(userID string) error {
 	}
 
 	return xerrors.New("couldn't create a standard budget")
-}
-
-func (a *accountApi) fetch(ctx context.Context, request *http.Request) (*http.Response, error) {
-	request = request.WithContext(ctx)
-
-	responseCh := make(chan *http.Response)
-	errorCh := make(chan error)
-
-	go func() {
-		response, err := a.HttpClient.Do(request)
-		if err != nil {
-			errorCh <- err
-			return
-		}
-
-		responseCh <- response
-	}()
-
-	select {
-	case response := <-responseCh:
-		return response, nil
-
-	case err := <-errorCh:
-		return nil, err
-
-	case <-ctx.Done():
-		return nil, xerrors.New("HTTP request cancelled")
-	}
 }

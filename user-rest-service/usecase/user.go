@@ -3,11 +3,14 @@ package usecase
 import (
 	"time"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
+
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
 
 	"github.com/google/uuid"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/interfaces"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
@@ -21,11 +24,11 @@ type UserUsecase interface {
 }
 
 type userUsecase struct {
-	userRepository repository.UserRepository
+	userRepository userdomain.Repository
 	accountApi     interfaces.AccountApi
 }
 
-func NewUserUsecase(userRepository repository.UserRepository, accountApi interfaces.AccountApi) *userUsecase {
+func NewUserUsecase(userRepository userdomain.Repository, accountApi interfaces.AccountApi) *userUsecase {
 	return &userUsecase{
 		userRepository: userRepository,
 		accountApi:     accountApi,
@@ -33,9 +36,37 @@ func NewUserUsecase(userRepository repository.UserRepository, accountApi interfa
 }
 
 func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
-	signUpUser, err := model.NewSignUpUser(in.UserID, in.Name, in.Email, in.Password)
+	var userValidationError errors.UserValidationError
+
+	userID, err := vo.NewUserID(in.UserID)
 	if err != nil {
-		return nil, errors.NewBadRequestError(err)
+		userValidationError.UserID = "ユーザーIDを正しく入力してください"
+	}
+
+	email, err := vo.NewEmail(in.Email)
+	if err != nil {
+		userValidationError.Email = "メールアドレスを正しく入力してください"
+	}
+
+	password, err := vo.NewPassword(in.Password)
+	if err != nil {
+		if xerrors.Is(err, errors.ErrInvalidPassword) {
+			userValidationError.Password = "パスワードを正しく入力してください"
+		}
+
+		return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
+	}
+
+	signUpUser, err := userdomain.NewSignUpUser(userID, in.Name, email, password)
+	if err != nil {
+		userValidationError.Name = "名前を正しく入力してください"
+	}
+
+	if userValidationError.UserID != "" ||
+		userValidationError.Name != "" ||
+		userValidationError.Email != "" ||
+		userValidationError.Password != "" {
+		return nil, errors.NewBadRequestError(&userValidationError)
 	}
 
 	if err := checkForUniqueUser(u, signUpUser); err != nil {
@@ -47,18 +78,11 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 		return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(signUpUser.Password()), 10)
-	if err != nil {
-		return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
-	}
-
-	signUpUser.SetPassword(string(hash))
-
 	if err := u.userRepository.CreateSignUpUser(signUpUser); err != nil {
 		return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
 	}
 
-	if err := u.accountApi.PostInitStandardBudgets(signUpUser.UserID()); err != nil {
+	if err := u.accountApi.PostInitStandardBudgets(signUpUser.UserID().Value()); err != nil {
 		if err := u.userRepository.DeleteSignUpUser(signUpUser); err != nil {
 			return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
 		}
@@ -67,9 +91,9 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 	}
 
 	return &output.SignUpUser{
-		UserID: signUpUser.UserID(),
+		UserID: signUpUser.UserID().Value(),
 		Name:   signUpUser.Name(),
-		Email:  signUpUser.Email(),
+		Email:  signUpUser.Email().Value(),
 	}, nil
 }
 
@@ -111,13 +135,13 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 	}, nil
 }
 
-func checkForUniqueUser(u *userUsecase, signUpUser *model.SignUpUser) error {
-	_, errUserID := u.userRepository.FindSignUpUserByUserID(signUpUser.UserID())
+func checkForUniqueUser(u *userUsecase, signUpUser *userdomain.SignUpUser) error {
+	_, errUserID := u.userRepository.FindSignUpUserByUserID(signUpUser.UserID().Value())
 	if errUserID != nil && !xerrors.Is(errUserID, errors.ErrUserNotFound) {
 		return errUserID
 	}
 
-	_, errEmail := u.userRepository.FindSignUpUserByEmail(signUpUser.Email())
+	_, errEmail := u.userRepository.FindSignUpUserByEmail(signUpUser.Email().Value())
 	if errEmail != nil && !xerrors.Is(errEmail, errors.ErrUserNotFound) {
 		return errEmail
 	}

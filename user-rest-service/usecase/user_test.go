@@ -3,6 +3,8 @@ package usecase
 import (
 	"testing"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
+
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
@@ -18,19 +20,19 @@ import (
 
 type mockUserRepository struct{}
 
-func (t *mockUserRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
+func (t *mockUserRepository) FindSignUpUserByUserID(userID string) (*userdomain.SignUpUser, error) {
 	return nil, errors.ErrUserNotFound
 }
 
-func (t *mockUserRepository) FindSignUpUserByEmail(email string) (*model.SignUpUser, error) {
+func (t *mockUserRepository) FindSignUpUserByEmail(email string) (*userdomain.SignUpUser, error) {
 	return nil, errors.ErrUserNotFound
 }
 
-func (t *mockUserRepository) CreateSignUpUser(user *model.SignUpUser) error {
+func (t *mockUserRepository) CreateSignUpUser(user *userdomain.SignUpUser) error {
 	return nil
 }
 
-func (t *mockUserRepository) DeleteSignUpUser(signUpUser *model.SignUpUser) error {
+func (t *mockUserRepository) DeleteSignUpUser(signUpUser *userdomain.SignUpUser) error {
 	return nil
 }
 

@@ -7,7 +7,13 @@ import (
 	"golang.org/x/xerrors"
 )
 
-var ErrUserNotFound = xerrors.New("user not found")
+var (
+	ErrUserNotFound    = xerrors.New("user not found")
+	ErrInvalidUserID   = xerrors.New("invalid user id")
+	ErrInvalidUserName = xerrors.New("invalid user name")
+	ErrInvalidEmail    = xerrors.New("invalid email")
+	ErrInvalidPassword = xerrors.New("invalid password")
+)
 
 type UserValidationError struct {
 	UserID   string `json:"user_id,omitempty"`
