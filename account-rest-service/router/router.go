@@ -11,11 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/joho/godotenv"
-
 	"github.com/gorilla/mux"
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/injector"
+	"github.com/joho/godotenv"
 	"github.com/rs/cors"
+
+	"github.com/paypay3/kakeibo-app-api/account-rest-service/injector"
 )
 
 func Run() error {

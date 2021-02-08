@@ -14,11 +14,10 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/garyburd/redigo/redis"
+	"github.com/gorilla/mux"
 	"golang.org/x/xerrors"
 
-	"github.com/gorilla/mux"
-
-	"github.com/garyburd/redigo/redis"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
 )

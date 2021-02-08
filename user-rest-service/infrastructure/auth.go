@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"github.com/garyburd/redigo/redis"
+
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 )
 

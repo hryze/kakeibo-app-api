@@ -3,19 +3,14 @@ package usecase
 import (
 	"testing"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
-
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
-
-	"github.com/google/go-cmp/cmp"
-
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
-
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
-
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
 )
 
 type mockUserRepository struct{}

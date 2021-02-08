@@ -4,14 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
-
 	"golang.org/x/xerrors"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/datasource"
-
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/datasource"
 )
 
 type userRepository struct {

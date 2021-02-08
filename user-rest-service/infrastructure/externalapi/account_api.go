@@ -10,8 +10,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"golang.org/x/xerrors"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 )
 
 type accountApi struct {
