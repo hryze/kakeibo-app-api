@@ -50,9 +50,9 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 	if err != nil {
 		if xerrors.Is(err, errors.ErrInvalidPassword) {
 			userValidationError.Password = "パスワードを正しく入力してください"
+		} else {
+			return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
 		}
-
-		return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
 	}
 
 	signUpUser, err := userdomain.NewSignUpUser(userID, in.Name, email, password)
