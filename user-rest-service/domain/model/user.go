@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 )
 
 const (
@@ -50,7 +50,7 @@ func (u *SignUpUser) SetPassword(hashStr string) {
 }
 
 func NewSignUpUser(userID, name, email, password string) (*SignUpUser, error) {
-	var userValidationError errors.UserValidationError
+	var userValidationError apierrors.UserValidationError
 
 	if utf8.RuneCountInString(userID) < minUserIDLength ||
 		utf8.RuneCountInString(userID) > maxUserIDLength ||
@@ -133,7 +133,7 @@ func (u *LoginUser) SetPassword(hashStr string) {
 }
 
 func NewLoginUser(email, password string) (*LoginUser, error) {
-	var userValidationError errors.UserValidationError
+	var userValidationError apierrors.UserValidationError
 
 	if len(email) < minEmailLength ||
 		len(email) > maxEmailLength ||

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 )
 
 type UserID string
@@ -19,7 +19,7 @@ func NewUserID(userID string) (UserID, error) {
 		utf8.RuneCountInString(userID) > maxUserIDLength ||
 		strings.Contains(userID, " ") ||
 		strings.Contains(userID, "　") {
-		return "", errors.ErrInvalidUserID
+		return "", apierrors.ErrInvalidUserID
 	}
 
 	return UserID(userID), nil

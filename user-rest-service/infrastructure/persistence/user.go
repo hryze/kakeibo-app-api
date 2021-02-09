@@ -5,9 +5,9 @@ import (
 
 	"golang.org/x/xerrors"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/datasource"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
 )
@@ -39,7 +39,7 @@ func (r *userRepository) FindSignUpUserByUserID(userID string) (*userdomain.Sign
 	var signUpUserDto datasource.SignUpUser
 	if err := r.MySQLHandler.Conn.QueryRowx(query, userID).StructScan(&signUpUserDto); err != nil {
 		if xerrors.Is(err, sql.ErrNoRows) {
-			return nil, errors.ErrUserNotFound
+			return nil, apierrors.ErrUserNotFound
 		}
 
 		return nil, err
@@ -65,7 +65,7 @@ func (r *userRepository) FindSignUpUserByEmail(email string) (*userdomain.SignUp
 	var signUpUserDto datasource.SignUpUser
 	if err := r.MySQLHandler.Conn.QueryRowx(query, email).StructScan(&signUpUserDto); err != nil {
 		if xerrors.Is(err, sql.ErrNoRows) {
-			return nil, errors.ErrUserNotFound
+			return nil, apierrors.ErrUserNotFound
 		}
 
 		return nil, err

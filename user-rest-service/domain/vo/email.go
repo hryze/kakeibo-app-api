@@ -3,7 +3,7 @@ package vo
 import (
 	"regexp"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 )
 
 type Email string
@@ -19,7 +19,7 @@ func NewEmail(email string) (Email, error) {
 	if len(email) == 0 ||
 		len(email) > maxEmailLength ||
 		!emailRegex.MatchString(email) {
-		return "", errors.ErrInvalidEmail
+		return "", apierrors.ErrInvalidEmail
 	}
 
 	return Email(email), nil

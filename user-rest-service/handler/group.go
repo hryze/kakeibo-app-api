@@ -18,8 +18,8 @@ import (
 	"github.com/gorilla/mux"
 	"golang.org/x/xerrors"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
 )
 
 type NoContentMsg struct {
@@ -423,7 +423,7 @@ func (h *DBHandler) PostGroupUnapprovedUser(w http.ResponseWriter, r *http.Reque
 	}
 
 	if _, err := h.UserRepo.FindSignUpUserByUserID(groupUnapprovedUser.UserID); err != nil {
-		if xerrors.Is(err, errors.ErrUserNotFound) {
+		if xerrors.Is(err, apierrors.ErrUserNotFound) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &NotFoundErrorMsg{"該当するユーザーが見つかりませんでした。"}))
 			return
 		}

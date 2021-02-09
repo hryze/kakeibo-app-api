@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 )
 
 type Password string
@@ -20,7 +20,7 @@ func NewPassword(password string) (Password, error) {
 		len(password) > maxPasswordLength ||
 		strings.Contains(password, " ") ||
 		strings.Contains(password, "　") {
-		return "", errors.ErrInvalidPassword
+		return "", apierrors.ErrInvalidPassword
 	}
 
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10)

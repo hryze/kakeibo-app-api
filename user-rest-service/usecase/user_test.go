@@ -6,9 +6,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
 )
@@ -16,11 +16,11 @@ import (
 type mockUserRepository struct{}
 
 func (t *mockUserRepository) FindSignUpUserByUserID(userID string) (*userdomain.SignUpUser, error) {
-	return nil, errors.ErrUserNotFound
+	return nil, apierrors.ErrUserNotFound
 }
 
 func (t *mockUserRepository) FindSignUpUserByEmail(email string) (*userdomain.SignUpUser, error) {
-	return nil, errors.ErrUserNotFound
+	return nil, apierrors.ErrUserNotFound
 }
 
 func (t *mockUserRepository) CreateSignUpUser(user *userdomain.SignUpUser) error {

@@ -4,8 +4,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
 )
 
 type SignUpUser struct {
@@ -25,7 +25,7 @@ func NewSignUpUser(userID vo.UserID, name string, email vo.Email, password vo.Pa
 		utf8.RuneCountInString(name) > maxNameLength ||
 		strings.Contains(name, " ") ||
 		strings.Contains(name, "　") {
-		return nil, errors.ErrInvalidUserName
+		return nil, apierrors.ErrInvalidUserName
 	}
 
 	return &SignUpUser{

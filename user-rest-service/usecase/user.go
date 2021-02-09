@@ -7,10 +7,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/xerrors"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/interfaces"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
@@ -34,7 +34,7 @@ func NewUserUsecase(userRepository userdomain.Repository, accountApi interfaces.
 }
 
 func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
-	var userValidationError errors.UserValidationError
+	var userValidationError apierrors.UserValidationError
 
 	userID, err := vo.NewUserID(in.UserID)
 	if err != nil {
@@ -48,10 +48,10 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 
 	password, err := vo.NewPassword(in.Password)
 	if err != nil {
-		if xerrors.Is(err, errors.ErrInvalidPassword) {
+		if xerrors.Is(err, apierrors.ErrInvalidPassword) {
 			userValidationError.Password = "パスワードを正しく入力してください"
 		} else {
-			return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
+			return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 		}
 	}
 
@@ -64,28 +64,28 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 		userValidationError.Name != "" ||
 		userValidationError.Email != "" ||
 		userValidationError.Password != "" {
-		return nil, errors.NewBadRequestError(&userValidationError)
+		return nil, apierrors.NewBadRequestError(&userValidationError)
 	}
 
 	if err := checkForUniqueUser(u, signUpUser); err != nil {
-		var userConflictError *errors.UserConflictError
+		var userConflictError *apierrors.UserConflictError
 		if xerrors.As(err, &userConflictError) {
-			return nil, errors.NewConflictError(userConflictError)
+			return nil, apierrors.NewConflictError(userConflictError)
 		}
 
-		return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
 	if err := u.userRepository.CreateSignUpUser(signUpUser); err != nil {
-		return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
 	if err := u.accountApi.PostInitStandardBudgets(signUpUser.UserID().Value()); err != nil {
 		if err := u.userRepository.DeleteSignUpUser(signUpUser); err != nil {
-			return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
+			return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 		}
 
-		return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
 	return &output.SignUpUser{
@@ -98,30 +98,30 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 	loginUser, err := model.NewLoginUser(in.Email, in.Password)
 	if err != nil {
-		return nil, errors.NewBadRequestError(err)
+		return nil, apierrors.NewBadRequestError(err)
 	}
 
 	dbLoginUser, err := u.userRepository.FindLoginUserByEmail(loginUser.Email())
 	if err != nil {
-		if xerrors.Is(err, errors.ErrUserNotFound) {
-			return nil, errors.NewAuthenticationError(errors.NewErrorString("認証に失敗しました"))
+		if xerrors.Is(err, apierrors.ErrUserNotFound) {
+			return nil, apierrors.NewAuthenticationError(apierrors.NewErrorString("認証に失敗しました"))
 		}
 
-		return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
 	hashedPassword := dbLoginUser.Password()
 	password := loginUser.Password()
 
 	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
-		return nil, errors.NewAuthenticationError(errors.NewErrorString("認証に失敗しました"))
+		return nil, apierrors.NewAuthenticationError(apierrors.NewErrorString("認証に失敗しました"))
 	}
 
 	sessionID := uuid.New().String()
 	expiration := 86400 * 30
 
 	if err := u.userRepository.AddSessionID(sessionID, dbLoginUser.UserID(), expiration); err != nil {
-		return nil, errors.NewInternalServerError(errors.NewErrorString("Internal Server Error"))
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
 	return &output.LoginUser{
@@ -135,23 +135,23 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 
 func checkForUniqueUser(u *userUsecase, signUpUser *userdomain.SignUpUser) error {
 	_, errUserID := u.userRepository.FindSignUpUserByUserID(signUpUser.UserID().Value())
-	if errUserID != nil && !xerrors.Is(errUserID, errors.ErrUserNotFound) {
+	if errUserID != nil && !xerrors.Is(errUserID, apierrors.ErrUserNotFound) {
 		return errUserID
 	}
 
 	_, errEmail := u.userRepository.FindSignUpUserByEmail(signUpUser.Email().Value())
-	if errEmail != nil && !xerrors.Is(errEmail, errors.ErrUserNotFound) {
+	if errEmail != nil && !xerrors.Is(errEmail, apierrors.ErrUserNotFound) {
 		return errEmail
 	}
 
-	existsUserByUserID := !xerrors.Is(errUserID, errors.ErrUserNotFound)
-	existsUserByEmail := !xerrors.Is(errEmail, errors.ErrUserNotFound)
+	existsUserByUserID := !xerrors.Is(errUserID, apierrors.ErrUserNotFound)
+	existsUserByEmail := !xerrors.Is(errEmail, apierrors.ErrUserNotFound)
 
 	if !existsUserByUserID && !existsUserByEmail {
 		return nil
 	}
 
-	var userConflictError errors.UserConflictError
+	var userConflictError apierrors.UserConflictError
 
 	if existsUserByUserID {
 		userConflictError.UserID = "このユーザーIDは既に利用されています"
