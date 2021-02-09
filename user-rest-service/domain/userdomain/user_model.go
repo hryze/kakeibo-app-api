@@ -9,7 +9,7 @@ import (
 )
 
 type SignUpUser struct {
-	userID   vo.UserID
+	userID   UserID
 	name     string
 	email    vo.Email
 	password vo.Password
@@ -20,7 +20,7 @@ const (
 	maxNameLength = 50
 )
 
-func NewSignUpUser(userID vo.UserID, name string, email vo.Email, password vo.Password) (*SignUpUser, error) {
+func NewSignUpUser(userID UserID, name string, email vo.Email, password vo.Password) (*SignUpUser, error) {
 	if utf8.RuneCountInString(name) < minNameLength ||
 		utf8.RuneCountInString(name) > maxNameLength ||
 		strings.Contains(name, " ") ||
@@ -38,14 +38,14 @@ func NewSignUpUser(userID vo.UserID, name string, email vo.Email, password vo.Pa
 
 func NewSignUpUserFromDataSource(userID, name, email, password string) *SignUpUser {
 	return &SignUpUser{
-		userID:   vo.UserID(userID),
+		userID:   UserID(userID),
 		name:     name,
 		email:    vo.Email(email),
 		password: vo.Password(password),
 	}
 }
 
-func (u *SignUpUser) UserID() vo.UserID {
+func (u *SignUpUser) UserID() UserID {
 	return u.userID
 }
 

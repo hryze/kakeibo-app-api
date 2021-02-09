@@ -36,7 +36,7 @@ func NewUserUsecase(userRepository userdomain.Repository, accountApi interfaces.
 func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 	var userValidationError apierrors.UserValidationError
 
-	userID, err := vo.NewUserID(in.UserID)
+	userID, err := userdomain.NewUserID(in.UserID)
 	if err != nil {
 		userValidationError.UserID = "ユーザーIDを正しく入力してください"
 	}
