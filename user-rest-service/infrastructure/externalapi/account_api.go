@@ -12,15 +12,17 @@ import (
 
 	"golang.org/x/xerrors"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/externalapi/client"
 )
 
 type accountApi struct {
-	*config.AccountApiHandler
+	*client.AccountApiHandler
 }
 
-func NewAccountApi(accountApiHandler *config.AccountApiHandler) *accountApi {
-	return &accountApi{accountApiHandler}
+func NewAccountApi(accountApiHandler *client.AccountApiHandler) *accountApi {
+	return &accountApi{
+		accountApiHandler,
+	}
 }
 
 func (a *accountApi) PostInitStandardBudgets(userID string) error {
@@ -41,7 +43,7 @@ func (a *accountApi) PostInitStandardBudgets(userID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	response, err := a.HttpClient.Do(request.WithContext(ctx))
+	response, err := a.Client.Do(request.WithContext(ctx))
 	if err != nil {
 		return err
 	}

@@ -15,10 +15,11 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/handler"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/externalapi"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/externalapi/client"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/injector"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 )
@@ -33,21 +34,25 @@ func Run() error {
 		}
 	}
 
-	if len(os.Getenv("ALLOWED_ORIGIN")) == 0 || len(os.Getenv("COOKIE_DOMAIN")) == 0 || len(os.Getenv("ACCOUNT_HOST")) == 0 || len(os.Getenv("MYSQL_DSN")) == 0 || len(os.Getenv("REDIS_DSN")) == 0 {
+	if len(os.Getenv("ALLOWED_ORIGIN")) == 0 ||
+		len(os.Getenv("COOKIE_DOMAIN")) == 0 ||
+		len(os.Getenv("ACCOUNT_HOST")) == 0 ||
+		len(os.Getenv("MYSQL_DSN")) == 0 ||
+		len(os.Getenv("REDIS_DSN")) == 0 {
 		return errors.New("environment variable not defined")
 	}
 
-	redisHandler, err := config.NewRedisHandler()
+	redisHandler, err := db.NewRedisHandler()
 	if err != nil {
 		return err
 	}
 
-	mySQLHandler, err := config.NewMySQLHandler()
+	mySQLHandler, err := db.NewMySQLHandler()
 	if err != nil {
 		return err
 	}
 
-	accountApiHandler := config.NewAccountApiHandler()
+	accountApiHandler := client.NewAccountApiHandler()
 
 	userRepository := persistence.NewUserRepository(redisHandler, mySQLHandler)
 	accountApi := externalapi.NewAccountApi(accountApiHandler)

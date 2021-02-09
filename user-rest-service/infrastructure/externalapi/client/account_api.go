@@ -1,13 +1,13 @@
-package config
+package client
 
 import "net/http"
 
 type AccountApiHandler struct {
-	HttpClient *http.Client
+	Client *http.Client
 }
 
 func NewAccountApiHandler() *AccountApiHandler {
 	return &AccountApiHandler{
-		HttpClient: http.DefaultClient,
+		Client: http.DefaultClient,
 	}
 }

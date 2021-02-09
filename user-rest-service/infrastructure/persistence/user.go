@@ -5,20 +5,23 @@ import (
 
 	"golang.org/x/xerrors"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/errors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/datasource"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
 )
 
 type userRepository struct {
-	*config.RedisHandler
-	*config.MySQLHandler
+	*db.RedisHandler
+	*db.MySQLHandler
 }
 
-func NewUserRepository(redisHandler *config.RedisHandler, mysqlHandler *config.MySQLHandler) *userRepository {
-	return &userRepository{redisHandler, mysqlHandler}
+func NewUserRepository(redisHandler *db.RedisHandler, mysqlHandler *db.MySQLHandler) *userRepository {
+	return &userRepository{
+		redisHandler,
+		mysqlHandler,
+	}
 }
 
 func (r *userRepository) FindSignUpUserByUserID(userID string) (*userdomain.SignUpUser, error) {

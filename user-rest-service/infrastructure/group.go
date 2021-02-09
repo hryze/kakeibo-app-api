@@ -4,15 +4,15 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
 )
 
 type GroupRepository struct {
-	*config.MySQLHandler
+	*db.MySQLHandler
 }
 
-func NewGroupRepository(mysqlHandler *config.MySQLHandler) *GroupRepository {
+func NewGroupRepository(mysqlHandler *db.MySQLHandler) *GroupRepository {
 	return &GroupRepository{mysqlHandler}
 }
 

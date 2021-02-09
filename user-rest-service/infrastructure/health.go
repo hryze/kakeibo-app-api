@@ -4,15 +4,15 @@ import (
 	"context"
 	"time"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
 )
 
 type HealthRepository struct {
-	*config.RedisHandler
-	*config.MySQLHandler
+	*db.RedisHandler
+	*db.MySQLHandler
 }
 
-func NewHealthRepository(redisHandler *config.RedisHandler, mysqlHandler *config.MySQLHandler) *HealthRepository {
+func NewHealthRepository(redisHandler *db.RedisHandler, mysqlHandler *db.MySQLHandler) *HealthRepository {
 	return &HealthRepository{redisHandler, mysqlHandler}
 }
 
