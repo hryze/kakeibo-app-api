@@ -27,7 +27,8 @@ func NewAccountApi(accountApiHandler *client.AccountApiHandler) *accountApi {
 
 func (a *accountApi) PostInitStandardBudgets(userID string) error {
 	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/standard-budgets", accountHost)
+	accountPort := os.Getenv("ACCOUNT_PORT")
+	requestURL := fmt.Sprintf("http://%s:%s/standard-budgets", accountHost, accountPort)
 
 	request, err := http.NewRequest(
 		"POST",
