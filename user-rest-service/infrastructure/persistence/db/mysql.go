@@ -1,11 +1,10 @@
 package db
 
 import (
-	"os"
-	"time"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 )
 
 type MySQLHandler struct {
@@ -13,16 +12,18 @@ type MySQLHandler struct {
 }
 
 func NewMySQLHandler() (*MySQLHandler, error) {
-	dsn := os.Getenv("MYSQL_DSN")
-
-	conn, err := sqlx.Open("mysql", dsn)
+	conn, err := sqlx.Open("mysql", config.Env.MySQL.Dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	conn.SetMaxOpenConns(25)
-	conn.SetMaxIdleConns(25)
-	conn.SetConnMaxLifetime(300 * time.Second)
+	if err := conn.Ping(); err != nil {
+		return nil, err
+	}
+
+	conn.SetMaxOpenConns(config.Env.MySQL.MaxConn)
+	conn.SetMaxIdleConns(config.Env.MySQL.MaxIdleConn)
+	conn.SetConnMaxLifetime(config.Env.MySQL.MaxConnLifetime)
 
 	return &MySQLHandler{
 		Conn: conn,

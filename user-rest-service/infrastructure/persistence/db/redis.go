@@ -1,10 +1,9 @@
 package db
 
 import (
-	"os"
-	"time"
-
 	"github.com/garyburd/redigo/redis"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 )
 
 type RedisHandler struct {
@@ -12,21 +11,26 @@ type RedisHandler struct {
 }
 
 func NewRedisHandler() (*RedisHandler, error) {
-	dsn := os.Getenv("REDIS_DSN")
-
 	pool := &redis.Pool{
 		Dial: func() (redis.Conn, error) {
-			conn, err := redis.Dial("tcp", dsn)
+			conn, err := redis.Dial("tcp", config.Env.Redis.Dsn)
 			if err != nil {
 				return nil, err
 			}
 
 			return conn, nil
 		},
-		MaxActive:       25,
-		MaxIdle:         25,
-		MaxConnLifetime: 300 * time.Second,
+		MaxActive:       config.Env.Redis.MaxConn,
+		MaxIdle:         config.Env.Redis.MaxIdleConn,
+		MaxConnLifetime: config.Env.Redis.MaxConnLifetime,
 		Wait:            true,
+	}
+
+	conn := pool.Get()
+	defer conn.Close()
+
+	if _, err := conn.Do("PING"); err != nil {
+		return nil, err
 	}
 
 	return &RedisHandler{
