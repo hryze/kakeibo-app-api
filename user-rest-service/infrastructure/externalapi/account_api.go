@@ -51,8 +51,8 @@ func (a *accountApi) PostInitStandardBudgets(userID string) error {
 		return err
 	}
 	defer func() {
-		_, _ = io.Copy(ioutil.Discard, response.Body)
-		_ = response.Body.Close()
+		io.Copy(ioutil.Discard, response.Body)
+		response.Body.Close()
 	}()
 
 	if response.StatusCode == http.StatusCreated {
