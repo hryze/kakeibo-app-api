@@ -51,7 +51,7 @@ func (a *accountApi) PostInitStandardBudgets(userID string) error {
 		return err
 	}
 	defer func() {
-		io.Copy(ioutil.Discard, response.Body)
+		_, _ = io.Copy(ioutil.Discard, response.Body)
 		response.Body.Close()
 	}()
 
