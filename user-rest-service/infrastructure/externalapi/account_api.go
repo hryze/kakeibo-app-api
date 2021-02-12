@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
+
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
@@ -25,7 +27,7 @@ func NewAccountApi(accountApiHandler *client.AccountApiHandler) *accountApi {
 	}
 }
 
-func (a *accountApi) PostInitStandardBudgets(userID string) error {
+func (a *accountApi) PostInitStandardBudgets(userID userdomain.UserID) error {
 	requestURL := fmt.Sprintf(
 		"http://%s:%d/standard-budgets",
 		config.Env.AccountApi.Host,
@@ -35,7 +37,7 @@ func (a *accountApi) PostInitStandardBudgets(userID string) error {
 	request, err := http.NewRequest(
 		"POST",
 		requestURL,
-		bytes.NewBuffer([]byte(fmt.Sprintf(`{ "user_id" : "%s" }`, userID))),
+		bytes.NewBuffer([]byte(fmt.Sprintf(`{ "user_id" : "%s" }`, userID.Value()))),
 	)
 	if err != nil {
 		return err

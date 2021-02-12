@@ -3,6 +3,8 @@ package persistence
 import (
 	"database/sql"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
+
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
@@ -24,7 +26,7 @@ func NewUserRepository(redisHandler *db.RedisHandler, mysqlHandler *db.MySQLHand
 	}
 }
 
-func (r *userRepository) FindSignUpUserByUserID(userID string) (*userdomain.SignUpUser, error) {
+func (r *userRepository) FindSignUpUserByUserID(userID userdomain.UserID) (*userdomain.SignUpUser, error) {
 	query := `
         SELECT
             user_id,
@@ -45,12 +47,35 @@ func (r *userRepository) FindSignUpUserByUserID(userID string) (*userdomain.Sign
 		return nil, err
 	}
 
-	signUpUser := userdomain.NewSignUpUserFromDataSource(signUpUserDto.UserID, signUpUserDto.Name, signUpUserDto.Email, signUpUserDto.Password)
+	var userValidationError apierrors.UserValidationError
+
+	userIDVo, err := userdomain.NewUserID(signUpUserDto.UserID)
+	if err != nil {
+		userValidationError.UserID = "ユーザーIDが正しくありません"
+	}
+
+	nameVo, err := userdomain.NewName(signUpUserDto.Name)
+	if err != nil {
+		userValidationError.Name = "名前が正しくありません"
+	}
+
+	emailVo, err := vo.NewEmail(signUpUserDto.Email)
+	if err != nil {
+		userValidationError.Email = "メールアドレスが正しくありません"
+	}
+
+	if userValidationError.UserID != "" ||
+		userValidationError.Name != "" ||
+		userValidationError.Email != "" {
+		return nil, apierrors.NewBadRequestError(&userValidationError)
+	}
+
+	signUpUser := userdomain.NewSignUpUserFromDataSource(userIDVo, nameVo, emailVo)
 
 	return signUpUser, nil
 }
 
-func (r *userRepository) FindSignUpUserByEmail(email string) (*userdomain.SignUpUser, error) {
+func (r *userRepository) FindSignUpUserByEmail(email vo.Email) (*userdomain.SignUpUser, error) {
 	query := `
         SELECT
             user_id,
@@ -71,7 +96,30 @@ func (r *userRepository) FindSignUpUserByEmail(email string) (*userdomain.SignUp
 		return nil, err
 	}
 
-	signUpUser := userdomain.NewSignUpUserFromDataSource(signUpUserDto.UserID, signUpUserDto.Name, signUpUserDto.Email, signUpUserDto.Password)
+	var userValidationError apierrors.UserValidationError
+
+	userIDVo, err := userdomain.NewUserID(signUpUserDto.UserID)
+	if err != nil {
+		userValidationError.UserID = "ユーザーIDが正しくありません"
+	}
+
+	nameVo, err := userdomain.NewName(signUpUserDto.Name)
+	if err != nil {
+		userValidationError.Name = "名前が正しくありません"
+	}
+
+	emailVo, err := vo.NewEmail(signUpUserDto.Email)
+	if err != nil {
+		userValidationError.Email = "メールアドレスが正しくありません"
+	}
+
+	if userValidationError.UserID != "" ||
+		userValidationError.Name != "" ||
+		userValidationError.Email != "" {
+		return nil, apierrors.NewBadRequestError(&userValidationError)
+	}
+
+	signUpUser := userdomain.NewSignUpUserFromDataSource(userIDVo, nameVo, emailVo)
 
 	return signUpUser, nil
 }

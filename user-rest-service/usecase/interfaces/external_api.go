@@ -1,5 +1,7 @@
 package interfaces
 
+import "github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
+
 type AccountApi interface {
-	PostInitStandardBudgets(userID string) error
+	PostInitStandardBudgets(userID userdomain.UserID) error
 }

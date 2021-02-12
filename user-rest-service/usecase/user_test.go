@@ -3,6 +3,8 @@ package usecase
 import (
 	"testing"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -15,11 +17,11 @@ import (
 
 type mockUserRepository struct{}
 
-func (t *mockUserRepository) FindSignUpUserByUserID(userID string) (*userdomain.SignUpUser, error) {
+func (t *mockUserRepository) FindSignUpUserByUserID(userID userdomain.UserID) (*userdomain.SignUpUser, error) {
 	return nil, apierrors.ErrUserNotFound
 }
 
-func (t *mockUserRepository) FindSignUpUserByEmail(email string) (*userdomain.SignUpUser, error) {
+func (t *mockUserRepository) FindSignUpUserByEmail(email vo.Email) (*userdomain.SignUpUser, error) {
 	return nil, apierrors.ErrUserNotFound
 }
 
@@ -53,7 +55,7 @@ func (t *mockUserRepository) DeleteSessionID(sessionID string) error {
 
 type mockAccountApi struct{}
 
-func (t *mockAccountApi) PostInitStandardBudgets(userID string) error {
+func (t *mockAccountApi) PostInitStandardBudgets(userID userdomain.UserID) error {
 	return nil
 }
 

@@ -41,6 +41,11 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 		userValidationError.UserID = "ユーザーIDを正しく入力してください"
 	}
 
+	name, err := userdomain.NewName(in.Name)
+	if err != nil {
+		userValidationError.Name = "名前を正しく入力してください"
+	}
+
 	email, err := vo.NewEmail(in.Email)
 	if err != nil {
 		userValidationError.Email = "メールアドレスを正しく入力してください"
@@ -55,17 +60,14 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 		}
 	}
 
-	signUpUser, err := userdomain.NewSignUpUser(userID, in.Name, email, password)
-	if err != nil {
-		userValidationError.Name = "名前を正しく入力してください"
-	}
-
 	if userValidationError.UserID != "" ||
 		userValidationError.Name != "" ||
 		userValidationError.Email != "" ||
 		userValidationError.Password != "" {
 		return nil, apierrors.NewBadRequestError(&userValidationError)
 	}
+
+	signUpUser := userdomain.NewSignUpUser(userID, name, email, password)
 
 	if err := checkForUniqueUser(u, signUpUser); err != nil {
 		var userConflictError *apierrors.UserConflictError
@@ -80,7 +82,7 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	if err := u.accountApi.PostInitStandardBudgets(signUpUser.UserID().Value()); err != nil {
+	if err := u.accountApi.PostInitStandardBudgets(signUpUser.UserID()); err != nil {
 		if err := u.userRepository.DeleteSignUpUser(signUpUser); err != nil {
 			return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 		}
@@ -90,7 +92,7 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 
 	return &output.SignUpUser{
 		UserID: signUpUser.UserID().Value(),
-		Name:   signUpUser.Name(),
+		Name:   signUpUser.Name().Value(),
 		Email:  signUpUser.Email().Value(),
 	}, nil
 }
@@ -134,12 +136,12 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 }
 
 func checkForUniqueUser(u *userUsecase, signUpUser *userdomain.SignUpUser) error {
-	_, errUserID := u.userRepository.FindSignUpUserByUserID(signUpUser.UserID().Value())
+	_, errUserID := u.userRepository.FindSignUpUserByUserID(signUpUser.UserID())
 	if errUserID != nil && !xerrors.Is(errUserID, apierrors.ErrUserNotFound) {
 		return errUserID
 	}
 
-	_, errEmail := u.userRepository.FindSignUpUserByEmail(signUpUser.Email().Value())
+	_, errEmail := u.userRepository.FindSignUpUserByEmail(signUpUser.Email())
 	if errEmail != nil && !xerrors.Is(errEmail, apierrors.ErrUserNotFound) {
 		return errEmail
 	}
