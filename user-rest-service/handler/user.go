@@ -30,7 +30,7 @@ func NewUserHandler(userUsecase usecase.UserUsecase) *userHandler {
 func (h *userHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var in input.SignUpUser
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-		response.ErrorJSON(w, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error")))
+		response.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("正しいデータを入力してください")))
 		return
 	}
 
@@ -46,7 +46,7 @@ func (h *userHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var in input.LoginUser
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-		response.ErrorJSON(w, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error")))
+		response.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("正しいデータを入力してください")))
 		return
 	}
 
