@@ -423,7 +423,8 @@ func (h *DBHandler) PostGroupUnapprovedUser(w http.ResponseWriter, r *http.Reque
 	}
 
 	if _, err := h.UserRepo.FindSignUpUserByUserID(groupUnapprovedUser.UserID); err != nil {
-		if xerrors.Is(err, apierrors.ErrUserNotFound) {
+		var notFoundError *apierrors.NotFoundError
+		if xerrors.As(err, &notFoundError) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &NotFoundErrorMsg{"該当するユーザーが見つかりませんでした。"}))
 			return
 		}

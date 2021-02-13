@@ -72,12 +72,7 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(out); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	response.JSON(w, http.StatusCreated, out)
 }
 
 func (h *DBHandler) Logout(w http.ResponseWriter, r *http.Request) {
@@ -132,9 +127,9 @@ func (h *DBHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	out := &output.LoginUser{
-		UserID: user.UserID(),
-		Name:   user.Name(),
-		Email:  user.Email(),
+		UserID: user.ID,
+		Name:   user.Name,
+		Email:  user.Email,
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

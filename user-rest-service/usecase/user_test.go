@@ -3,14 +3,12 @@ package usecase
 import (
 	"testing"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
 )
@@ -18,11 +16,11 @@ import (
 type mockUserRepository struct{}
 
 func (t *mockUserRepository) FindSignUpUserByUserID(userID userdomain.UserID) (*userdomain.SignUpUser, error) {
-	return nil, apierrors.ErrUserNotFound
+	return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
 }
 
 func (t *mockUserRepository) FindSignUpUserByEmail(email vo.Email) (*userdomain.SignUpUser, error) {
-	return nil, apierrors.ErrUserNotFound
+	return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
 }
 
 func (t *mockUserRepository) CreateSignUpUser(user *userdomain.SignUpUser) error {
@@ -33,19 +31,19 @@ func (t *mockUserRepository) DeleteSignUpUser(signUpUser *userdomain.SignUpUser)
 	return nil
 }
 
-func (t *mockUserRepository) FindLoginUserByEmail(email string) (*model.LoginUser, error) {
-	loginUser := model.NewLoginUserFromDataSource("testUserID", "testName", "test@icloud.com", "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy")
+func (t *mockUserRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.LoginUser, error) {
+	loginUser := userdomain.NewLoginUserFromDataSource("testUserID", "testName", "test@icloud.com", "$2a$10$MfTmnqbuDog.W/Kaug3vlef0ZX5OoxEbjSc9hyAB.YGNKQvfQGDd6")
 
 	return loginUser, nil
 }
 
-func (t *mockUserRepository) GetUser(userID string) (*model.LoginUser, error) {
-	loginUser := model.NewLoginUserFromDataSource("testID", "testName", "test@icloud.com", "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy")
+func (t *mockUserRepository) GetUser(userID string) (*userdomain.LoginUser, error) {
+	loginUser := userdomain.NewLoginUserFromDataSource("testID", "testName", "test@icloud.com", "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy")
 
 	return loginUser, nil
 }
 
-func (t *mockUserRepository) AddSessionID(sessionID string, loginUserID string, expiration int) error {
+func (t *mockUserRepository) AddSessionID(sessionID string, loginUserID userdomain.UserID, expiration int) error {
 	return nil
 }
 

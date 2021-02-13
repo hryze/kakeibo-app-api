@@ -4,7 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
+	"golang.org/x/xerrors"
 )
 
 type Name string
@@ -14,12 +14,23 @@ const (
 	maxNameLength = 50
 )
 
+var ErrInvalidUserName = xerrors.New("invalid user name")
+
 func NewName(name string) (Name, error) {
 	if utf8.RuneCountInString(name) < minNameLength ||
-		utf8.RuneCountInString(name) > maxNameLength ||
-		strings.Contains(name, " ") ||
+		utf8.RuneCountInString(name) > maxNameLength {
+		return "", xerrors.Errorf(
+			"user name must be %d or more and %d or less: %s: %w",
+			minNameLength, maxNameLength, name, ErrInvalidUserName,
+		)
+	}
+
+	if strings.Contains(name, " ") ||
 		strings.Contains(name, "　") {
-		return "", apierrors.ErrInvalidUserName
+		return "", xerrors.Errorf(
+			"user name cannot contain spaces: %s: %w",
+			name, ErrInvalidUserName,
+		)
 	}
 
 	return Name(name), nil

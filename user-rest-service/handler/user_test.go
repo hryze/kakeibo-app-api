@@ -19,29 +19,16 @@ import (
 type MockUserRepository struct{}
 
 func (t MockUserRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
-	return nil, apierrors.ErrUserNotFound
-}
-
-func (t MockUserRepository) FindSignUpUserByEmail(email string) (*model.SignUpUser, error) {
-	return nil, apierrors.ErrUserNotFound
-}
-
-func (t MockUserRepository) CreateSignUpUser(user *model.SignUpUser) error {
-	return nil
-}
-
-func (t MockUserRepository) DeleteSignUpUser(signUpUser *model.SignUpUser) error {
-	return nil
-}
-
-func (t MockUserRepository) FindLoginUserByEmail(email string) (*model.LoginUser, error) {
-	loginUser := model.NewLoginUserFromDataSource("testID", "testName", "test@icloud.com", "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy")
-
-	return loginUser, nil
+	return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
 }
 
 func (t MockUserRepository) GetUser(userID string) (*model.LoginUser, error) {
-	loginUser := model.NewLoginUserFromDataSource("testID", "testName", "test@icloud.com", "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy")
+	loginUser := &model.LoginUser{
+		ID:       "testID",
+		Name:     "testName",
+		Email:    "test@icloud.com",
+		Password: "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy",
+	}
 
 	return loginUser, nil
 }

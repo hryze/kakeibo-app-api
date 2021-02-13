@@ -29,7 +29,12 @@ type MockSqlResult struct {
 }
 
 func (t MockUserRepositoryForGroup) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
-	signUpUser := model.NewSignUpUserFromDataSource("testID", "testName", "test@icloud.com", "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy")
+	signUpUser := &model.SignUpUser{
+		ID:       "testID",
+		Name:     "testName",
+		Email:    "test@icloud.com",
+		Password: "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy",
+	}
 
 	return signUpUser, nil
 }

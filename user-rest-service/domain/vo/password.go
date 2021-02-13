@@ -4,28 +4,50 @@ import (
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
-
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
+	"golang.org/x/xerrors"
 )
 
 type Password string
 
 const (
-	minPasswordLength = 8
-	maxPasswordLength = 50
+	minPasswordLength  = 8
+	maxPasswordLength  = 50
+	hashPasswordLength = 60
 )
+
+var ErrInvalidPassword = xerrors.New("invalid password")
 
 func NewPassword(password string) (Password, error) {
 	if len(password) < minPasswordLength ||
-		len(password) > maxPasswordLength ||
-		strings.Contains(password, " ") ||
+		len(password) > maxPasswordLength {
+		return "", xerrors.Errorf(
+			"password must be %d or more and %d or less: %s: %w",
+			minPasswordLength, maxPasswordLength, password, ErrInvalidPassword,
+		)
+	}
+
+	if strings.Contains(password, " ") ||
 		strings.Contains(password, "　") {
-		return "", apierrors.ErrInvalidPassword
+		return "", xerrors.Errorf(
+			"password cannot contain spaces: %s: %w",
+			password, ErrInvalidPassword,
+		)
 	}
 
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	if err != nil {
-		return "", err
+		return "", xerrors.Errorf("can't generate hash password: %s", password)
+	}
+
+	return Password(string(hashPassword)), nil
+}
+
+func NewHashPassword(hashPassword string) (Password, error) {
+	if len(hashPassword) != hashPasswordLength {
+		return "", xerrors.Errorf(
+			"hash password must be %d characters: %s: %w",
+			hashPasswordLength, hashPassword, ErrInvalidPassword,
+		)
 	}
 
 	return Password(string(hashPassword)), nil

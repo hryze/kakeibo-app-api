@@ -17,10 +17,6 @@ type AuthRepository interface {
 
 type UserRepository interface {
 	FindSignUpUserByUserID(userID string) (*model.SignUpUser, error)
-	FindSignUpUserByEmail(email string) (*model.SignUpUser, error)
-	CreateSignUpUser(user *model.SignUpUser) error
-	DeleteSignUpUser(signUpUser *model.SignUpUser) error
-	FindLoginUserByEmail(email string) (*model.LoginUser, error)
 	GetUser(userID string) (*model.LoginUser, error)
 	AddSessionID(sessionID string, userID string, expiration int) error
 	DeleteSessionID(sessionID string) error

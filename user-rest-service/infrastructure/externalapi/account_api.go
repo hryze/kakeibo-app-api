@@ -9,11 +9,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
-
-	"golang.org/x/xerrors"
-
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/externalapi/client"
 )
 
@@ -61,5 +59,5 @@ func (a *accountApi) PostInitStandardBudgets(userID userdomain.UserID) error {
 		return nil
 	}
 
-	return xerrors.New("couldn't create a standard budget")
+	return apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 }
