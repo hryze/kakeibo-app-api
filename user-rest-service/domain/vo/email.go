@@ -19,8 +19,7 @@ var (
 )
 
 func NewEmail(email string) (Email, error) {
-	if len(email) == 0 ||
-		len(email) > maxEmailLength {
+	if l := len(email); l == 0 || l > maxEmailLength {
 		return "", xerrors.Errorf(
 			"email must be %d or less: %s: %w",
 			maxEmailLength, email, ErrInvalidEmail,

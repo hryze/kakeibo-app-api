@@ -17,8 +17,7 @@ const (
 var ErrInvalidUserName = xerrors.New("invalid user name")
 
 func NewName(name string) (Name, error) {
-	if utf8.RuneCountInString(name) < minNameLength ||
-		utf8.RuneCountInString(name) > maxNameLength {
+	if n := utf8.RuneCountInString(name); n < minNameLength || n > maxNameLength {
 		return "", xerrors.Errorf(
 			"user name must be %d or more and %d or less: %s: %w",
 			minNameLength, maxNameLength, name, ErrInvalidUserName,
