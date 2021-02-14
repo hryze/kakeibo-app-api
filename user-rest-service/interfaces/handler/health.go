@@ -1,8 +1,6 @@
 package handler
 
-import (
-	"net/http"
-)
+import "net/http"
 
 func (h *DBHandler) Readyz(w http.ResponseWriter, r *http.Request) {
 	if err := h.HealthRepo.PingMySQL(); err != nil {

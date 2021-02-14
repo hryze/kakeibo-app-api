@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/handler"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/handler"
 )
 
 func InjectMySQL() *db.MySQLHandler {

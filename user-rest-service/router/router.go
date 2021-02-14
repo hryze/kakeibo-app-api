@@ -14,12 +14,12 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/handler"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/externalapi"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/externalapi/client"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/injector"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/handler"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 )
 

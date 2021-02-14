@@ -10,6 +10,7 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/interfaces"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
@@ -33,7 +34,7 @@ func NewUserUsecase(userRepository userdomain.Repository, accountApi interfaces.
 }
 
 func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
-	var userValidationError userdomain.ValidationError
+	var userValidationError presenter.ValidationError
 
 	userID, err := userdomain.NewUserID(in.UserID)
 	if err != nil {
@@ -88,7 +89,7 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 	}, nil
 }
 func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
-	var userValidationError userdomain.ValidationError
+	var userValidationError presenter.ValidationError
 
 	email, err := vo.NewEmail(in.Email)
 	if err != nil {
@@ -165,7 +166,7 @@ func checkForUniqueUser(u *userUsecase, signUpUser *userdomain.SignUpUser) error
 		return nil
 	}
 
-	var userConflictError userdomain.ConflictError
+	var userConflictError presenter.ConflictError
 
 	if existsUserByUserID {
 		userConflictError.UserID = "このユーザーIDは既に利用されています"

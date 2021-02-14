@@ -1,4 +1,4 @@
-package userdomain
+package presenter
 
 import (
 	"encoding/json"

@@ -10,6 +10,7 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/datasource"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 )
 
 type userRepository struct {
@@ -44,7 +45,7 @@ func (r *userRepository) FindSignUpUserByUserID(userID userdomain.UserID) (*user
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	var userValidationError userdomain.ValidationError
+	var userValidationError presenter.ValidationError
 
 	userIDVo, err := userdomain.NewUserID(signUpUserDto.UserID)
 	if err != nil {
@@ -90,7 +91,7 @@ func (r *userRepository) FindSignUpUserByEmail(email vo.Email) (*userdomain.Sign
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	var userValidationError userdomain.ValidationError
+	var userValidationError presenter.ValidationError
 
 	userIDVo, err := userdomain.NewUserID(signUpUserDto.UserID)
 	if err != nil {
@@ -172,7 +173,7 @@ func (r *userRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.Login
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	var userValidationError userdomain.ValidationError
+	var userValidationError presenter.ValidationError
 
 	userIDVo, err := userdomain.NewUserID(loginUserDto.UserID)
 	if err != nil {
