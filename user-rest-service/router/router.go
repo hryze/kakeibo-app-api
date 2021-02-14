@@ -28,11 +28,13 @@ func Run() error {
 	if err != nil {
 		return err
 	}
+	defer redisHandler.Pool.Close()
 
 	mySQLHandler, err := db.NewMySQLHandler()
 	if err != nil {
 		return err
 	}
+	defer mySQLHandler.Conn.Close()
 
 	accountApiHandler := client.NewAccountApiHandler()
 
