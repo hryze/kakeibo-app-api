@@ -11,8 +11,8 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/gateway"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/interfaces"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
 )
 
@@ -23,10 +23,10 @@ type UserUsecase interface {
 
 type userUsecase struct {
 	userRepository userdomain.Repository
-	accountApi     interfaces.AccountApi
+	accountApi     gateway.AccountApi
 }
 
-func NewUserUsecase(userRepository userdomain.Repository, accountApi interfaces.AccountApi) *userUsecase {
+func NewUserUsecase(userRepository userdomain.Repository, accountApi gateway.AccountApi) *userUsecase {
 	return &userUsecase{
 		userRepository: userRepository,
 		accountApi:     accountApi,

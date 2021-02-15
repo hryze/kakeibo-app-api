@@ -11,7 +11,7 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/response"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
@@ -30,29 +30,29 @@ func NewUserHandler(userUsecase usecase.UserUsecase) *userHandler {
 func (h *userHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var in input.SignUpUser
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-		response.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("正しいデータを入力してください")))
+		presenter.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("正しいデータを入力してください")))
 		return
 	}
 
 	out, err := h.userUsecase.SignUp(&in)
 	if err != nil {
-		response.ErrorJSON(w, err)
+		presenter.ErrorJSON(w, err)
 		return
 	}
 
-	response.JSON(w, http.StatusCreated, out)
+	presenter.JSON(w, http.StatusCreated, out)
 }
 
 func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var in input.LoginUser
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-		response.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("正しいデータを入力してください")))
+		presenter.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("正しいデータを入力してください")))
 		return
 	}
 
 	out, err := h.userUsecase.Login(&in)
 	if err != nil {
-		response.ErrorJSON(w, err)
+		presenter.ErrorJSON(w, err)
 		return
 	}
 
@@ -72,7 +72,7 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 
-	response.JSON(w, http.StatusCreated, out)
+	presenter.JSON(w, http.StatusCreated, out)
 }
 
 func (h *DBHandler) Logout(w http.ResponseWriter, r *http.Request) {
