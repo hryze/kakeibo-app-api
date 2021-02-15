@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"os"
 	"time"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 
 	"github.com/garyburd/redigo/redis"
 	"golang.org/x/xerrors"
@@ -56,19 +57,12 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	domain := os.Getenv("COOKIE_DOMAIN")
-	secure := true
-
-	if domain != "shakepiper.com" {
-		secure = false
-	}
-
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
-		Value:    out.SessionID,
-		Expires:  out.Expires,
-		Domain:   domain,
-		Secure:   secure,
+		Value:    out.Cookie.SessionID,
+		Expires:  out.Cookie.Expires,
+		Domain:   config.Env.Cookie.Domain,
+		Secure:   config.Env.Cookie.Secure,
 		HttpOnly: true,
 	})
 

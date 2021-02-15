@@ -45,7 +45,7 @@ func (r *userRepository) FindSignUpUserByUserID(userID userdomain.UserID) (*user
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	var userValidationError presenter.ValidationError
+	var userValidationError presenter.UserValidationError
 
 	userIDVo, err := userdomain.NewUserID(signUpUserDto.UserID)
 	if err != nil {
@@ -91,7 +91,7 @@ func (r *userRepository) FindSignUpUserByEmail(email vo.Email) (*userdomain.Sign
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	var userValidationError presenter.ValidationError
+	var userValidationError presenter.UserValidationError
 
 	userIDVo, err := userdomain.NewUserID(signUpUserDto.UserID)
 	if err != nil {
@@ -173,7 +173,7 @@ func (r *userRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.Login
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	var userValidationError presenter.ValidationError
+	var userValidationError presenter.UserValidationError
 
 	userIDVo, err := userdomain.NewUserID(loginUserDto.UserID)
 	if err != nil {

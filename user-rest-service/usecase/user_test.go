@@ -102,7 +102,7 @@ func Test_userUsecase_Login(t *testing.T) {
 		Email:  "test@icloud.com",
 	}
 
-	ignoreFieldsOption := cmpopts.IgnoreFields(output.LoginUser{}, "SessionID", "Expires")
+	ignoreFieldsOption := cmpopts.IgnoreFields(output.LoginUser{}, "Cookie")
 
 	if diff := cmp.Diff(&wantOut, &gotOut, ignoreFieldsOption); len(diff) != 0 {
 		t.Errorf("differs: (-want +got)\n%s", diff)

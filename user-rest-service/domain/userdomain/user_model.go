@@ -49,11 +49,11 @@ type LoginUser struct {
 	password vo.Password
 }
 
-func NewLoginUser(email vo.Email, password vo.Password) (*LoginUser, error) {
+func NewLoginUser(email vo.Email, password vo.Password) *LoginUser {
 	return &LoginUser{
 		email:    email,
 		password: password,
-	}, nil
+	}
 }
 
 func NewLoginUserFromDataSource(userID UserID, name Name, email vo.Email, hashPassword vo.Password) *LoginUser {

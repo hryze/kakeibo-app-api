@@ -34,7 +34,7 @@ func NewUserUsecase(userRepository userdomain.Repository, accountApi gateway.Acc
 }
 
 func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
-	var userValidationError presenter.ValidationError
+	var userValidationError presenter.UserValidationError
 
 	userID, err := userdomain.NewUserID(in.UserID)
 	if err != nil {
@@ -88,8 +88,9 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 		Email:  signUpUser.Email().Value(),
 	}, nil
 }
+
 func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
-	var userValidationError presenter.ValidationError
+	var userValidationError presenter.UserValidationError
 
 	email, err := vo.NewEmail(in.Email)
 	if err != nil {
@@ -109,10 +110,7 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 		return nil, apierrors.NewBadRequestError(&userValidationError)
 	}
 
-	loginUser, err := userdomain.NewLoginUser(email, password)
-	if err != nil {
-		return nil, apierrors.NewBadRequestError(err)
-	}
+	loginUser := userdomain.NewLoginUser(email, password)
 
 	dbLoginUser, err := u.userRepository.FindLoginUserByEmail(loginUser.Email())
 	if err != nil {
@@ -137,12 +135,16 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 		return nil, err
 	}
 
-	return &output.LoginUser{
-		UserID:    dbLoginUser.UserID().Value(),
-		Name:      dbLoginUser.Name().Value(),
-		Email:     dbLoginUser.Email().Value(),
+	cookieInfo := output.CookieInfo{
 		SessionID: sessionID,
 		Expires:   time.Now().Add(time.Duration(expiration) * time.Second),
+	}
+
+	return &output.LoginUser{
+		UserID: dbLoginUser.UserID().Value(),
+		Name:   dbLoginUser.Name().Value(),
+		Email:  dbLoginUser.Email().Value(),
+		Cookie: cookieInfo,
 	}, nil
 }
 
@@ -166,7 +168,7 @@ func checkForUniqueUser(u *userUsecase, signUpUser *userdomain.SignUpUser) error
 		return nil
 	}
 
-	var userConflictError presenter.ConflictError
+	var userConflictError presenter.UserConflictError
 
 	if existsUserByUserID {
 		userConflictError.UserID = "このユーザーIDは既に利用されています"

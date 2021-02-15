@@ -38,6 +38,7 @@ type Cors struct {
 
 type Cookie struct {
 	Domain string `envconfig:"COOKIE_DOMAIN" required:"true"`
+	Secure bool   `envconfig:"COOKIE_SECURE" default:"true"`
 }
 
 type MySQL struct {
