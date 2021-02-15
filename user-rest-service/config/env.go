@@ -20,12 +20,12 @@ func init() {
 }
 
 type ENV struct {
-	Server     server
-	Cors       cors
-	Cookie     cookie
-	MySQL      mysql
-	Redis      redis
-	AccountApi accountApi
+	Server
+	Cors
+	Cookie
+	MySQL
+	Redis
+	AccountApi
 }
 
 type Server struct {
