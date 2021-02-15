@@ -17,10 +17,10 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
-
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
+
+	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
 )
 
 type GroupTransactionsSearchQuery struct {

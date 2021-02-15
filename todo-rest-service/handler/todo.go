@@ -13,13 +13,11 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/go-playground/validator"
-
-	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
-
 	"github.com/gorilla/mux"
 
-	"github.com/garyburd/redigo/redis"
+	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 )
 
 type Todos interface {

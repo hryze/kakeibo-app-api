@@ -3,7 +3,6 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,9 +14,11 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/gorilla/mux"
-
 	"github.com/garyburd/redigo/redis"
+	"github.com/gorilla/mux"
+	"golang.org/x/xerrors"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 )
 
@@ -83,7 +84,7 @@ func postInitGroupStandardBudgets(groupID int) error {
 		return nil
 	}
 
-	return errors.New("couldn't create a group standard budget")
+	return xerrors.New("couldn't create a group standard budget")
 }
 
 func checkForUniqueGroupUser(h *DBHandler, groupID int, userID string) error {
@@ -381,7 +382,7 @@ func (h *DBHandler) PutGroup(w http.ResponseWriter, r *http.Request) {
 
 	dbGroup, err := h.GroupRepo.GetGroup(groupID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if xerrors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"グループ名を取得できませんでした"}))
 			return
 		}
@@ -421,9 +422,10 @@ func (h *DBHandler) PostGroupUnapprovedUser(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if err := h.UserRepo.FindUserID(groupUnapprovedUser.UserID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"該当するユーザーが見つかりませんでした。"}))
+	if _, err := h.UserRepo.FindSignUpUserByUserID(groupUnapprovedUser.UserID); err != nil {
+		var notFoundError *apierrors.NotFoundError
+		if xerrors.As(err, &notFoundError) {
+			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &NotFoundErrorMsg{"該当するユーザーが見つかりませんでした。"}))
 			return
 		}
 
@@ -493,7 +495,7 @@ func (h *DBHandler) DeleteGroupApprovedUser(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err := h.GroupRepo.FindApprovedUser(groupID, userID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if xerrors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"こちらのグループには参加していません。"}))
 			return
 		}
@@ -534,7 +536,7 @@ func (h *DBHandler) PostGroupApprovedUser(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := h.GroupRepo.FindUnapprovedUser(groupID, userID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if xerrors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"グループに招待されていないため、参加できませんでした。"}))
 			return
 		}
@@ -596,7 +598,7 @@ func (h *DBHandler) DeleteGroupUnapprovedUser(w http.ResponseWriter, r *http.Req
 	}
 
 	if err := h.GroupRepo.FindUnapprovedUser(groupID, userID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if xerrors.Is(err, sql.ErrNoRows) {
 			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"こちらのグループには招待されていません。"}))
 			return
 		}
@@ -628,7 +630,7 @@ func (h *DBHandler) VerifyGroupAffiliation(w http.ResponseWriter, r *http.Reques
 	userID := mux.Vars(r)["user_id"]
 
 	if err := h.GroupRepo.FindApprovedUser(groupID, userID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if xerrors.Is(err, sql.ErrNoRows) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

@@ -5,13 +5,14 @@ import (
 	"strings"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
 )
 
 type GroupRepository struct {
-	*MySQLHandler
+	*db.MySQLHandler
 }
 
-func NewGroupRepository(mysqlHandler *MySQLHandler) *GroupRepository {
+func NewGroupRepository(mysqlHandler *db.MySQLHandler) *GroupRepository {
 	return &GroupRepository{mysqlHandler}
 }
 
@@ -29,7 +30,7 @@ func (r *GroupRepository) GetApprovedGroupList(userID string) ([]model.ApprovedG
         WHERE
             group_users.user_id = ?`
 
-	rows, err := r.MySQLHandler.conn.Queryx(query, userID)
+	rows, err := r.MySQLHandler.Conn.Queryx(query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +70,7 @@ func (r *GroupRepository) GetUnApprovedGroupList(userID string) ([]model.Unappro
         WHERE
             group_unapproved_users.user_id = ?`
 
-	rows, err := r.MySQLHandler.conn.Queryx(query, userID)
+	rows, err := r.MySQLHandler.Conn.Queryx(query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +117,7 @@ func (r *GroupRepository) GetApprovedUsersList(groupIDList []interface{}) ([]mod
 
 	query := strings.Join(sliceQuery, " UNION ")
 
-	rows, err := r.MySQLHandler.conn.Queryx(query, groupIDList...)
+	rows, err := r.MySQLHandler.Conn.Queryx(query, groupIDList...)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +160,7 @@ func (r *GroupRepository) GetUnapprovedUsersList(groupIDList []interface{}) ([]m
 
 	query := strings.Join(sliceQuery, " UNION ")
 
-	rows, err := r.MySQLHandler.conn.Queryx(query, groupIDList...)
+	rows, err := r.MySQLHandler.Conn.Queryx(query, groupIDList...)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +194,7 @@ func (r *GroupRepository) GetGroup(groupID int) (*model.Group, error) {
             id = ?`
 
 	var group model.Group
-	if err := r.MySQLHandler.conn.QueryRowx(query, groupID).StructScan(&group); err != nil {
+	if err := r.MySQLHandler.Conn.QueryRowx(query, groupID).StructScan(&group); err != nil {
 		return nil, err
 	}
 
@@ -209,7 +210,7 @@ func (r *GroupRepository) PutGroup(group *model.Group, groupID int) error {
         WHERE
             id = ?`
 
-	_, err := r.MySQLHandler.conn.Exec(query, group.GroupName, groupID)
+	_, err := r.MySQLHandler.Conn.Exec(query, group.GroupName, groupID)
 
 	return err
 }
@@ -227,7 +228,7 @@ func (r *GroupRepository) PostGroupAndApprovedUser(group *model.Group, userID st
         VALUES
             (?,?,"#FF0000")`
 
-	tx, err := r.MySQLHandler.conn.Begin()
+	tx, err := r.MySQLHandler.Conn.Begin()
 	if err != nil {
 		return nil, err
 	}
@@ -283,7 +284,7 @@ func (r *GroupRepository) DeleteGroupAndApprovedUser(groupID int, userID string)
         AND
             user_id = ?`
 
-	tx, err := r.MySQLHandler.conn.Begin()
+	tx, err := r.MySQLHandler.Conn.Begin()
 	if err != nil {
 		return err
 	}
@@ -322,7 +323,7 @@ func (r *GroupRepository) PostUnapprovedUser(unapprovedUser *model.UnapprovedUse
         VALUES
             (?,?)`
 
-	result, err := r.MySQLHandler.conn.Exec(query, groupID, unapprovedUser.UserID)
+	result, err := r.MySQLHandler.Conn.Exec(query, groupID, unapprovedUser.UserID)
 
 	return result, err
 }
@@ -343,7 +344,7 @@ func (r *GroupRepository) GetUnapprovedUser(groupUnapprovedUsersID int) (*model.
             group_unapproved_users.id = ?`
 
 	var unapprovedUser model.UnapprovedUser
-	if err := r.MySQLHandler.conn.QueryRowx(query, groupUnapprovedUsersID).StructScan(&unapprovedUser); err != nil {
+	if err := r.MySQLHandler.Conn.QueryRowx(query, groupUnapprovedUsersID).StructScan(&unapprovedUser); err != nil {
 		return nil, err
 	}
 
@@ -362,7 +363,7 @@ func (r *GroupRepository) FindApprovedUser(groupID int, userID string) error {
             user_id = ?`
 
 	var groupUsersID int
-	err := r.MySQLHandler.conn.QueryRowx(query, groupID, userID).Scan(&groupUsersID)
+	err := r.MySQLHandler.Conn.QueryRowx(query, groupID, userID).Scan(&groupUsersID)
 
 	return err
 }
@@ -379,7 +380,7 @@ func (r *GroupRepository) FindUnapprovedUser(groupID int, userID string) error {
             user_id = ?`
 
 	var groupUnapprovedUsersID int
-	err := r.MySQLHandler.conn.QueryRowx(query, groupID, userID).Scan(&groupUnapprovedUsersID)
+	err := r.MySQLHandler.Conn.QueryRowx(query, groupID, userID).Scan(&groupUnapprovedUsersID)
 
 	return err
 }
@@ -400,7 +401,7 @@ func (r *GroupRepository) PostGroupApprovedUserAndDeleteGroupUnapprovedUser(grou
         AND
             user_id = ?`
 
-	tx, err := r.MySQLHandler.conn.Begin()
+	tx, err := r.MySQLHandler.Conn.Begin()
 	if err != nil {
 		return nil, err
 	}
@@ -451,7 +452,7 @@ func (r *GroupRepository) GetApprovedUser(approvedUsersID int) (*model.ApprovedU
             group_users.id = ?`
 
 	var approvedUser model.ApprovedUser
-	if err := r.MySQLHandler.conn.QueryRowx(query, approvedUsersID).StructScan(&approvedUser); err != nil {
+	if err := r.MySQLHandler.Conn.QueryRowx(query, approvedUsersID).StructScan(&approvedUser); err != nil {
 		return nil, err
 	}
 
@@ -468,7 +469,7 @@ func (r *GroupRepository) DeleteGroupUnapprovedUser(groupID int, userID string) 
         AND
             user_id = ?`
 
-	_, err := r.MySQLHandler.conn.Exec(query, groupID, userID)
+	_, err := r.MySQLHandler.Conn.Exec(query, groupID, userID)
 
 	return err
 }
@@ -483,7 +484,7 @@ func (r *GroupRepository) DeleteGroupApprovedUser(groupID int, userID string) er
         AND
             user_id = ?`
 
-	_, err := r.MySQLHandler.conn.Exec(query, groupID, userID)
+	_, err := r.MySQLHandler.Conn.Exec(query, groupID, userID)
 
 	return err
 }
@@ -510,7 +511,7 @@ func (r *GroupRepository) FindApprovedUsersList(groupID int, groupUsersList []st
 	}
 
 	var dbGroupUsersList model.GroupTasksUsersListReceiver
-	rows, err := r.MySQLHandler.conn.Queryx(query, queryArgs...)
+	rows, err := r.MySQLHandler.Conn.Queryx(query, queryArgs...)
 	if err != nil {
 		return dbGroupUsersList, err
 	}
@@ -541,7 +542,7 @@ func (r *GroupRepository) GetGroupUsersList(groupID int) ([]string, error) {
         WHERE
             group_id = ?`
 
-	rows, err := r.MySQLHandler.conn.Queryx(query, groupID)
+	rows, err := r.MySQLHandler.Conn.Queryx(query, groupID)
 	if err != nil {
 		return nil, err
 	}

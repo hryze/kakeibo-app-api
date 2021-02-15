@@ -1,57 +1,39 @@
 package handler
 
 import (
-	"database/sql"
-	"net"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
-
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
+	"time"
 
 	"github.com/google/uuid"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
 )
 
 type MockUserRepository struct{}
 
-func (t MockUserRepository) FindUserID(userID string) error {
-	return sql.ErrNoRows
+func (t MockUserRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
+	return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
 }
 
-func (t MockUserRepository) FindEmail(email string) error {
-	return sql.ErrNoRows
-}
-
-func (t MockUserRepository) CreateUser(user *model.SignUpUser) error {
-	return nil
-}
-
-func (t MockUserRepository) DeleteUser(signUpUser *model.SignUpUser) error {
-	return nil
-}
-
-func (t MockUserRepository) FindUser(loginUser *model.LoginUser) (*model.LoginUser, error) {
-	return &model.LoginUser{
+func (t MockUserRepository) GetUser(userID string) (*model.LoginUser, error) {
+	loginUser := &model.LoginUser{
 		ID:       "testID",
 		Name:     "testName",
 		Email:    "test@icloud.com",
 		Password: "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy",
-	}, nil
+	}
+
+	return loginUser, nil
 }
 
-func (t MockUserRepository) GetUser(userID string) (*model.LoginUser, error) {
-	return &model.LoginUser{
-		ID:    "testID",
-		Name:  "testName",
-		Email: "test@icloud.com",
-	}, nil
-}
-
-func (t MockUserRepository) SetSessionID(sessionID string, loginUserID string, expiration int) error {
+func (t MockUserRepository) AddSessionID(sessionID string, userID string, expiration int) error {
 	return nil
 }
 
@@ -59,28 +41,28 @@ func (t MockUserRepository) DeleteSessionID(sessionID string) error {
 	return nil
 }
 
-func TestDBHandler_SignUp(t *testing.T) {
-	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
+type mockUserUsecase struct{}
 
-	postInitStandardBudgetsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusCreated)
-	})
+func (u *mockUserUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
+	return &output.SignUpUser{
+		UserID: "testID",
+		Name:   "testName",
+		Email:  "test@icloud.com",
+	}, nil
+}
 
-	listener, err := net.Listen("tcp", "127.0.0.1:8081")
-	if err != nil {
-		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
-	}
+func (u *mockUserUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
+	return &output.LoginUser{
+		UserID:    "testID",
+		Name:      "testName",
+		Email:     "test@icloud.com",
+		SessionID: uuid.New().String(),
+		Expires:   time.Now().Add(time.Duration(86400*30) * time.Second),
+	}, nil
+}
 
-	ts := httptest.Server{
-		Listener: listener,
-		Config:   &http.Server{Handler: postInitStandardBudgetsHandler},
-	}
-	ts.Start()
-	defer ts.Close()
-
-	h := DBHandler{UserRepo: MockUserRepository{}}
+func Test_userHandler_SignUp(t *testing.T) {
+	h := NewUserHandler(&mockUserUsecase{})
 
 	r := httptest.NewRequest("POST", "/signup", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
@@ -91,11 +73,11 @@ func TestDBHandler_SignUp(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, &model.SignUpUser{}, &model.SignUpUser{})
+	testutil.AssertResponseBody(t, res, &output.SignUpUser{}, &output.SignUpUser{})
 }
 
-func TestDBHandler_Login(t *testing.T) {
-	h := DBHandler{UserRepo: MockUserRepository{}}
+func Test_userHandler_Login(t *testing.T) {
+	h := NewUserHandler(&mockUserUsecase{})
 
 	r := httptest.NewRequest("POST", "/login", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
@@ -106,7 +88,7 @@ func TestDBHandler_Login(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, &model.LoginUser{}, &model.LoginUser{})
+	testutil.AssertResponseBody(t, res, &output.LoginUser{}, &output.LoginUser{})
 	testutil.AssertSetResponseCookie(t, res)
 }
 
@@ -155,5 +137,5 @@ func TestDBHandler_GetUser(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &model.LoginUser{}, &model.LoginUser{})
+	testutil.AssertResponseBody(t, res, &output.LoginUser{}, &output.LoginUser{})
 }

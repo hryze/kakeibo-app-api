@@ -16,10 +16,10 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
-
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
+
+	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 )
 
 func verifyGroupAffiliationOfUsersList(groupID int, groupUsersList model.GroupTasksUsersListReceiver) error {

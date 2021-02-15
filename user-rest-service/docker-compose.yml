@@ -5,7 +5,7 @@ services:
     image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password
     restart: always
-    env_file: .env
+    env_file: development.env
     environment:
       TZ: "Asia/Tokyo"
     ports:
@@ -18,7 +18,7 @@ services:
     image: redis:alpine3.12
     command: redis-server
     restart: always
-    env_file: .env
+    env_file: development.env
     environment:
       TZ: "Asia/Tokyo"
     ports:

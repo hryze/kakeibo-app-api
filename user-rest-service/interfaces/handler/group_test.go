@@ -10,16 +10,12 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
-	"github.com/google/uuid"
-
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
-
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
-
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
 )
 
 type MockGroupRepository struct{}
@@ -32,8 +28,15 @@ type MockSqlResult struct {
 	sql.Result
 }
 
-func (t MockUserRepositoryForGroup) FindUserID(userID string) error {
-	return nil
+func (t MockUserRepositoryForGroup) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
+	signUpUser := &model.SignUpUser{
+		ID:       "testID",
+		Name:     "testName",
+		Email:    "test@icloud.com",
+		Password: "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy",
+	}
+
+	return signUpUser, nil
 }
 
 func (r MockSqlResult) LastInsertId() (int64, error) {

@@ -16,11 +16,10 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
-
+	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 
-	"github.com/garyburd/redigo/redis"
+	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
 )
 
 type GroupCustomCategoryValidationErrorMsg struct {

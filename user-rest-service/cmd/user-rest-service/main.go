@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/router"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/router"
 )
 
 func main() {

@@ -14,10 +14,9 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
-	"github.com/google/uuid"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
 )

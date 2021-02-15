@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/handler"
-
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/infrastructure"
 )
 

@@ -11,9 +11,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gorilla/mux"
-
 	"github.com/google/go-cmp/cmp"
+	"github.com/gorilla/mux"
 )
 
 func SetUpMockServer() func() {
