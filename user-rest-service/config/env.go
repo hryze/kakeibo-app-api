@@ -37,8 +37,10 @@ type Cors struct {
 }
 
 type Cookie struct {
-	Domain string `envconfig:"COOKIE_DOMAIN" required:"true"`
-	Secure bool   `envconfig:"COOKIE_SECURE" default:"true"`
+	Name       string        `envconfig:"COOKIE_NAME"       required:"true"`
+	Domain     string        `envconfig:"COOKIE_DOMAIN"     required:"true"`
+	Secure     bool          `envconfig:"COOKIE_SECURE"     default:"true"`
+	Expiration time.Duration `envconfig:"COOKIE_EXPIRATION" default:"2592000s"`
 }
 
 type MySQL struct {

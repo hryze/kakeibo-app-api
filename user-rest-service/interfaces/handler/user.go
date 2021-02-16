@@ -6,12 +6,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
-
 	"github.com/garyburd/redigo/redis"
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
@@ -58,9 +57,9 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     "session_id",
+		Name:     config.Env.Cookie.Name,
 		Value:    out.Cookie.SessionID,
-		Expires:  out.Cookie.Expires,
+		Expires:  time.Now().Add(config.Env.Cookie.Expiration),
 		Domain:   config.Env.Cookie.Domain,
 		Secure:   config.Env.Cookie.Secure,
 		HttpOnly: true,

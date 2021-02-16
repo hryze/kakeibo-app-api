@@ -1,7 +1,5 @@
 package output
 
-import "time"
-
 type SignUpUser struct {
 	UserID string `json:"user_id"`
 	Name   string `json:"name"`
@@ -17,5 +15,4 @@ type LoginUser struct {
 
 type CookieInfo struct {
 	SessionID string
-	Expires   time.Time
 }

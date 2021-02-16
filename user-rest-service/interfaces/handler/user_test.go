@@ -5,7 +5,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -58,7 +57,6 @@ func (u *mockUserUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) 
 		Email:  "test@icloud.com",
 		Cookie: output.CookieInfo{
 			SessionID: uuid.New().String(),
-			Expires:   time.Now().Add(time.Duration(86400*30) * time.Second),
 		},
 	}, nil
 }

@@ -43,7 +43,7 @@ func (t *mockUserRepository) GetUser(userID string) (*userdomain.LoginUser, erro
 	return loginUser, nil
 }
 
-func (t *mockUserRepository) AddSessionID(sessionID string, loginUserID userdomain.UserID, expiration int) error {
+func (t *mockUserRepository) AddSessionID(sessionID string, loginUserID userdomain.UserID) error {
 	return nil
 }
 

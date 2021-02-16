@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 	"golang.org/x/xerrors"
 
@@ -126,22 +124,18 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 	}
 
 	sessionID := uuid.New().String()
-	expiration := 86400 * 30
 
-	if err := u.userRepository.AddSessionID(sessionID, dbLoginUser.UserID(), expiration); err != nil {
+	if err := u.userRepository.AddSessionID(sessionID, dbLoginUser.UserID()); err != nil {
 		return nil, err
-	}
-
-	cookieInfo := output.CookieInfo{
-		SessionID: sessionID,
-		Expires:   time.Now().Add(time.Duration(expiration) * time.Second),
 	}
 
 	return &output.LoginUser{
 		UserID: dbLoginUser.UserID().Value(),
 		Name:   dbLoginUser.Name().Value(),
 		Email:  dbLoginUser.Email().Value(),
-		Cookie: cookieInfo,
+		Cookie: output.CookieInfo{
+			SessionID: sessionID,
+		},
 	}, nil
 }
 
