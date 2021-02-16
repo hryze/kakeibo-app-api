@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
@@ -122,9 +121,7 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 		return nil, err
 	}
 
-	hashPassword := dbLoginUser.Password().Value()
-
-	if err := bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(in.Password)); err != nil {
+	if err := dbLoginUser.Password().Equals(in.Password); err != nil {
 		return nil, apierrors.NewAuthenticationError(apierrors.NewErrorString("認証に失敗しました"))
 	}
 

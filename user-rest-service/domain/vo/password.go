@@ -55,3 +55,14 @@ func NewHashPassword(hashPassword string) (Password, error) {
 func (p Password) Value() string {
 	return string(p)
 }
+
+func (p Password) Equals(inputPassword string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(p.Value()), []byte(inputPassword)); err != nil {
+		return xerrors.Errorf(
+			"hash password %s and input password %s are not equal: %w",
+			p.Value(), inputPassword, ErrInvalidPassword,
+		)
+	}
+
+	return nil
+}
