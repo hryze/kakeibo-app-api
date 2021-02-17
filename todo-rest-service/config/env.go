@@ -26,7 +26,7 @@ type ENV struct {
 	MySQL
 	Redis
 	UserApi
-	TodoApi
+	AccountApi
 }
 
 type Server struct {
@@ -60,7 +60,7 @@ type UserApi struct {
 	Port int    `envconfig:"USER_PORT" required:"true"`
 }
 
-type TodoApi struct {
-	Host string `envconfig:"TODO_HOST" required:"true"`
-	Port int    `envconfig:"TODO_PORT" required:"true"`
+type AccountApi struct {
+	Host string `envconfig:"ACCOUNT_HOST" required:"true"`
+	Port int    `envconfig:"ACCOUNT_PORT" required:"true"`
 }

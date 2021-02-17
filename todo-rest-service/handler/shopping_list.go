@@ -10,7 +10,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
 	"reflect"
 	"strconv"
 	"time"
@@ -19,6 +18,7 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
 
+	"github.com/paypay3/kakeibo-app-api/todo-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 )
 
@@ -301,8 +301,10 @@ func eitherCategoryIDValidation(fl validator.FieldLevel) bool {
 }
 
 func getShoppingItemCategoriesName(categoriesID CategoriesID) ([]byte, error) {
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/categories/name", accountHost)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/categories/name",
+		config.Env.AccountApi.Host, config.Env.AccountApi.Port,
+	)
 
 	requestBody, err := json.Marshal(&categoriesID)
 	if err != nil {
@@ -358,8 +360,10 @@ func getShoppingItemCategoriesName(categoriesID CategoriesID) ([]byte, error) {
 }
 
 func getShoppingItemCategoriesNameList(categoriesIdList []CategoriesID) ([]byte, error) {
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/categories/names", accountHost)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/categories/names",
+		config.Env.AccountApi.Host, config.Env.AccountApi.Port,
+	)
 
 	requestBody, err := json.Marshal(&categoriesIdList)
 	if err != nil {
@@ -415,8 +419,10 @@ func getShoppingItemCategoriesNameList(categoriesIdList []CategoriesID) ([]byte,
 }
 
 func getShoppingItemRelatedTransactionDataList(transactionIdList []int64) ([]*model.TransactionData, error) {
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/transactions/related-shopping-list", accountHost)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/transactions/related-shopping-list",
+		config.Env.AccountApi.Host, config.Env.AccountApi.Port,
+	)
 
 	requestBody, err := json.Marshal(&transactionIdList)
 	if err != nil {
@@ -472,8 +478,10 @@ func getShoppingItemRelatedTransactionDataList(transactionIdList []int64) ([]*mo
 }
 
 func postRelatedTransaction(shoppingItem model.ShoppingItem, cookie *http.Cookie) (model.ShoppingItem, error) {
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/transactions", accountHost)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/transactions",
+		config.Env.AccountApi.Host, config.Env.AccountApi.Port,
+	)
 
 	relatedTransaction := RelatedTransaction{
 		TransactionType:  "expense",
@@ -540,8 +548,10 @@ func postRelatedTransaction(shoppingItem model.ShoppingItem, cookie *http.Cookie
 }
 
 func deleteRelatedTransaction(shoppingItem model.ShoppingItem, cookie *http.Cookie) (model.ShoppingItem, error) {
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/transactions/%d", accountHost, shoppingItem.RelatedTransactionData.ID.Int64)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/transactions/%d",
+		config.Env.AccountApi.Host, config.Env.AccountApi.Port, shoppingItem.RelatedTransactionData.ID.Int64,
+	)
 
 	request, err := http.NewRequest(
 		"DELETE",
@@ -1144,7 +1154,7 @@ func (h *DBHandler) PutShoppingItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if shoppingItem.CompleteFlag && shoppingItem.TransactionAutoAdd && shoppingItem.RelatedTransactionData == nil {
-		cookie, err := r.Cookie("session_id")
+		cookie, err := r.Cookie(config.Env.Cookie.Name)
 		if err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
@@ -1156,7 +1166,7 @@ func (h *DBHandler) PutShoppingItem(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if !shoppingItem.CompleteFlag && shoppingItem.RelatedTransactionData != nil {
-		cookie, err := r.Cookie("session_id")
+		cookie, err := r.Cookie(config.Env.Cookie.Name)
 		if err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
