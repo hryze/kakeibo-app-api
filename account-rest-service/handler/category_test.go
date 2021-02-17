@@ -6,13 +6,13 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
+	"github.com/paypay3/kakeibo-app-api/account-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/testutil"
 )
@@ -210,7 +210,7 @@ func TestDBHandler_GetCategoriesList(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -235,7 +235,7 @@ func TestDBHandler_PostCustomCategory(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -264,7 +264,7 @@ func TestDBHandler_PutCustomCategory(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -280,12 +280,10 @@ func TestDBHandler_PutCustomCategory(t *testing.T) {
 }
 
 func TestDBHandler_DeleteCustomCategory(t *testing.T) {
-	if err := os.Setenv("TODO_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
-
-	todoHost := os.Getenv("TODO_HOST")
-	todoHostURL := fmt.Sprintf("%s:8082", todoHost)
+	todoHostURL := fmt.Sprintf(
+		"%s:%d",
+		config.Env.TodoApi.Host, config.Env.TodoApi.Port,
+	)
 
 	mockPutShoppingListCustomCategoryIdToMediumCategoryId := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -320,7 +318,7 @@ func TestDBHandler_DeleteCustomCategory(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -345,7 +343,7 @@ func TestDBHandler_GetCategoriesName(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -370,7 +368,7 @@ func TestDBHandler_GetCategoriesNameList(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
