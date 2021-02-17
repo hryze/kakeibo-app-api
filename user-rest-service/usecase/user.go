@@ -128,7 +128,7 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 
 	sessionID := uuid.New().String()
 
-	if err := u.sessionStore.AddSessionID(sessionID, dbLoginUser.UserID()); err != nil {
+	if err := u.sessionStore.StoreLoginInfo(sessionID, dbLoginUser.UserID()); err != nil {
 		return nil, err
 	}
 

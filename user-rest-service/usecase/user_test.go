@@ -45,7 +45,7 @@ func (r *mockUserRepository) GetUser(userID string) (*userdomain.LoginUser, erro
 
 type mockSessionStore struct{}
 
-func (s *mockSessionStore) AddSessionID(sessionID string, loginUserID userdomain.UserID) error {
+func (s *mockSessionStore) StoreLoginInfo(sessionID string, loginUserID userdomain.UserID) error {
 	return nil
 }
 

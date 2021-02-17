@@ -15,7 +15,7 @@ func NewSessionStore(redisHandler *imdb.RedisHandler) *sessionStore {
 	return &sessionStore{redisHandler}
 }
 
-func (s *sessionStore) AddSessionID(sessionID string, userID userdomain.UserID) error {
+func (s *sessionStore) StoreLoginInfo(sessionID string, userID userdomain.UserID) error {
 	conn := s.RedisHandler.Pool.Get()
 	defer conn.Close()
 
