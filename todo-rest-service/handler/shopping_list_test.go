@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -17,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
+	"github.com/paypay3/kakeibo-app-api/todo-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
 )
@@ -599,12 +599,7 @@ func (m MockShoppingListRepository) PutShoppingListCustomCategoryIdToMediumCateg
 }
 
 func TestDBHandler_GetDailyShoppingDataByDay(t *testing.T) {
-	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
-
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+	accountHostURL := fmt.Sprintf("%s:%d", config.Env.AccountApi.Host, config.Env.AccountApi.Port)
 
 	mockGetCategoriesNameList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var mockCategoriesNameList []MockCategoriesName
@@ -708,7 +703,7 @@ func TestDBHandler_GetDailyShoppingDataByDay(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -730,12 +725,7 @@ func TestDBHandler_GetDailyShoppingDataByDay(t *testing.T) {
 }
 
 func TestDBHandler_GetDailyShoppingDataByCategory(t *testing.T) {
-	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
-
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+	accountHostURL := fmt.Sprintf("%s:%d", config.Env.AccountApi.Host, config.Env.AccountApi.Port)
 
 	mockGetCategoriesNameList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var mockCategoriesNameList []MockCategoriesName
@@ -839,7 +829,7 @@ func TestDBHandler_GetDailyShoppingDataByCategory(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -861,12 +851,7 @@ func TestDBHandler_GetDailyShoppingDataByCategory(t *testing.T) {
 }
 
 func TestDBHandler_GetMonthlyShoppingDataByDay(t *testing.T) {
-	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
-
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+	accountHostURL := fmt.Sprintf("%s:%d", config.Env.AccountApi.Host, config.Env.AccountApi.Port)
 
 	mockGetCategoriesNameList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var mockCategoriesNameList []MockCategoriesName
@@ -975,7 +960,7 @@ func TestDBHandler_GetMonthlyShoppingDataByDay(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -997,12 +982,7 @@ func TestDBHandler_GetMonthlyShoppingDataByDay(t *testing.T) {
 }
 
 func TestDBHandler_GetMonthlyShoppingDataByCategory(t *testing.T) {
-	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
-
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+	accountHostURL := fmt.Sprintf("%s:%d", config.Env.AccountApi.Host, config.Env.AccountApi.Port)
 
 	mockGetCategoriesNameList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var mockCategoriesNameList []MockCategoriesName
@@ -1111,7 +1091,7 @@ func TestDBHandler_GetMonthlyShoppingDataByCategory(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -1133,12 +1113,7 @@ func TestDBHandler_GetMonthlyShoppingDataByCategory(t *testing.T) {
 }
 
 func TestDBHandler_GetExpiredShoppingList(t *testing.T) {
-	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
-
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+	accountHostURL := fmt.Sprintf("%s:%d", config.Env.AccountApi.Host, config.Env.AccountApi.Port)
 
 	mockGetCategoriesNameList := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mockCategoriesNameList := []MockCategoriesName{
@@ -1193,7 +1168,7 @@ func TestDBHandler_GetExpiredShoppingList(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -1209,12 +1184,7 @@ func TestDBHandler_GetExpiredShoppingList(t *testing.T) {
 }
 
 func TestDBHandler_PostRegularShoppingItem(t *testing.T) {
-	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
-
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+	accountHostURL := fmt.Sprintf("%s:%d", config.Env.AccountApi.Host, config.Env.AccountApi.Port)
 
 	mockGetCategoriesName := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mockCategoriesName := MockCategoriesName{
@@ -1257,7 +1227,7 @@ func TestDBHandler_PostRegularShoppingItem(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -1281,12 +1251,7 @@ func TestDBHandler_PostRegularShoppingItem(t *testing.T) {
 }
 
 func TestDBHandler_PutRegularShoppingItem(t *testing.T) {
-	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
-
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+	accountHostURL := fmt.Sprintf("%s:%d", config.Env.AccountApi.Host, config.Env.AccountApi.Port)
 
 	mockGetCategoriesName := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mockCategoriesName := MockCategoriesName{
@@ -1333,7 +1298,7 @@ func TestDBHandler_PutRegularShoppingItem(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -1370,7 +1335,7 @@ func TestDBHandler_DeleteRegularShoppingItem(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -1386,12 +1351,7 @@ func TestDBHandler_DeleteRegularShoppingItem(t *testing.T) {
 }
 
 func TestDBHandler_PostShoppingItem(t *testing.T) {
-	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
-
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+	accountHostURL := fmt.Sprintf("%s:%d", config.Env.AccountApi.Host, config.Env.AccountApi.Port)
 
 	mockGetCategoriesName := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mockCategoriesName := MockCategoriesName{
@@ -1434,7 +1394,7 @@ func TestDBHandler_PostShoppingItem(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -1450,12 +1410,7 @@ func TestDBHandler_PostShoppingItem(t *testing.T) {
 }
 
 func TestDBHandler_PutShoppingItem(t *testing.T) {
-	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
-
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	accountHostURL := fmt.Sprintf("%s:8081", accountHost)
+	accountHostURL := fmt.Sprintf("%s:%d", config.Env.AccountApi.Host, config.Env.AccountApi.Port)
 
 	mockPostTransaction := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mockTransaction := model.TransactionData{
@@ -1533,7 +1488,7 @@ func TestDBHandler_PutShoppingItem(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -1562,7 +1517,7 @@ func TestDBHandler_DeleteShoppingItem(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 

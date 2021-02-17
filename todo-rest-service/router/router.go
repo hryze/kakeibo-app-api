@@ -2,8 +2,7 @@ package router
 
 import (
 	"context"
-	"errors"
-	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -12,26 +11,13 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 
+	"github.com/paypay3/kakeibo-app-api/todo-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/injector"
 )
 
 func Run() error {
-	isLocal := flag.Bool("local", false, "Please specify -local flag")
-	flag.Parse()
-
-	if *isLocal {
-		if err := godotenv.Load("../../.env"); err != nil {
-			return err
-		}
-	}
-
-	if len(os.Getenv("ALLOWED_ORIGIN")) == 0 || len(os.Getenv("USER_HOST")) == 0 || len(os.Getenv("ACCOUNT_HOST")) == 0 || len(os.Getenv("MYSQL_DSN")) == 0 || len(os.Getenv("REDIS_DSN")) == 0 {
-		return errors.New("environment variable not defined")
-	}
-
 	h := injector.InjectDBHandler()
 
 	router := mux.NewRouter()
@@ -82,17 +68,15 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks/{id:[0-9]+}", h.PutGroupTask).Methods("PUT")
 	router.HandleFunc("/groups/{group_id:[0-9]+}/tasks/{id:[0-9]+}", h.DeleteGroupTask).Methods("DELETE")
 
-	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
-
 	corsWrapper := cors.New(cors.Options{
-		AllowedOrigins:   []string{allowedOrigin},
+		AllowedOrigins:   config.Env.Cors.AllowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Accept-Language"},
 		AllowCredentials: true,
 	})
 
 	srv := &http.Server{
-		Addr:    ":8082",
+		Addr:    fmt.Sprintf(":%d", config.Env.Server.Port),
 		Handler: corsWrapper.Handler(router),
 	}
 
