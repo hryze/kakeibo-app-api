@@ -1,18 +1,17 @@
 package infrastructure
 
 import (
-	"fmt"
-
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/auth/imdb"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
 )
 
 type UserRepository struct {
-	*db.RedisHandler
-	*db.MySQLHandler
+	*imdb.RedisHandler
+	*rdb.MySQLHandler
 }
 
-func NewUserRepository(redisHandler *db.RedisHandler, mysqlHandler *db.MySQLHandler) *UserRepository {
+func NewUserRepository(redisHandler *imdb.RedisHandler, mysqlHandler *rdb.MySQLHandler) *UserRepository {
 	return &UserRepository{redisHandler, mysqlHandler}
 }
 
@@ -46,7 +45,6 @@ func (r *UserRepository) GetUser(userID string) (*model.LoginUser, error) {
 
 	var user model.LoginUser
 	if err := r.MySQLHandler.Conn.QueryRowx(query, userID).StructScan(&user); err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 

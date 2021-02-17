@@ -11,6 +11,7 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/gateway"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/sessionstore"
 )
 
 type UserUsecase interface {
@@ -20,12 +21,14 @@ type UserUsecase interface {
 
 type userUsecase struct {
 	userRepository userdomain.Repository
+	sessionStore   sessionstore.SessionStore
 	accountApi     gateway.AccountApi
 }
 
-func NewUserUsecase(userRepository userdomain.Repository, accountApi gateway.AccountApi) *userUsecase {
+func NewUserUsecase(userRepository userdomain.Repository, sessionStore sessionstore.SessionStore, accountApi gateway.AccountApi) *userUsecase {
 	return &userUsecase{
 		userRepository: userRepository,
+		sessionStore:   sessionStore,
 		accountApi:     accountApi,
 	}
 }
@@ -125,7 +128,7 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 
 	sessionID := uuid.New().String()
 
-	if err := u.userRepository.AddSessionID(sessionID, dbLoginUser.UserID()); err != nil {
+	if err := u.sessionStore.AddSessionID(sessionID, dbLoginUser.UserID()); err != nil {
 		return nil, err
 	}
 

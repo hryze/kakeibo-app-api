@@ -15,50 +15,52 @@ import (
 
 type mockUserRepository struct{}
 
-func (t *mockUserRepository) FindSignUpUserByUserID(userID userdomain.UserID) (*userdomain.SignUpUser, error) {
+func (r *mockUserRepository) FindSignUpUserByUserID(userID userdomain.UserID) (*userdomain.SignUpUser, error) {
 	return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
 }
 
-func (t *mockUserRepository) FindSignUpUserByEmail(email vo.Email) (*userdomain.SignUpUser, error) {
+func (r *mockUserRepository) FindSignUpUserByEmail(email vo.Email) (*userdomain.SignUpUser, error) {
 	return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
 }
 
-func (t *mockUserRepository) CreateSignUpUser(user *userdomain.SignUpUser) error {
+func (r *mockUserRepository) CreateSignUpUser(user *userdomain.SignUpUser) error {
 	return nil
 }
 
-func (t *mockUserRepository) DeleteSignUpUser(signUpUser *userdomain.SignUpUser) error {
+func (r *mockUserRepository) DeleteSignUpUser(signUpUser *userdomain.SignUpUser) error {
 	return nil
 }
 
-func (t *mockUserRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.LoginUser, error) {
+func (r *mockUserRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.LoginUser, error) {
 	loginUser := userdomain.NewLoginUserFromDataSource("testUserID", "testName", "test@icloud.com", "$2a$10$MfTmnqbuDog.W/Kaug3vlef0ZX5OoxEbjSc9hyAB.YGNKQvfQGDd6")
 
 	return loginUser, nil
 }
 
-func (t *mockUserRepository) GetUser(userID string) (*userdomain.LoginUser, error) {
+func (r *mockUserRepository) GetUser(userID string) (*userdomain.LoginUser, error) {
 	loginUser := userdomain.NewLoginUserFromDataSource("testID", "testName", "test@icloud.com", "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy")
 
 	return loginUser, nil
 }
 
-func (t *mockUserRepository) AddSessionID(sessionID string, loginUserID userdomain.UserID) error {
+type mockSessionStore struct{}
+
+func (s *mockSessionStore) AddSessionID(sessionID string, loginUserID userdomain.UserID) error {
 	return nil
 }
 
-func (t *mockUserRepository) DeleteSessionID(sessionID string) error {
+func (s *mockSessionStore) DeleteSessionID(sessionID string) error {
 	return nil
 }
 
 type mockAccountApi struct{}
 
-func (t *mockAccountApi) PostInitStandardBudgets(userID userdomain.UserID) error {
+func (a *mockAccountApi) PostInitStandardBudgets(userID userdomain.UserID) error {
 	return nil
 }
 
 func Test_userUsecase_SignUp(t *testing.T) {
-	u := NewUserUsecase(&mockUserRepository{}, &mockAccountApi{})
+	u := NewUserUsecase(&mockUserRepository{}, &mockSessionStore{}, &mockAccountApi{})
 
 	in := input.SignUpUser{
 		UserID:   "testUserID",
@@ -84,7 +86,7 @@ func Test_userUsecase_SignUp(t *testing.T) {
 }
 
 func Test_userUsecase_Login(t *testing.T) {
-	u := NewUserUsecase(&mockUserRepository{}, &mockAccountApi{})
+	u := NewUserUsecase(&mockUserRepository{}, &mockSessionStore{}, &mockAccountApi{})
 
 	in := input.LoginUser{
 		Email:    "test@icloud.com",
@@ -93,7 +95,7 @@ func Test_userUsecase_Login(t *testing.T) {
 
 	gotOut, err := u.Login(&in)
 	if err != nil {
-		t.Errorf("unexpected error by userUsecase.SignUp '%#v'", err)
+		t.Errorf("unexpected error by userUsecase.Login '%#v'", err)
 	}
 
 	wantOut := &output.LoginUser{

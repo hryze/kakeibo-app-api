@@ -14,23 +14,25 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/auth"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/auth/imdb"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/externalapi"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/externalapi/client"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/injector"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/handler"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 )
 
 func Run() error {
-	redisHandler, err := db.NewRedisHandler()
+	redisHandler, err := imdb.NewRedisHandler()
 	if err != nil {
 		return err
 	}
 	defer redisHandler.Pool.Close()
 
-	mySQLHandler, err := db.NewMySQLHandler()
+	mySQLHandler, err := rdb.NewMySQLHandler()
 	if err != nil {
 		return err
 	}
@@ -38,9 +40,10 @@ func Run() error {
 
 	accountApiHandler := client.NewAccountApiHandler()
 
-	userRepository := persistence.NewUserRepository(redisHandler, mySQLHandler)
+	userRepository := persistence.NewUserRepository(mySQLHandler)
+	sessionStore := auth.NewSessionStore(redisHandler)
 	accountApi := externalapi.NewAccountApi(accountApiHandler)
-	userUsecase := usecase.NewUserUsecase(userRepository, accountApi)
+	userUsecase := usecase.NewUserUsecase(userRepository, sessionStore, accountApi)
 	userHandler := handler.NewUserHandler(userUsecase)
 
 	h := injector.InjectDBHandler()

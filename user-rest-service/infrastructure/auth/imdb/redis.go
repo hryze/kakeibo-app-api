@@ -1,4 +1,4 @@
-package db
+package imdb
 
 import (
 	"github.com/garyburd/redigo/redis"
