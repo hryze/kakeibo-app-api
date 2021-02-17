@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
+	"github.com/paypay3/kakeibo-app-api/account-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/testutil"
 )
@@ -381,7 +382,7 @@ func TestDBHandler_GetMonthlyTransactionsList(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -406,7 +407,7 @@ func TestDBHandler_Get10LatestTransactionsList(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -435,7 +436,7 @@ func TestDBHandler_PostTransaction(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -464,7 +465,7 @@ func TestDBHandler_PutTransaction(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -493,7 +494,7 @@ func TestDBHandler_DeleteTransaction(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -534,7 +535,7 @@ func TestDBHandler_SearchTransactionsList(t *testing.T) {
 	r.URL.RawQuery = urlQuery.Encode()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -559,7 +560,7 @@ func TestDBHandler_GetShoppingItemRelatedTransactionDataList(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 

@@ -12,7 +12,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"text/template"
 	"time"
@@ -20,6 +19,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 
+	"github.com/paypay3/kakeibo-app-api/account-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
 )
 
@@ -204,8 +204,10 @@ func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery)
 }
 
 func getGroupUserIDList(groupID int) ([]string, error) {
-	userHost := os.Getenv("USER_HOST")
-	requestURL := fmt.Sprintf("http://%s:8080/groups/%d/users", userHost, groupID)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/groups/%d/users",
+		config.Env.UserApi.Host, config.Env.UserApi.Port, groupID,
+	)
 
 	request, err := http.NewRequest(
 		"GET",
