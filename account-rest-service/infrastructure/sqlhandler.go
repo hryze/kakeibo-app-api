@@ -1,11 +1,11 @@
 package infrastructure
 
 import (
-	"os"
-
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+
+	"github.com/paypay3/kakeibo-app-api/account-rest-service/config"
 )
 
 type MySQLHandler struct {
@@ -17,33 +17,48 @@ type RedisHandler struct {
 }
 
 func NewMySQLHandler() (*MySQLHandler, error) {
-	dsn := os.Getenv("MYSQL_DSN")
-
-	conn, err := sqlx.Open("mysql", dsn)
+	conn, err := sqlx.Open("mysql", config.Env.MySQL.Dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	mySQLHandler := new(MySQLHandler)
-	mySQLHandler.conn = conn
+	if err := conn.Ping(); err != nil {
+		return nil, err
+	}
 
-	return mySQLHandler, nil
+	conn.SetMaxOpenConns(config.Env.MySQL.MaxConn)
+	conn.SetMaxIdleConns(config.Env.MySQL.MaxIdleConn)
+	conn.SetConnMaxLifetime(config.Env.MySQL.MaxConnLifetime)
+
+	return &MySQLHandler{
+		conn: conn,
+	}, nil
 }
 
 func NewRedisHandler() (*RedisHandler, error) {
-	dsn := os.Getenv("REDIS_DSN")
-
-	redisHandler := new(RedisHandler)
-	redisHandler.pool = &redis.Pool{
+	pool := &redis.Pool{
 		Dial: func() (redis.Conn, error) {
-			conn, err := redis.Dial("tcp", dsn)
+			conn, err := redis.Dial("tcp", config.Env.Redis.Dsn)
 			if err != nil {
 				return nil, err
 			}
 
 			return conn, nil
 		},
+		MaxActive:       config.Env.Redis.MaxConn,
+		MaxIdle:         config.Env.Redis.MaxIdleConn,
+		MaxConnLifetime: config.Env.Redis.MaxConnLifetime,
+		Wait:            true,
 	}
 
-	return redisHandler, nil
+	conn := pool.Get()
+	defer conn.Close()
+
+	if _, err := conn.Do("PING"); err != nil {
+		return nil, err
+	}
+
+	return &RedisHandler{
+		pool: pool,
+	}, nil
 }

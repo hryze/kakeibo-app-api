@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
+	"github.com/paypay3/kakeibo-app-api/todo-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
 )
@@ -104,7 +105,7 @@ func TestDBHandler_GetDailyTodoList(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -133,7 +134,7 @@ func TestDBHandler_GetMonthlyTodoList(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -159,7 +160,7 @@ func TestDBHandler_GetExpiredTodoList(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -184,7 +185,7 @@ func TestDBHandler_PostTodo(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -213,7 +214,7 @@ func TestDBHandler_PutTodo(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -242,7 +243,7 @@ func TestDBHandler_DeleteTodo(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -283,7 +284,7 @@ func TestDBHandler_SearchTodoList(t *testing.T) {
 	r.URL.RawQuery = urlQuery.Encode()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 

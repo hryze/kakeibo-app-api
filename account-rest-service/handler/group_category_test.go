@@ -6,13 +6,13 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
+	"github.com/paypay3/kakeibo-app-api/account-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/testutil"
 )
@@ -218,7 +218,7 @@ func TestDBHandler_GetGroupCategoriesList(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -247,7 +247,7 @@ func TestDBHandler_PostGroupCustomCategory(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -277,7 +277,7 @@ func TestDBHandler_PutGroupCustomCategory(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -293,12 +293,10 @@ func TestDBHandler_PutGroupCustomCategory(t *testing.T) {
 }
 
 func TestDBHandler_DeleteGroupCustomCategory(t *testing.T) {
-	if err := os.Setenv("TODO_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
-
-	todoHost := os.Getenv("TODO_HOST")
-	todoHostURL := fmt.Sprintf("%s:8082", todoHost)
+	todoHostURL := fmt.Sprintf(
+		"%s:%d",
+		config.Env.TodoApi.Host, config.Env.TodoApi.Port,
+	)
 
 	mockGroupPutShoppingListCustomCategoryIdToMediumCategoryId := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -334,7 +332,7 @@ func TestDBHandler_DeleteGroupCustomCategory(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -363,7 +361,7 @@ func TestDBHandler_GetGroupCategoriesName(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -392,7 +390,7 @@ func TestDBHandler_GetGroupCategoriesNameList(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 

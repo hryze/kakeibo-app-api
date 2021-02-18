@@ -9,20 +9,16 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/datasource"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 )
 
 type userRepository struct {
-	*db.RedisHandler
-	*db.MySQLHandler
+	*rdb.MySQLHandler
 }
 
-func NewUserRepository(redisHandler *db.RedisHandler, mysqlHandler *db.MySQLHandler) *userRepository {
-	return &userRepository{
-		redisHandler,
-		mysqlHandler,
-	}
+func NewUserRepository(mysqlHandler *rdb.MySQLHandler) *userRepository {
+	return &userRepository{mysqlHandler}
 }
 
 func (r *userRepository) FindSignUpUserByUserID(userID userdomain.UserID) (*userdomain.SignUpUser, error) {
@@ -45,7 +41,7 @@ func (r *userRepository) FindSignUpUserByUserID(userID userdomain.UserID) (*user
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	var userValidationError presenter.ValidationError
+	var userValidationError presenter.UserValidationError
 
 	userIDVo, err := userdomain.NewUserID(signUpUserDto.UserID)
 	if err != nil {
@@ -91,7 +87,7 @@ func (r *userRepository) FindSignUpUserByEmail(email vo.Email) (*userdomain.Sign
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	var userValidationError presenter.ValidationError
+	var userValidationError presenter.UserValidationError
 
 	userIDVo, err := userdomain.NewUserID(signUpUserDto.UserID)
 	if err != nil {
@@ -173,7 +169,7 @@ func (r *userRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.Login
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	var userValidationError presenter.ValidationError
+	var userValidationError presenter.UserValidationError
 
 	userIDVo, err := userdomain.NewUserID(loginUserDto.UserID)
 	if err != nil {
@@ -221,26 +217,4 @@ func (r *userRepository) GetUser(userID string) (*userdomain.LoginUser, error) {
 	}
 
 	return &user, nil
-}
-
-func (r *userRepository) AddSessionID(sessionID string, userID userdomain.UserID, expiration int) error {
-	conn := r.RedisHandler.Pool.Get()
-	defer conn.Close()
-
-	if _, err := conn.Do("SET", sessionID, userID.Value(), "EX", expiration); err != nil {
-		return apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
-	}
-
-	return nil
-}
-
-func (r *userRepository) DeleteSessionID(sessionID string) error {
-	conn := r.RedisHandler.Pool.Get()
-	defer conn.Close()
-
-	if _, err := conn.Do("DEL", sessionID); err != nil {
-		return apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
-	}
-
-	return nil
 }

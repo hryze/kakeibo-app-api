@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -19,13 +18,16 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 
+	"github.com/paypay3/kakeibo-app-api/todo-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 )
 
 func verifyGroupAffiliationOfUsersList(groupID int, groupUsersList model.GroupTasksUsersListReceiver) error {
-	userHost := os.Getenv("USER_HOST")
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/groups/%d/users/verify",
+		config.Env.UserApi.Host, config.Env.UserApi.Port, groupID,
+	)
 
-	requestURL := fmt.Sprintf("http://%s:8080/groups/%d/users/verify", userHost, groupID)
 	requestBody, err := json.Marshal(groupUsersList)
 	if err != nil {
 		return err

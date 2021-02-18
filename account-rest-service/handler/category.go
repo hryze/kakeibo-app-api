@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -19,6 +18,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 
+	"github.com/paypay3/kakeibo-app-api/account-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
 )
 
@@ -55,8 +55,10 @@ func validateCustomCategory(r *http.Request, customCategory *model.CustomCategor
 }
 
 func putShoppingListCustomCategoryIdToMediumCategoryId(mediumCategoryID int, customCategoryID int) error {
-	todoHost := os.Getenv("TODO_HOST")
-	requestURL := fmt.Sprintf("http://%s:8082/shopping-list/categories", todoHost)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/shopping-list/categories",
+		config.Env.TodoApi.Host, config.Env.TodoApi.Port,
+	)
 
 	categoriesID := struct {
 		MediumCategoryID int `json:"medium_category_id"`

@@ -10,7 +10,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
 	"reflect"
 	"strconv"
 	"time"
@@ -19,6 +18,7 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
 
+	"github.com/paypay3/kakeibo-app-api/todo-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
 )
 
@@ -245,8 +245,10 @@ func groupShoppingItemValidateValuer(field reflect.Value) interface{} {
 }
 
 func getGroupShoppingItemCategoriesName(categoriesID CategoriesID, groupID int) ([]byte, error) {
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/groups/%d/categories/name", accountHost, groupID)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/groups/%d/categories/name",
+		config.Env.AccountApi.Host, config.Env.AccountApi.Port, groupID,
+	)
 
 	requestBody, err := json.Marshal(&categoriesID)
 	if err != nil {
@@ -302,8 +304,10 @@ func getGroupShoppingItemCategoriesName(categoriesID CategoriesID, groupID int) 
 }
 
 func getGroupShoppingItemCategoriesNameList(categoriesIdList []CategoriesID, groupID int) ([]byte, error) {
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/groups/%d/categories/names", accountHost, groupID)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/groups/%d/categories/names",
+		config.Env.AccountApi.Host, config.Env.AccountApi.Port, groupID,
+	)
 
 	requestBody, err := json.Marshal(&categoriesIdList)
 	if err != nil {
@@ -359,8 +363,10 @@ func getGroupShoppingItemCategoriesNameList(categoriesIdList []CategoriesID, gro
 }
 
 func getGroupShoppingItemRelatedTransactionDataList(transactionIdList []int64, groupID int) ([]*model.GroupTransactionData, error) {
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/groups/%d/transactions/related-shopping-list", accountHost, groupID)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/groups/%d/transactions/related-shopping-list",
+		config.Env.AccountApi.Host, config.Env.AccountApi.Port, groupID,
+	)
 
 	requestBody, err := json.Marshal(&transactionIdList)
 	if err != nil {
@@ -416,8 +422,10 @@ func getGroupShoppingItemRelatedTransactionDataList(transactionIdList []int64, g
 }
 
 func postGroupRelatedTransaction(groupShoppingItem model.GroupShoppingItem, groupID int, cookie *http.Cookie) (model.GroupShoppingItem, error) {
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/groups/%d/transactions", accountHost, groupID)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/groups/%d/transactions",
+		config.Env.AccountApi.Host, config.Env.AccountApi.Port, groupID,
+	)
 
 	groupRelatedTransaction := GroupRelatedTransaction{
 		TransactionType:  "expense",
@@ -485,8 +493,10 @@ func postGroupRelatedTransaction(groupShoppingItem model.GroupShoppingItem, grou
 }
 
 func deleteGroupRelatedTransaction(groupShoppingItem model.GroupShoppingItem, groupID int, cookie *http.Cookie) (model.GroupShoppingItem, error) {
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/groups/%d/transactions/%d", accountHost, groupID, groupShoppingItem.RelatedTransactionData.ID.Int64)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/groups/%d/transactions/%d",
+		config.Env.AccountApi.Host, config.Env.AccountApi.Port, groupID, groupShoppingItem.RelatedTransactionData.ID.Int64,
+	)
 
 	request, err := http.NewRequest(
 		"DELETE",
@@ -1484,7 +1494,7 @@ func (h *DBHandler) PutGroupShoppingItem(w http.ResponseWriter, r *http.Request)
 	}
 
 	if groupShoppingItem.CompleteFlag && groupShoppingItem.TransactionAutoAdd && groupShoppingItem.RelatedTransactionData == nil {
-		cookie, err := r.Cookie("session_id")
+		cookie, err := r.Cookie(config.Env.Cookie.Name)
 		if err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return
@@ -1496,7 +1506,7 @@ func (h *DBHandler) PutGroupShoppingItem(w http.ResponseWriter, r *http.Request)
 			return
 		}
 	} else if !groupShoppingItem.CompleteFlag && groupShoppingItem.RelatedTransactionData != nil {
-		cookie, err := r.Cookie("session_id")
+		cookie, err := r.Cookie(config.Env.Cookie.Name)
 		if err != nil {
 			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
 			return

@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 )
 
 func GetRequestJsonFromTestData(t *testing.T) string {
@@ -69,7 +71,7 @@ func AssertSetResponseCookie(t *testing.T, res *http.Response) {
 
 	cookie := res.Cookies()[0]
 
-	if diff := cmp.Diff("session_id", cookie.Name); len(diff) != 0 {
+	if diff := cmp.Diff(config.Env.Cookie.Name, cookie.Name); len(diff) != 0 {
 		t.Errorf("differs: (-want +got)\n%s", diff)
 	}
 
@@ -77,7 +79,15 @@ func AssertSetResponseCookie(t *testing.T, res *http.Response) {
 		t.Errorf("differs: (-want +got)\n%s", diff)
 	}
 
-	if diff := cmp.Diff(36, len(cookie.Value)); len(diff) != 0 {
+	if diff := cmp.Diff(true, time.Now().UTC().Before(cookie.Expires)); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
+
+	if diff := cmp.Diff(config.Env.Cookie.Domain, cookie.Domain); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
+
+	if diff := cmp.Diff(config.Env.Cookie.Secure, cookie.Secure); len(diff) != 0 {
 		t.Errorf("differs: (-want +got)\n%s", diff)
 	}
 
@@ -85,9 +95,6 @@ func AssertSetResponseCookie(t *testing.T, res *http.Response) {
 		t.Errorf("differs: (-want +got)\n%s", diff)
 	}
 
-	if diff := cmp.Diff(true, time.Now().UTC().Before(cookie.Expires)); len(diff) != 0 {
-		t.Errorf("differs: (-want +got)\n%s", diff)
-	}
 }
 
 func AssertDeleteResponseCookie(t *testing.T, res *http.Response) {

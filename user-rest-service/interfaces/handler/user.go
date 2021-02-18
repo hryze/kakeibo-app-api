@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
@@ -56,19 +56,12 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	domain := os.Getenv("COOKIE_DOMAIN")
-	secure := true
-
-	if domain != "shakepiper.com" {
-		secure = false
-	}
-
 	http.SetCookie(w, &http.Cookie{
-		Name:     "session_id",
-		Value:    out.SessionID,
-		Expires:  out.Expires,
-		Domain:   domain,
-		Secure:   secure,
+		Name:     config.Env.Cookie.Name,
+		Value:    out.Cookie.SessionID,
+		Expires:  time.Now().Add(config.Env.Cookie.Expiration),
+		Domain:   config.Env.Cookie.Domain,
+		Secure:   config.Env.Cookie.Secure,
 		HttpOnly: true,
 	})
 

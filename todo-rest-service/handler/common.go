@@ -8,9 +8,9 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/paypay3/kakeibo-app-api/todo-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/repository"
 )
 
@@ -119,7 +119,7 @@ func errorResponseByJSON(w http.ResponseWriter, err error) {
 }
 
 func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (string, error) {
-	cookie, err := r.Cookie("session_id")
+	cookie, err := r.Cookie(config.Env.Cookie.Name)
 	if err != nil {
 		return "", err
 	}
@@ -134,8 +134,10 @@ func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (stri
 }
 
 func verifyGroupAffiliation(groupID int, userID string) error {
-	userHost := os.Getenv("USER_HOST")
-	requestURL := fmt.Sprintf("http://%s:8080/groups/%d/users/%s/verify", userHost, groupID, userID)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/groups/%d/users/%s/verify",
+		config.Env.UserApi.Host, config.Env.UserApi.Port, groupID, userID,
+	)
 
 	request, err := http.NewRequest(
 		"GET",

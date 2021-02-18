@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
+	"github.com/paypay3/kakeibo-app-api/account-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/account-rest-service/testutil"
 )
@@ -136,7 +137,7 @@ func TestDBHandler_GetGroupStandardBudgets(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -167,7 +168,7 @@ func TestDBHandler_PutGroupStandardBudgets(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -199,7 +200,7 @@ func TestDBHandler_GetGroupCustomBudgets(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -231,7 +232,7 @@ func TestDBHandler_PostGroupCustomBudgets(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -263,7 +264,7 @@ func TestDBHandler_PutGroupCustomBudgets(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -293,7 +294,7 @@ func TestDBHandler_DeleteGroupCustomBudgets(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -323,7 +324,7 @@ func TestDBHandler_GetYearlyGroupBudgets(t *testing.T) {
 	})
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 

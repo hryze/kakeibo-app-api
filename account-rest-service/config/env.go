@@ -25,7 +25,8 @@ type ENV struct {
 	Cookie
 	MySQL
 	Redis
-	AccountApi
+	UserApi
+	TodoApi
 }
 
 type Server struct {
@@ -37,10 +38,7 @@ type Cors struct {
 }
 
 type Cookie struct {
-	Name       string        `envconfig:"COOKIE_NAME"       required:"true"`
-	Domain     string        `envconfig:"COOKIE_DOMAIN"     required:"true"`
-	Secure     bool          `envconfig:"COOKIE_SECURE"     default:"true"`
-	Expiration time.Duration `envconfig:"COOKIE_EXPIRATION" default:"2592000s"`
+	Name string `envconfig:"COOKIE_NAME" required:"true"`
 }
 
 type MySQL struct {
@@ -57,7 +55,12 @@ type Redis struct {
 	MaxConnLifetime time.Duration `envconfig:"REDIS_MAX_CONN_LIFETIME" default:"300s"`
 }
 
-type AccountApi struct {
-	Host string `envconfig:"ACCOUNT_HOST" required:"true"`
-	Port int    `envconfig:"ACCOUNT_PORT" required:"true"`
+type UserApi struct {
+	Host string `envconfig:"USER_HOST" required:"true"`
+	Port int    `envconfig:"USER_PORT" required:"true"`
+}
+
+type TodoApi struct {
+	Host string `envconfig:"TODO_HOST" required:"true"`
+	Port int    `envconfig:"TODO_PORT" required:"true"`
 }

@@ -9,6 +9,4 @@ type Repository interface {
 	DeleteSignUpUser(signUpUser *SignUpUser) error
 	FindLoginUserByEmail(email vo.Email) (*LoginUser, error)
 	GetUser(userID string) (*LoginUser, error)
-	AddSessionID(sessionID string, userID UserID, expiration int) error
-	DeleteSessionID(sessionID string) error
 }

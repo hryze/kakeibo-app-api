@@ -3,14 +3,14 @@ package infrastructure
 import (
 	"github.com/garyburd/redigo/redis"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/db"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/auth/imdb"
 )
 
 type AuthRepository struct {
-	*db.RedisHandler
+	*imdb.RedisHandler
 }
 
-func NewAuthRepository(redisHandler *db.RedisHandler) *AuthRepository {
+func NewAuthRepository(redisHandler *imdb.RedisHandler) *AuthRepository {
 	return &AuthRepository{redisHandler}
 }
 

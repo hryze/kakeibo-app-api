@@ -1,10 +1,7 @@
 package usecase
 
 import (
-	"time"
-
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
@@ -14,6 +11,7 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/gateway"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/sessionstore"
 )
 
 type UserUsecase interface {
@@ -23,18 +21,20 @@ type UserUsecase interface {
 
 type userUsecase struct {
 	userRepository userdomain.Repository
+	sessionStore   sessionstore.SessionStore
 	accountApi     gateway.AccountApi
 }
 
-func NewUserUsecase(userRepository userdomain.Repository, accountApi gateway.AccountApi) *userUsecase {
+func NewUserUsecase(userRepository userdomain.Repository, sessionStore sessionstore.SessionStore, accountApi gateway.AccountApi) *userUsecase {
 	return &userUsecase{
 		userRepository: userRepository,
+		sessionStore:   sessionStore,
 		accountApi:     accountApi,
 	}
 }
 
 func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
-	var userValidationError presenter.ValidationError
+	var userValidationError presenter.UserValidationError
 
 	userID, err := userdomain.NewUserID(in.UserID)
 	if err != nil {
@@ -88,8 +88,9 @@ func (u *userUsecase) SignUp(in *input.SignUpUser) (*output.SignUpUser, error) {
 		Email:  signUpUser.Email().Value(),
 	}, nil
 }
+
 func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
-	var userValidationError presenter.ValidationError
+	var userValidationError presenter.UserValidationError
 
 	email, err := vo.NewEmail(in.Email)
 	if err != nil {
@@ -109,10 +110,7 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 		return nil, apierrors.NewBadRequestError(&userValidationError)
 	}
 
-	loginUser, err := userdomain.NewLoginUser(email, password)
-	if err != nil {
-		return nil, apierrors.NewBadRequestError(err)
-	}
+	loginUser := userdomain.NewLoginUser(email, password)
 
 	dbLoginUser, err := u.userRepository.FindLoginUserByEmail(loginUser.Email())
 	if err != nil {
@@ -124,25 +122,23 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 		return nil, err
 	}
 
-	hashPassword := dbLoginUser.Password().Value()
-
-	if err := bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(in.Password)); err != nil {
+	if err := dbLoginUser.Password().Equals(in.Password); err != nil {
 		return nil, apierrors.NewAuthenticationError(apierrors.NewErrorString("認証に失敗しました"))
 	}
 
 	sessionID := uuid.New().String()
-	expiration := 86400 * 30
 
-	if err := u.userRepository.AddSessionID(sessionID, dbLoginUser.UserID(), expiration); err != nil {
+	if err := u.sessionStore.StoreLoginInfo(sessionID, dbLoginUser.UserID()); err != nil {
 		return nil, err
 	}
 
 	return &output.LoginUser{
-		UserID:    dbLoginUser.UserID().Value(),
-		Name:      dbLoginUser.Name().Value(),
-		Email:     dbLoginUser.Email().Value(),
-		SessionID: sessionID,
-		Expires:   time.Now().Add(time.Duration(expiration) * time.Second),
+		UserID: dbLoginUser.UserID().Value(),
+		Name:   dbLoginUser.Name().Value(),
+		Email:  dbLoginUser.Email().Value(),
+		Cookie: output.CookieInfo{
+			SessionID: sessionID,
+		},
 	}, nil
 }
 
@@ -166,7 +162,7 @@ func checkForUniqueUser(u *userUsecase, signUpUser *userdomain.SignUpUser) error
 		return nil
 	}
 
-	var userConflictError presenter.ConflictError
+	var userConflictError presenter.UserConflictError
 
 	if existsUserByUserID {
 		userConflictError.UserID = "このユーザーIDは既に利用されています"

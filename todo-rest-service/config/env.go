@@ -25,6 +25,7 @@ type ENV struct {
 	Cookie
 	MySQL
 	Redis
+	UserApi
 	AccountApi
 }
 
@@ -37,10 +38,7 @@ type Cors struct {
 }
 
 type Cookie struct {
-	Name       string        `envconfig:"COOKIE_NAME"       required:"true"`
-	Domain     string        `envconfig:"COOKIE_DOMAIN"     required:"true"`
-	Secure     bool          `envconfig:"COOKIE_SECURE"     default:"true"`
-	Expiration time.Duration `envconfig:"COOKIE_EXPIRATION" default:"2592000s"`
+	Name string `envconfig:"COOKIE_NAME" required:"true"`
 }
 
 type MySQL struct {
@@ -55,6 +53,11 @@ type Redis struct {
 	MaxConn         int           `envconfig:"REDIS_MAX_CONN"          default:"25"`
 	MaxIdleConn     int           `envconfig:"REDIS_MAX_IDLE"          default:"25"`
 	MaxConnLifetime time.Duration `envconfig:"REDIS_MAX_CONN_LIFETIME" default:"300s"`
+}
+
+type UserApi struct {
+	Host string `envconfig:"USER_HOST" required:"true"`
+	Port int    `envconfig:"USER_PORT" required:"true"`
 }
 
 type AccountApi struct {
