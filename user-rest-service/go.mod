@@ -1,6 +1,6 @@
 module github.com/paypay3/kakeibo-app-api/user-rest-service
 
-go 1.15
+go 1.16
 
 require (
 	github.com/garyburd/redigo v1.6.2
