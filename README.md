@@ -57,7 +57,7 @@ https://github.com/ryo-wens/kakeibo-front
 
 ### 【 _Backend_ 】
 **<ins>Language</ins>**
-- Go v1.15.5
+- Go v1.16.0
 
 ### 【 _Infrastructure_ 】
 **<ins>Cloud Service</ins>**
@@ -85,7 +85,7 @@ https://github.com/ryo-wens/kakeibo-front
     - IAM
 
 **<ins>Container</ins>**
-- docker v19.03.13
+- docker v20.10.2
 - docker-compose v1.27.4（開発環境Database用）
 
 **<ins>Container Orchestration</ins>**
