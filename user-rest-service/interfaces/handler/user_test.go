@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
@@ -99,7 +100,7 @@ func TestDBHandler_Logout(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 
@@ -125,7 +126,7 @@ func TestDBHandler_GetUser(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
-		Name:  "session_id",
+		Name:  config.Env.Cookie.Name,
 		Value: uuid.New().String(),
 	}
 

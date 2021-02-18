@@ -69,7 +69,7 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *DBHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("session_id")
+	cookie, err := r.Cookie(config.Env.Cookie.Name)
 	if xerrors.Is(err, http.ErrNoCookie) {
 		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"ログアウト済みです"}))
 		return
@@ -82,7 +82,7 @@ func (h *DBHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     "session_id",
+		Name:     config.Env.Cookie.Name,
 		Value:    "",
 		Expires:  time.Now(),
 		HttpOnly: true,

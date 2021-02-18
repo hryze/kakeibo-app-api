@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
 )
 
@@ -103,7 +104,7 @@ func errorResponseByJSON(w http.ResponseWriter, err error) {
 }
 
 func verifySessionID(h *DBHandler, w http.ResponseWriter, r *http.Request) (string, error) {
-	cookie, err := r.Cookie("session_id")
+	cookie, err := r.Cookie(config.Env.Cookie.Name)
 	if err != nil {
 		return "", err
 	}
