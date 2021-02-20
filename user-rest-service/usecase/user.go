@@ -17,6 +17,7 @@ import (
 type UserUsecase interface {
 	SignUp(in *input.SignUpUser) (*output.SignUpUser, error)
 	Login(in *input.LoginUser) (*output.LoginUser, error)
+	Logout(in *input.CookieInfo) error
 }
 
 type userUsecase struct {
@@ -140,6 +141,14 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 			SessionID: sessionID,
 		},
 	}, nil
+}
+
+func (u *userUsecase) Logout(in *input.CookieInfo) error {
+	if err := u.sessionStore.DeleteLoginInfo(in.SessionID); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func checkForUniqueUser(u *userUsecase, signUpUser *userdomain.SignUpUser) error {

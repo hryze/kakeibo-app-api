@@ -68,32 +68,24 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 	presenter.JSON(w, http.StatusCreated, out)
 }
 
-func (h *DBHandler) Logout(w http.ResponseWriter, r *http.Request) {
+func (h *userHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie(config.Env.Cookie.Name)
 	if xerrors.Is(err, http.ErrNoCookie) {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"ログアウト済みです"}))
+		presenter.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("ログアウト済みです")))
 		return
 	}
 
-	sessionID := cookie.Value
-	if err := h.UserRepo.DeleteSessionID(sessionID); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+	cookieInfo := &input.CookieInfo{SessionID: cookie.Value}
+
+	if err := h.userUsecase.Logout(cookieInfo); err != nil {
+		presenter.ErrorJSON(w, err)
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     config.Env.Cookie.Name,
-		Value:    "",
-		Expires:  time.Now(),
-		HttpOnly: true,
-	})
+	cookie.MaxAge = -1
+	http.SetCookie(w, cookie)
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&DeleteContentMsg{"ログアウトしました"}); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	presenter.JSON(w, http.StatusOK, presenter.NewSuccessString("ログアウトしました"))
 }
 
 func (h *DBHandler) GetUser(w http.ResponseWriter, r *http.Request) {

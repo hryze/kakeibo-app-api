@@ -102,7 +102,7 @@ func AssertDeleteResponseCookie(t *testing.T, res *http.Response) {
 
 	cookie := res.Cookies()[0]
 
-	if diff := cmp.Diff(0, len(cookie.Value)); len(diff) != 0 {
+	if diff := cmp.Diff(-1, cookie.MaxAge); len(diff) != 0 {
 		t.Errorf("differs: (-want +got)\n%s", diff)
 	}
 
