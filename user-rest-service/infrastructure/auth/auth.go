@@ -28,7 +28,7 @@ func (s *sessionStore) StoreLoginInfo(sessionID string, userID userdomain.UserID
 	return nil
 }
 
-func (s *sessionStore) DeleteSessionID(sessionID string) error {
+func (s *sessionStore) DeleteLoginInfo(sessionID string) error {
 	conn := s.RedisHandler.Pool.Get()
 	defer conn.Close()
 

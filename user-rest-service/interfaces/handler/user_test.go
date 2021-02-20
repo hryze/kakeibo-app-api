@@ -11,6 +11,7 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
@@ -62,6 +63,10 @@ func (u *mockUserUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) 
 	}, nil
 }
 
+func (u *mockUserUsecase) Logout(in *input.CookieInfo) error {
+	return nil
+}
+
 func Test_userHandler_SignUp(t *testing.T) {
 	h := NewUserHandler(&mockUserUsecase{})
 
@@ -93,8 +98,8 @@ func Test_userHandler_Login(t *testing.T) {
 	testutil.AssertSetResponseCookie(t, res)
 }
 
-func TestDBHandler_Logout(t *testing.T) {
-	h := DBHandler{UserRepo: MockUserRepository{}}
+func Test_userHandler_Logout(t *testing.T) {
+	h := NewUserHandler(&mockUserUsecase{})
 
 	r := httptest.NewRequest("DELETE", "/logout", nil)
 	w := httptest.NewRecorder()
@@ -112,7 +117,7 @@ func TestDBHandler_Logout(t *testing.T) {
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
+	testutil.AssertResponseBody(t, res, presenter.NewSuccessString(""), presenter.NewSuccessString(""))
 	testutil.AssertDeleteResponseCookie(t, res)
 }
 

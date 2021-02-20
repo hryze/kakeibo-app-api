@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/google/uuid"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
@@ -49,7 +50,7 @@ func (s *mockSessionStore) StoreLoginInfo(sessionID string, loginUserID userdoma
 	return nil
 }
 
-func (s *mockSessionStore) DeleteSessionID(sessionID string) error {
+func (s *mockSessionStore) DeleteLoginInfo(sessionID string) error {
 	return nil
 }
 
@@ -108,5 +109,17 @@ func Test_userUsecase_Login(t *testing.T) {
 
 	if diff := cmp.Diff(&wantOut, &gotOut, ignoreFieldsOption); len(diff) != 0 {
 		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
+}
+
+func Test_userUsecase_Logout(t *testing.T) {
+	u := NewUserUsecase(&mockUserRepository{}, &mockSessionStore{}, &mockAccountApi{})
+
+	in := input.CookieInfo{
+		SessionID: uuid.New().String(),
+	}
+
+	if err := u.Logout(&in); err != nil {
+		t.Errorf("unexpected error by userUsecase.Logout '%#v'", err)
 	}
 }
