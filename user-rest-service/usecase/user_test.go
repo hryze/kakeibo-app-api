@@ -38,8 +38,8 @@ func (r *mockUserRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.L
 	return loginUser, nil
 }
 
-func (r *mockUserRepository) GetUser(userID string) (*userdomain.LoginUser, error) {
-	loginUser := userdomain.NewLoginUserFromDataSource("testID", "testName", "test@icloud.com", "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy")
+func (r *mockUserRepository) FindLoginUserByUserID(userID userdomain.UserID) (*userdomain.LoginUser, error) {
+	loginUser := userdomain.NewLoginUserFromDataSource("testUserID", "testName", "test@icloud.com", "")
 
 	return loginUser, nil
 }
@@ -52,6 +52,12 @@ func (s *mockSessionStore) StoreLoginInfo(sessionID string, loginUserID userdoma
 
 func (s *mockSessionStore) DeleteLoginInfo(sessionID string) error {
 	return nil
+}
+
+func (s *mockSessionStore) FetchUserID(sessionID string) (userdomain.UserID, error) {
+	userID, _ := userdomain.NewUserID("testID")
+
+	return userID, nil
 }
 
 type mockAccountApi struct{}
@@ -121,5 +127,28 @@ func Test_userUsecase_Logout(t *testing.T) {
 
 	if err := u.Logout(&in); err != nil {
 		t.Errorf("unexpected error by userUsecase.Logout '%#v'", err)
+	}
+}
+
+func Test_userUsecase_FetchUserInfo(t *testing.T) {
+	u := NewUserUsecase(&mockUserRepository{}, &mockSessionStore{}, &mockAccountApi{})
+
+	in := input.AuthenticatedUser{
+		UserID: "testUserID",
+	}
+
+	gotOut, err := u.FetchUserInfo(&in)
+	if err != nil {
+		t.Errorf("unexpected error by userUsecase.FetchUserInfo '%#v'", err)
+	}
+
+	wantOut := &output.LoginUser{
+		UserID: "testUserID",
+		Name:   "testName",
+		Email:  "test@icloud.com",
+	}
+
+	if diff := cmp.Diff(&wantOut, &gotOut); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
 	}
 }

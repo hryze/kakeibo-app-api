@@ -22,6 +22,7 @@ func init() {
 type ENV struct {
 	Server
 	Cors
+	RequestCtx
 	Cookie
 	MySQL
 	Redis
@@ -34,6 +35,10 @@ type Server struct {
 
 type Cors struct {
 	AllowedOrigins []string `envconfig:"CORS_ALLOWED_ORIGINS" required:"true"`
+}
+
+type RequestCtx struct {
+	UserID string `envconfig:"REQUEST_CONTEXT_USER_ID" default:"userID"`
 }
 
 type Cookie struct {

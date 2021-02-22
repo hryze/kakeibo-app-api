@@ -15,3 +15,7 @@ type LoginUser struct {
 type CookieInfo struct {
 	SessionID string
 }
+
+type AuthenticatedUser struct {
+	UserID string
+}

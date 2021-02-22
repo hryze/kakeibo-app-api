@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/auth"
@@ -22,6 +21,7 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/injector"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/handler"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/middleware"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 )
 
@@ -49,11 +49,18 @@ func Run() error {
 	h := injector.InjectDBHandler()
 
 	router := mux.NewRouter()
+
+	// register middleware
+	router.Use(
+		middleware.NewCorsMiddlewareFunc(),
+		middleware.NewAuthMiddlewareFunc(sessionStore),
+	)
+
 	router.HandleFunc("/readyz", h.Readyz).Methods(http.MethodGet)
 	router.HandleFunc("/signup", userHandler.SignUp).Methods(http.MethodPost)
 	router.HandleFunc("/login", userHandler.Login).Methods(http.MethodPost)
 	router.HandleFunc("/logout", userHandler.Logout).Methods(http.MethodDelete)
-	router.HandleFunc("/user", h.GetUser).Methods(http.MethodGet)
+	router.HandleFunc("/user", userHandler.FetchUserInfo).Methods(http.MethodGet)
 	router.HandleFunc("/groups", h.GetGroupList).Methods(http.MethodGet)
 	router.HandleFunc("/groups", h.PostGroup).Methods(http.MethodPost)
 	router.HandleFunc("/groups/{group_id:[0-9]+}", h.PutGroup).Methods(http.MethodPut)
@@ -65,16 +72,9 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users/{user_id:[\\S]{1,10}}/verify", h.VerifyGroupAffiliation).Methods(http.MethodGet)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users/verify", h.VerifyGroupAffiliationOfUsersList).Methods(http.MethodGet)
 
-	corsWrapper := cors.New(cors.Options{
-		AllowedOrigins:   config.Env.Cors.AllowedOrigins,
-		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
-		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Accept-Language"},
-		AllowCredentials: true,
-	})
-
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", config.Env.Server.Port),
-		Handler: corsWrapper.Handler(router),
+		Handler: router,
 	}
 
 	errorCh := make(chan error, 1)

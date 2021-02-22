@@ -200,7 +200,7 @@ func (r *userRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.Login
 	return loginUser, nil
 }
 
-func (r *userRepository) GetUser(userID string) (*userdomain.LoginUser, error) {
+func (r *userRepository) FindLoginUserByUserID(userID userdomain.UserID) (*userdomain.LoginUser, error) {
 	query := `
         SELECT
             user_id,
@@ -211,10 +211,37 @@ func (r *userRepository) GetUser(userID string) (*userdomain.LoginUser, error) {
         WHERE
             user_id = ?`
 
-	var user userdomain.LoginUser
-	if err := r.MySQLHandler.Conn.QueryRowx(query, userID).StructScan(&user); err != nil {
-		return nil, err
+	var loginUserDto datasource.LoginUser
+	if err := r.MySQLHandler.Conn.QueryRowx(query, userID.Value()).StructScan(&loginUserDto); err != nil {
+		if xerrors.Is(err, sql.ErrNoRows) {
+			return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
+		}
+
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	return &user, nil
+	var userValidationError presenter.UserValidationError
+
+	userIDVo, err := userdomain.NewUserID(loginUserDto.UserID)
+	if err != nil {
+		userValidationError.UserID = "ユーザーIDが正しくありません"
+	}
+
+	nameVo, err := userdomain.NewName(loginUserDto.Name)
+	if err != nil {
+		userValidationError.Name = "名前が正しくありません"
+	}
+
+	emailVo, err := vo.NewEmail(loginUserDto.Email)
+	if err != nil {
+		userValidationError.Email = "メールアドレスが正しくありません"
+	}
+
+	if !userValidationError.IsEmpty() {
+		return nil, apierrors.NewBadRequestError(&userValidationError)
+	}
+
+	loginUser := userdomain.NewLoginUserFromDataSource(userIDVo, nameVo, emailVo, "")
+
+	return loginUser, nil
 }

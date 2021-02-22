@@ -7,40 +7,14 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/context"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
 )
-
-type MockUserRepository struct{}
-
-func (t MockUserRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
-	return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
-}
-
-func (t MockUserRepository) GetUser(userID string) (*model.LoginUser, error) {
-	loginUser := &model.LoginUser{
-		ID:       "testID",
-		Name:     "testName",
-		Email:    "test@icloud.com",
-		Password: "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy",
-	}
-
-	return loginUser, nil
-}
-
-func (t MockUserRepository) AddSessionID(sessionID string, userID string, expiration int) error {
-	return nil
-}
-
-func (t MockUserRepository) DeleteSessionID(sessionID string) error {
-	return nil
-}
 
 type mockUserUsecase struct{}
 
@@ -65,6 +39,14 @@ func (u *mockUserUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) 
 
 func (u *mockUserUsecase) Logout(in *input.CookieInfo) error {
 	return nil
+}
+
+func (u *mockUserUsecase) FetchUserInfo(in *input.AuthenticatedUser) (*output.LoginUser, error) {
+	return &output.LoginUser{
+		UserID: "testID",
+		Name:   "testName",
+		Email:  "test@icloud.com",
+	}, nil
 }
 
 func Test_userHandler_SignUp(t *testing.T) {
@@ -121,23 +103,15 @@ func Test_userHandler_Logout(t *testing.T) {
 	testutil.AssertDeleteResponseCookie(t, res)
 }
 
-func TestDBHandler_GetUser(t *testing.T) {
-	h := DBHandler{
-		AuthRepo: MockAuthRepository{},
-		UserRepo: MockUserRepository{},
-	}
+func Test_userHandler_FetchUserInfo(t *testing.T) {
+	h := NewUserHandler(&mockUserUsecase{})
 
 	r := httptest.NewRequest("GET", "/user", nil)
 	w := httptest.NewRecorder()
 
-	cookie := &http.Cookie{
-		Name:  config.Env.Cookie.Name,
-		Value: uuid.New().String(),
-	}
+	context.Set(r, config.Env.RequestCtx.UserID, "testID")
 
-	r.AddCookie(cookie)
-
-	h.GetUser(w, r)
+	h.FetchUserInfo(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()

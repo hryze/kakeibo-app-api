@@ -18,6 +18,7 @@ type UserUsecase interface {
 	SignUp(in *input.SignUpUser) (*output.SignUpUser, error)
 	Login(in *input.LoginUser) (*output.LoginUser, error)
 	Logout(in *input.CookieInfo) error
+	FetchUserInfo(in *input.AuthenticatedUser) (*output.LoginUser, error)
 }
 
 type userUsecase struct {
@@ -149,6 +150,30 @@ func (u *userUsecase) Logout(in *input.CookieInfo) error {
 	}
 
 	return nil
+}
+
+func (u *userUsecase) FetchUserInfo(in *input.AuthenticatedUser) (*output.LoginUser, error) {
+	var userValidationError presenter.UserValidationError
+
+	userID, err := userdomain.NewUserID(in.UserID)
+	if err != nil {
+		userValidationError.UserID = "ユーザーIDを正しく入力してください"
+	}
+
+	if !userValidationError.IsEmpty() {
+		return nil, apierrors.NewBadRequestError(&userValidationError)
+	}
+
+	dbLoginUser, err := u.userRepository.FindLoginUserByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &output.LoginUser{
+		UserID: dbLoginUser.UserID().Value(),
+		Name:   dbLoginUser.Name().Value(),
+		Email:  dbLoginUser.Email().Value(),
+	}, nil
 }
 
 func checkForUniqueUser(u *userUsecase, signUpUser *userdomain.SignUpUser) error {
