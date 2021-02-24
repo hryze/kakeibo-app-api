@@ -18,7 +18,7 @@ type UserUsecase interface {
 	SignUp(in *input.SignUpUser) (*output.SignUpUser, error)
 	Login(in *input.LoginUser) (*output.LoginUser, error)
 	Logout(in *input.CookieInfo) error
-	FetchUserInfo(in *input.AuthenticatedUser) (*output.LoginUser, error)
+	FetchLoginUser(in *input.AuthenticatedUser) (*output.LoginUser, error)
 }
 
 type userUsecase struct {
@@ -130,7 +130,7 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 
 	sessionID := uuid.New().String()
 
-	if err := u.sessionStore.StoreLoginInfo(sessionID, dbLoginUser.UserID()); err != nil {
+	if err := u.sessionStore.StoreUserBySessionID(sessionID, dbLoginUser.UserID()); err != nil {
 		return nil, err
 	}
 
@@ -145,14 +145,14 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 }
 
 func (u *userUsecase) Logout(in *input.CookieInfo) error {
-	if err := u.sessionStore.DeleteLoginInfo(in.SessionID); err != nil {
+	if err := u.sessionStore.DeleteUserBySessionID(in.SessionID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (u *userUsecase) FetchUserInfo(in *input.AuthenticatedUser) (*output.LoginUser, error) {
+func (u *userUsecase) FetchLoginUser(in *input.AuthenticatedUser) (*output.LoginUser, error) {
 	var userValidationError presenter.UserValidationError
 
 	userID, err := userdomain.NewUserID(in.UserID)

@@ -41,7 +41,7 @@ func (u *mockUserUsecase) Logout(in *input.CookieInfo) error {
 	return nil
 }
 
-func (u *mockUserUsecase) FetchUserInfo(in *input.AuthenticatedUser) (*output.LoginUser, error) {
+func (u *mockUserUsecase) FetchLoginUser(in *input.AuthenticatedUser) (*output.LoginUser, error) {
 	return &output.LoginUser{
 		UserID: "testID",
 		Name:   "testName",
@@ -103,7 +103,7 @@ func Test_userHandler_Logout(t *testing.T) {
 	testutil.AssertDeleteResponseCookie(t, res)
 }
 
-func Test_userHandler_FetchUserInfo(t *testing.T) {
+func Test_userHandler_FetchLoginUser(t *testing.T) {
 	h := NewUserHandler(&mockUserUsecase{})
 
 	r := httptest.NewRequest("GET", "/user", nil)
@@ -111,7 +111,7 @@ func Test_userHandler_FetchUserInfo(t *testing.T) {
 
 	context.Set(r, config.Env.RequestCtx.UserID, "testID")
 
-	h.FetchUserInfo(w, r)
+	h.FetchLoginUser(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()

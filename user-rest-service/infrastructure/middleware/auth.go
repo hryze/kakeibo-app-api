@@ -27,7 +27,7 @@ func NewAuthMiddlewareFunc(sessionStore sessionstore.SessionStore) func(http.Han
 			}
 
 			sessionID := cookie.Value
-			userID, err := sessionStore.FetchUserID(sessionID)
+			userID, err := sessionStore.FetchUserByUserID(sessionID)
 			if err != nil {
 				presenter.ErrorJSON(w, err)
 				return

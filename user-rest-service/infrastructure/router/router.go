@@ -60,7 +60,7 @@ func Run() error {
 	router.HandleFunc("/signup", userHandler.SignUp).Methods(http.MethodPost)
 	router.HandleFunc("/login", userHandler.Login).Methods(http.MethodPost)
 	router.HandleFunc("/logout", userHandler.Logout).Methods(http.MethodDelete)
-	router.HandleFunc("/user", userHandler.FetchUserInfo).Methods(http.MethodGet)
+	router.HandleFunc("/user", userHandler.FetchLoginUser).Methods(http.MethodGet)
 	router.HandleFunc("/groups", h.GetGroupList).Methods(http.MethodGet)
 	router.HandleFunc("/groups", h.PostGroup).Methods(http.MethodPost)
 	router.HandleFunc("/groups/{group_id:[0-9]+}", h.PutGroup).Methods(http.MethodPut)

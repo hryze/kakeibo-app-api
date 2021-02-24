@@ -46,15 +46,15 @@ func (r *mockUserRepository) FindLoginUserByUserID(userID userdomain.UserID) (*u
 
 type mockSessionStore struct{}
 
-func (s *mockSessionStore) StoreLoginInfo(sessionID string, loginUserID userdomain.UserID) error {
+func (s *mockSessionStore) StoreUserBySessionID(sessionID string, loginUserID userdomain.UserID) error {
 	return nil
 }
 
-func (s *mockSessionStore) DeleteLoginInfo(sessionID string) error {
+func (s *mockSessionStore) DeleteUserBySessionID(sessionID string) error {
 	return nil
 }
 
-func (s *mockSessionStore) FetchUserID(sessionID string) (userdomain.UserID, error) {
+func (s *mockSessionStore) FetchUserByUserID(sessionID string) (userdomain.UserID, error) {
 	userID, _ := userdomain.NewUserID("testID")
 
 	return userID, nil
@@ -130,14 +130,14 @@ func Test_userUsecase_Logout(t *testing.T) {
 	}
 }
 
-func Test_userUsecase_FetchUserInfo(t *testing.T) {
+func Test_userUsecase_FetchLoginUser(t *testing.T) {
 	u := NewUserUsecase(&mockUserRepository{}, &mockSessionStore{}, &mockAccountApi{})
 
 	in := input.AuthenticatedUser{
 		UserID: "testUserID",
 	}
 
-	gotOut, err := u.FetchUserInfo(&in)
+	gotOut, err := u.FetchLoginUser(&in)
 	if err != nil {
 		t.Errorf("unexpected error by userUsecase.FetchUserInfo '%#v'", err)
 	}

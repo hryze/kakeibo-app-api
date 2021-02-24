@@ -86,7 +86,7 @@ func (h *userHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	presenter.JSON(w, http.StatusOK, presenter.NewSuccessString("ログアウトしました"))
 }
 
-func (h *userHandler) FetchUserInfo(w http.ResponseWriter, r *http.Request) {
+func (h *userHandler) FetchLoginUser(w http.ResponseWriter, r *http.Request) {
 	ctx, ok := context.GetOk(r, config.Env.RequestCtx.UserID)
 	if !ok {
 		presenter.ErrorJSON(w, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error")))
@@ -101,7 +101,7 @@ func (h *userHandler) FetchUserInfo(w http.ResponseWriter, r *http.Request) {
 
 	in := input.AuthenticatedUser{UserID: ctxUserID}
 
-	out, err := h.userUsecase.FetchUserInfo(&in)
+	out, err := h.userUsecase.FetchLoginUser(&in)
 	if err != nil {
 		presenter.ErrorJSON(w, err)
 		return

@@ -19,7 +19,7 @@ func NewSessionStore(redisHandler *imdb.RedisHandler) *sessionStore {
 	return &sessionStore{redisHandler}
 }
 
-func (s *sessionStore) StoreLoginInfo(sessionID string, userID userdomain.UserID) error {
+func (s *sessionStore) StoreUserBySessionID(sessionID string, userID userdomain.UserID) error {
 	conn := s.RedisHandler.Pool.Get()
 	defer conn.Close()
 
@@ -32,7 +32,7 @@ func (s *sessionStore) StoreLoginInfo(sessionID string, userID userdomain.UserID
 	return nil
 }
 
-func (s *sessionStore) DeleteLoginInfo(sessionID string) error {
+func (s *sessionStore) DeleteUserBySessionID(sessionID string) error {
 	conn := s.RedisHandler.Pool.Get()
 	defer conn.Close()
 
@@ -43,7 +43,7 @@ func (s *sessionStore) DeleteLoginInfo(sessionID string) error {
 	return nil
 }
 
-func (s *sessionStore) FetchUserID(sessionID string) (userdomain.UserID, error) {
+func (s *sessionStore) FetchUserByUserID(sessionID string) (userdomain.UserID, error) {
 	conn := s.RedisHandler.Pool.Get()
 	defer conn.Close()
 
