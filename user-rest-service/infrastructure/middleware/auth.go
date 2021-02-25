@@ -40,14 +40,14 @@ func NewAuthMiddlewareFunc(sessionStore sessionstore.SessionStore) func(http.Han
 	}
 }
 
-func skipAuthMiddleware(r *http.Request) bool {
-	var skipAuthMiddlewarePaths = [...]string{
-		"/readyz",
-		"/signup",
-		"/login",
-		"/logout",
-	}
+var skipAuthMiddlewarePaths = [...]string{
+	"/readyz",
+	"/signup",
+	"/login",
+	"/logout",
+}
 
+func skipAuthMiddleware(r *http.Request) bool {
 	requestPath := r.URL.Path
 	for _, path := range skipAuthMiddlewarePaths {
 		if requestPath == path {
