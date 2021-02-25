@@ -16,12 +16,20 @@ func NewLoginUser(email vo.Email, password vo.Password) *LoginUser {
 	}
 }
 
-func NewLoginUserFromDataSource(userID UserID, name Name, email vo.Email, hashPassword vo.Password) *LoginUser {
+func NewLoginUserWithHashPassword(userID UserID, name Name, email vo.Email, hashPassword vo.Password) *LoginUser {
 	return &LoginUser{
 		userID:   userID,
 		name:     name,
 		email:    email,
 		password: hashPassword,
+	}
+}
+
+func NewLoginUserWithNoPassword(userID UserID, name Name, email vo.Email) *LoginUser {
+	return &LoginUser{
+		userID: userID,
+		name:   name,
+		email:  email,
 	}
 }
 

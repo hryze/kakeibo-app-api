@@ -33,13 +33,13 @@ func (r *mockUserRepository) DeleteSignUpUser(signUpUser *userdomain.SignUpUser)
 }
 
 func (r *mockUserRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.LoginUser, error) {
-	loginUser := userdomain.NewLoginUserFromDataSource("testUserID", "testName", "test@icloud.com", "$2a$10$MfTmnqbuDog.W/Kaug3vlef0ZX5OoxEbjSc9hyAB.YGNKQvfQGDd6")
+	loginUser := userdomain.NewLoginUserWithHashPassword("testUserID", "testName", "test@icloud.com", "$2a$10$MfTmnqbuDog.W/Kaug3vlef0ZX5OoxEbjSc9hyAB.YGNKQvfQGDd6")
 
 	return loginUser, nil
 }
 
 func (r *mockUserRepository) FindLoginUserByUserID(userID userdomain.UserID) (*userdomain.LoginUser, error) {
-	loginUser := userdomain.NewLoginUserFromDataSource("testUserID", "testName", "test@icloud.com", "")
+	loginUser := userdomain.NewLoginUserWithNoPassword("testUserID", "testName", "test@icloud.com")
 
 	return loginUser, nil
 }

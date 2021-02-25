@@ -195,7 +195,7 @@ func (r *userRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.Login
 		return nil, apierrors.NewBadRequestError(&userValidationError)
 	}
 
-	loginUser := userdomain.NewLoginUserFromDataSource(userIDVo, nameVo, emailVo, passwordVo)
+	loginUser := userdomain.NewLoginUserWithHashPassword(userIDVo, nameVo, emailVo, passwordVo)
 
 	return loginUser, nil
 }
@@ -241,7 +241,7 @@ func (r *userRepository) FindLoginUserByUserID(userID userdomain.UserID) (*userd
 		return nil, apierrors.NewBadRequestError(&userValidationError)
 	}
 
-	loginUser := userdomain.NewLoginUserFromDataSource(userIDVo, nameVo, emailVo, "")
+	loginUser := userdomain.NewLoginUserWithNoPassword(userIDVo, nameVo, emailVo)
 
 	return loginUser, nil
 }
