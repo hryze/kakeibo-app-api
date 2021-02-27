@@ -25,14 +25,6 @@ func NewLoginUserWithHashPassword(userID UserID, name Name, email vo.Email, hash
 	}
 }
 
-func NewLoginUserWithNoPassword(userID UserID, name Name, email vo.Email) *LoginUser {
-	return &LoginUser{
-		userID: userID,
-		name:   name,
-		email:  email,
-	}
-}
-
 func (u *LoginUser) UserID() UserID {
 	return u.userID
 }
@@ -47,4 +39,30 @@ func (u *LoginUser) Email() vo.Email {
 
 func (u *LoginUser) Password() vo.Password {
 	return u.password
+}
+
+type LoginUserWithoutPassword struct {
+	userID UserID
+	name   Name
+	email  vo.Email
+}
+
+func NewLoginUserWithoutPassword(userID UserID, name Name, email vo.Email) *LoginUserWithoutPassword {
+	return &LoginUserWithoutPassword{
+		userID: userID,
+		name:   name,
+		email:  email,
+	}
+}
+
+func (u *LoginUserWithoutPassword) UserID() UserID {
+	return u.userID
+}
+
+func (u *LoginUserWithoutPassword) Name() Name {
+	return u.name
+}
+
+func (u *LoginUserWithoutPassword) Email() vo.Email {
+	return u.email
 }

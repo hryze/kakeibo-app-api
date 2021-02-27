@@ -38,8 +38,8 @@ func (r *mockUserRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.L
 	return loginUser, nil
 }
 
-func (r *mockUserRepository) FindLoginUserByUserID(userID userdomain.UserID) (*userdomain.LoginUser, error) {
-	loginUser := userdomain.NewLoginUserWithNoPassword("testUserID", "testName", "test@icloud.com")
+func (r *mockUserRepository) FindLoginUserByUserID(userID userdomain.UserID) (*userdomain.LoginUserWithoutPassword, error) {
+	loginUser := userdomain.NewLoginUserWithoutPassword("testUserID", "testName", "test@icloud.com")
 
 	return loginUser, nil
 }
