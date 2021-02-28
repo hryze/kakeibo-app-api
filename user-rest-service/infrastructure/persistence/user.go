@@ -220,28 +220,7 @@ func (r *userRepository) FindLoginUserByUserID(userID userdomain.UserID) (*userd
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	var userValidationError presenter.UserValidationError
-
-	userIDVo, err := userdomain.NewUserID(loginUserDto.UserID)
-	if err != nil {
-		userValidationError.UserID = "ユーザーIDが正しくありません"
-	}
-
-	nameVo, err := userdomain.NewName(loginUserDto.Name)
-	if err != nil {
-		userValidationError.Name = "名前が正しくありません"
-	}
-
-	emailVo, err := vo.NewEmail(loginUserDto.Email)
-	if err != nil {
-		userValidationError.Email = "メールアドレスが正しくありません"
-	}
-
-	if !userValidationError.IsEmpty() {
-		return nil, apierrors.NewBadRequestError(&userValidationError)
-	}
-
-	loginUser := userdomain.NewLoginUserWithoutPassword(userIDVo, nameVo, emailVo)
+	loginUser := userdomain.NewLoginUserWithoutPassword(loginUserDto.UserID, loginUserDto.Email, loginUserDto.Name)
 
 	return loginUser, nil
 }

@@ -170,9 +170,9 @@ func (u *userUsecase) FetchLoginUser(in *input.AuthenticatedUser) (*output.Login
 	}
 
 	return &output.LoginUser{
-		UserID: dbLoginUser.UserID().Value(),
-		Name:   dbLoginUser.Name().Value(),
-		Email:  dbLoginUser.Email().Value(),
+		UserID: dbLoginUser.UserID(),
+		Name:   dbLoginUser.Name(),
+		Email:  dbLoginUser.Email(),
 	}, nil
 }
 

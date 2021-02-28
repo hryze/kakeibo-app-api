@@ -42,12 +42,12 @@ func (u *LoginUser) Password() vo.Password {
 }
 
 type LoginUserWithoutPassword struct {
-	userID UserID
-	name   Name
-	email  vo.Email
+	userID string
+	name   string
+	email  string
 }
 
-func NewLoginUserWithoutPassword(userID UserID, name Name, email vo.Email) *LoginUserWithoutPassword {
+func NewLoginUserWithoutPassword(userID, name, email string) *LoginUserWithoutPassword {
 	return &LoginUserWithoutPassword{
 		userID: userID,
 		name:   name,
@@ -55,14 +55,14 @@ func NewLoginUserWithoutPassword(userID UserID, name Name, email vo.Email) *Logi
 	}
 }
 
-func (u *LoginUserWithoutPassword) UserID() UserID {
+func (u *LoginUserWithoutPassword) UserID() string {
 	return u.userID
 }
 
-func (u *LoginUserWithoutPassword) Name() Name {
+func (u *LoginUserWithoutPassword) Name() string {
 	return u.name
 }
 
-func (u *LoginUserWithoutPassword) Email() vo.Email {
+func (u *LoginUserWithoutPassword) Email() string {
 	return u.email
 }
