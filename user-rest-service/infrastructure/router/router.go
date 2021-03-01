@@ -19,6 +19,7 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/externalapi/client"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/middleware"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/query"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/injector"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/handler"
@@ -41,9 +42,10 @@ func Run() error {
 	accountApiHandler := client.NewAccountApiHandler()
 
 	userRepository := persistence.NewUserRepository(mySQLHandler)
+	userQueryService := query.NewUserQueryService(mySQLHandler)
 	sessionStore := auth.NewSessionStore(redisHandler)
 	accountApi := externalapi.NewAccountApi(accountApiHandler)
-	userUsecase := usecase.NewUserUsecase(userRepository, sessionStore, accountApi)
+	userUsecase := usecase.NewUserUsecase(userRepository, userQueryService, sessionStore, accountApi)
 	userHandler := handler.NewUserHandler(userUsecase)
 
 	h := injector.InjectDBHandler()

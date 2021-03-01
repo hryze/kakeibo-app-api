@@ -38,7 +38,9 @@ func (r *mockUserRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.L
 	return loginUser, nil
 }
 
-func (r *mockUserRepository) FindLoginUserByUserID(userID userdomain.UserID) (*userdomain.LoginUserWithoutPassword, error) {
+type mockUserQueryService struct{}
+
+func (q *mockUserQueryService) FindLoginUserByUserID(userID userdomain.UserID) (*userdomain.LoginUserWithoutPassword, error) {
 	loginUser := userdomain.NewLoginUserWithoutPassword("testUserID", "testName", "test@icloud.com")
 
 	return loginUser, nil
@@ -67,7 +69,7 @@ func (a *mockAccountApi) PostInitStandardBudgets(userID userdomain.UserID) error
 }
 
 func Test_userUsecase_SignUp(t *testing.T) {
-	u := NewUserUsecase(&mockUserRepository{}, &mockSessionStore{}, &mockAccountApi{})
+	u := NewUserUsecase(&mockUserRepository{}, &mockUserQueryService{}, &mockSessionStore{}, &mockAccountApi{})
 
 	in := input.SignUpUser{
 		UserID:   "testUserID",
@@ -93,7 +95,7 @@ func Test_userUsecase_SignUp(t *testing.T) {
 }
 
 func Test_userUsecase_Login(t *testing.T) {
-	u := NewUserUsecase(&mockUserRepository{}, &mockSessionStore{}, &mockAccountApi{})
+	u := NewUserUsecase(&mockUserRepository{}, &mockUserQueryService{}, &mockSessionStore{}, &mockAccountApi{})
 
 	in := input.LoginUser{
 		Email:    "test@icloud.com",
@@ -119,7 +121,7 @@ func Test_userUsecase_Login(t *testing.T) {
 }
 
 func Test_userUsecase_Logout(t *testing.T) {
-	u := NewUserUsecase(&mockUserRepository{}, &mockSessionStore{}, &mockAccountApi{})
+	u := NewUserUsecase(&mockUserRepository{}, &mockUserQueryService{}, &mockSessionStore{}, &mockAccountApi{})
 
 	in := input.CookieInfo{
 		SessionID: uuid.New().String(),
@@ -131,7 +133,7 @@ func Test_userUsecase_Logout(t *testing.T) {
 }
 
 func Test_userUsecase_FetchLoginUser(t *testing.T) {
-	u := NewUserUsecase(&mockUserRepository{}, &mockSessionStore{}, &mockAccountApi{})
+	u := NewUserUsecase(&mockUserRepository{}, &mockUserQueryService{}, &mockSessionStore{}, &mockAccountApi{})
 
 	in := input.AuthenticatedUser{
 		UserID: "testUserID",

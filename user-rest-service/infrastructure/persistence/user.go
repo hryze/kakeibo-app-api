@@ -199,28 +199,3 @@ func (r *userRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.Login
 
 	return loginUser, nil
 }
-
-func (r *userRepository) FindLoginUserByUserID(userID userdomain.UserID) (*userdomain.LoginUserWithoutPassword, error) {
-	query := `
-        SELECT
-            user_id,
-            name,
-            email
-        FROM 
-            users
-        WHERE
-            user_id = ?`
-
-	var loginUserDto datasource.LoginUser
-	if err := r.MySQLHandler.Conn.QueryRowx(query, userID.Value()).StructScan(&loginUserDto); err != nil {
-		if xerrors.Is(err, sql.ErrNoRows) {
-			return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
-		}
-
-		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
-	}
-
-	loginUser := userdomain.NewLoginUserWithoutPassword(loginUserDto.UserID, loginUserDto.Email, loginUserDto.Name)
-
-	return loginUser, nil
-}

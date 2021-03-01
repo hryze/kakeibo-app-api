@@ -11,6 +11,7 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/gateway"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/queryservice"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/sessionstore"
 )
 
@@ -22,16 +23,18 @@ type UserUsecase interface {
 }
 
 type userUsecase struct {
-	userRepository userdomain.Repository
-	sessionStore   sessionstore.SessionStore
-	accountApi     gateway.AccountApi
+	userRepository   userdomain.Repository
+	userQueryService queryservice.UserQueryService
+	sessionStore     sessionstore.SessionStore
+	accountApi       gateway.AccountApi
 }
 
-func NewUserUsecase(userRepository userdomain.Repository, sessionStore sessionstore.SessionStore, accountApi gateway.AccountApi) *userUsecase {
+func NewUserUsecase(userRepository userdomain.Repository, userQueryService queryservice.UserQueryService, sessionStore sessionstore.SessionStore, accountApi gateway.AccountApi) *userUsecase {
 	return &userUsecase{
-		userRepository: userRepository,
-		sessionStore:   sessionStore,
-		accountApi:     accountApi,
+		userRepository:   userRepository,
+		userQueryService: userQueryService,
+		sessionStore:     sessionStore,
+		accountApi:       accountApi,
 	}
 }
 
@@ -164,7 +167,7 @@ func (u *userUsecase) FetchLoginUser(in *input.AuthenticatedUser) (*output.Login
 		return nil, apierrors.NewBadRequestError(&userValidationError)
 	}
 
-	dbLoginUser, err := u.userRepository.FindLoginUserByUserID(userID)
+	dbLoginUser, err := u.userQueryService.FindLoginUserByUserID(userID)
 	if err != nil {
 		return nil, err
 	}
