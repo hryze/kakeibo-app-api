@@ -195,26 +195,7 @@ func (r *userRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.Login
 		return nil, apierrors.NewBadRequestError(&userValidationError)
 	}
 
-	loginUser := userdomain.NewLoginUserFromDataSource(userIDVo, nameVo, emailVo, passwordVo)
+	loginUser := userdomain.NewLoginUserWithHashPassword(userIDVo, nameVo, emailVo, passwordVo)
 
 	return loginUser, nil
-}
-
-func (r *userRepository) GetUser(userID string) (*userdomain.LoginUser, error) {
-	query := `
-        SELECT
-            user_id,
-            name,
-            email
-        FROM 
-            users
-        WHERE
-            user_id = ?`
-
-	var user userdomain.LoginUser
-	if err := r.MySQLHandler.Conn.QueryRowx(query, userID).StructScan(&user); err != nil {
-		return nil, err
-	}
-
-	return &user, nil
 }

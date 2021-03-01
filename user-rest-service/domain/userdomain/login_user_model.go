@@ -16,7 +16,7 @@ func NewLoginUser(email vo.Email, password vo.Password) *LoginUser {
 	}
 }
 
-func NewLoginUserFromDataSource(userID UserID, name Name, email vo.Email, hashPassword vo.Password) *LoginUser {
+func NewLoginUserWithHashPassword(userID UserID, name Name, email vo.Email, hashPassword vo.Password) *LoginUser {
 	return &LoginUser{
 		userID:   userID,
 		name:     name,
@@ -39,4 +39,30 @@ func (u *LoginUser) Email() vo.Email {
 
 func (u *LoginUser) Password() vo.Password {
 	return u.password
+}
+
+type LoginUserWithoutPassword struct {
+	userID string
+	name   string
+	email  string
+}
+
+func NewLoginUserWithoutPassword(userID, name, email string) *LoginUserWithoutPassword {
+	return &LoginUserWithoutPassword{
+		userID: userID,
+		name:   name,
+		email:  email,
+	}
+}
+
+func (u *LoginUserWithoutPassword) UserID() string {
+	return u.userID
+}
+
+func (u *LoginUserWithoutPassword) Name() string {
+	return u.name
+}
+
+func (u *LoginUserWithoutPassword) Email() string {
+	return u.email
 }

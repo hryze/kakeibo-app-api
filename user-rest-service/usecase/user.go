@@ -11,6 +11,7 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/gateway"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/queryservice"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/sessionstore"
 )
 
@@ -18,19 +19,22 @@ type UserUsecase interface {
 	SignUp(in *input.SignUpUser) (*output.SignUpUser, error)
 	Login(in *input.LoginUser) (*output.LoginUser, error)
 	Logout(in *input.CookieInfo) error
+	FetchLoginUser(in *input.AuthenticatedUser) (*output.LoginUser, error)
 }
 
 type userUsecase struct {
-	userRepository userdomain.Repository
-	sessionStore   sessionstore.SessionStore
-	accountApi     gateway.AccountApi
+	userRepository   userdomain.Repository
+	userQueryService queryservice.UserQueryService
+	sessionStore     sessionstore.SessionStore
+	accountApi       gateway.AccountApi
 }
 
-func NewUserUsecase(userRepository userdomain.Repository, sessionStore sessionstore.SessionStore, accountApi gateway.AccountApi) *userUsecase {
+func NewUserUsecase(userRepository userdomain.Repository, userQueryService queryservice.UserQueryService, sessionStore sessionstore.SessionStore, accountApi gateway.AccountApi) *userUsecase {
 	return &userUsecase{
-		userRepository: userRepository,
-		sessionStore:   sessionStore,
-		accountApi:     accountApi,
+		userRepository:   userRepository,
+		userQueryService: userQueryService,
+		sessionStore:     sessionStore,
+		accountApi:       accountApi,
 	}
 }
 
@@ -129,7 +133,7 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 
 	sessionID := uuid.New().String()
 
-	if err := u.sessionStore.StoreLoginInfo(sessionID, dbLoginUser.UserID()); err != nil {
+	if err := u.sessionStore.StoreUserBySessionID(sessionID, dbLoginUser.UserID()); err != nil {
 		return nil, err
 	}
 
@@ -144,11 +148,35 @@ func (u *userUsecase) Login(in *input.LoginUser) (*output.LoginUser, error) {
 }
 
 func (u *userUsecase) Logout(in *input.CookieInfo) error {
-	if err := u.sessionStore.DeleteLoginInfo(in.SessionID); err != nil {
+	if err := u.sessionStore.DeleteUserBySessionID(in.SessionID); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (u *userUsecase) FetchLoginUser(in *input.AuthenticatedUser) (*output.LoginUser, error) {
+	var userValidationError presenter.UserValidationError
+
+	userID, err := userdomain.NewUserID(in.UserID)
+	if err != nil {
+		userValidationError.UserID = "ユーザーIDを正しく入力してください"
+	}
+
+	if !userValidationError.IsEmpty() {
+		return nil, apierrors.NewBadRequestError(&userValidationError)
+	}
+
+	dbLoginUser, err := u.userQueryService.FindLoginUserByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &output.LoginUser{
+		UserID: dbLoginUser.UserID(),
+		Name:   dbLoginUser.Name(),
+		Email:  dbLoginUser.Email(),
+	}, nil
 }
 
 func checkForUniqueUser(u *userUsecase, signUpUser *userdomain.SignUpUser) error {

@@ -1,12 +1,11 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
+	"github.com/gorilla/context"
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
@@ -14,7 +13,6 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
 )
 
 type userHandler struct {
@@ -88,39 +86,26 @@ func (h *userHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	presenter.JSON(w, http.StatusOK, presenter.NewSuccessString("ログアウトしました"))
 }
 
-func (h *DBHandler) GetUser(w http.ResponseWriter, r *http.Request) {
-	userID, err := verifySessionID(h, w, r)
-	if err != nil {
-		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+func (h *userHandler) FetchLoginUser(w http.ResponseWriter, r *http.Request) {
+	ctx, ok := context.GetOk(r, config.Env.RequestCtx.UserID)
+	if !ok {
+		presenter.ErrorJSON(w, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error")))
 		return
 	}
 
-	user, err := h.UserRepo.GetUser(userID)
-	if err != nil {
-		if xerrors.Is(err, sql.ErrNoRows) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusNotFound, &NotFoundErrorMsg{"ユーザーが存在しません。"}))
-			return
-		} else if err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-	}
-
-	out := &output.LoginUser{
-		UserID: user.ID,
-		Name:   user.Name,
-		Email:  user.Email,
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(out); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+	ctxUserID, ok := ctx.(string)
+	if !ok {
+		presenter.ErrorJSON(w, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error")))
 		return
 	}
+
+	in := input.AuthenticatedUser{UserID: ctxUserID}
+
+	out, err := h.userUsecase.FetchLoginUser(&in)
+	if err != nil {
+		presenter.ErrorJSON(w, err)
+		return
+	}
+
+	presenter.JSON(w, http.StatusOK, out)
 }
