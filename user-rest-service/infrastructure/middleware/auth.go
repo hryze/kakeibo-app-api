@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/gorilla/context"
 	"golang.org/x/xerrors"
@@ -40,18 +41,41 @@ func NewAuthMiddlewareFunc(sessionStore sessionstore.SessionStore) func(http.Han
 	}
 }
 
-var skipAuthMiddlewarePaths = [...]string{
-	"/readyz",
-	"/signup",
-	"/login",
-	"/logout",
-}
+const (
+	getGroupUserIDListHandlerPathFormat                = `^/groups/(?P<v0>[0-9]+)/users$`
+	verifyGroupAffiliationHandlerPathFormat            = `^/groups/(?P<v0>[0-9]+)/users/(?P<v1>[\S]{1,10})/verify$`
+	verifyGroupAffiliationOfUsersListHandlerPathFormat = `^/groups/(?P<v0>[0-9]+)/users/verify$`
+)
+
+var (
+	skipAuthMiddlewarePaths = [...]string{
+		"/readyz",
+		"/signup",
+		"/login",
+		"/logout",
+	}
+
+	skipAuthMiddlewareHandlers = [...]*regexp.Regexp{
+		regexp.MustCompile(getGroupUserIDListHandlerPathFormat),
+		regexp.MustCompile(verifyGroupAffiliationHandlerPathFormat),
+		regexp.MustCompile(verifyGroupAffiliationOfUsersListHandlerPathFormat),
+	}
+)
 
 func skipAuthMiddleware(r *http.Request) bool {
 	requestPath := r.URL.Path
+
 	for _, path := range skipAuthMiddlewarePaths {
 		if requestPath == path {
 			return true
+		}
+	}
+
+	if r.Method == http.MethodGet {
+		for _, regex := range skipAuthMiddlewareHandlers {
+			if regex.MatchString(requestPath) {
+				return true
+			}
 		}
 	}
 
