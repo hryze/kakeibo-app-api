@@ -52,11 +52,8 @@ func Run() error {
 
 	router := mux.NewRouter()
 
-	// register middleware
-	router.Use(
-		middleware.NewCorsMiddlewareFunc(),
-		middleware.NewAuthMiddlewareFunc(sessionStore),
-	)
+	// Register auth middleware.
+	router.Use(middleware.NewAuthMiddlewareFunc(sessionStore))
 
 	router.HandleFunc("/readyz", h.Readyz).Methods(http.MethodGet)
 	router.HandleFunc("/signup", userHandler.SignUp).Methods(http.MethodPost)
@@ -74,9 +71,10 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users/{user_id:[\\S]{1,10}}/verify", h.VerifyGroupAffiliation).Methods(http.MethodGet)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users/verify", h.VerifyGroupAffiliationOfUsersList).Methods(http.MethodGet)
 
+	// Apply cors middleware to top-level router.
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", config.Env.Server.Port),
-		Handler: router,
+		Handler: middleware.NewCorsMiddlewareFunc()(router),
 	}
 
 	errorCh := make(chan error, 1)
