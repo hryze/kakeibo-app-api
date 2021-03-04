@@ -15,7 +15,7 @@ build:
 
 .PHONY: run
 run:
-	GO_ENV=local LOCAL_SERVER_PORT=8081 LOCAL_CORS_ALLOWED_ORIGINS="http://localhost:3000" LOCAL_COOKIE_NAME="local_session_id" LOCAL_MYSQL_DSN="root:root@tcp(127.0.0.1:3307)/test_db?parseTime=true" LOCAL_REDIS_DSN="127.0.0.1:6379" LOCAL_USER_HOST="localhost" LOCAL_USER_PORT=8080 LOCAL_TODO_HOST="localhost" LOCAL_TODO_PORT=8082 go run cmd/account-rest-service/main.go
+	GO_ENV=local LOCAL_SERVER_PORT=8081 LOCAL_CORS_ALLOWED_ORIGINS="http://127.0.0.1:3000" LOCAL_COOKIE_NAME="local_session_id" LOCAL_MYSQL_DSN="root:root@tcp(127.0.0.1:3307)/test_db?parseTime=true" LOCAL_REDIS_DSN="127.0.0.1:6379" LOCAL_USER_HOST="localhost" LOCAL_USER_PORT=8080 LOCAL_TODO_HOST="localhost" LOCAL_TODO_PORT=8082 go run cmd/account-rest-service/main.go
 
 .PHONY: lint
 lint:
