@@ -24,12 +24,12 @@ func (r *UserRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUse
         WHERE 
             user_id = ?`
 
-	var user *model.SignUpUser
+	var user model.SignUpUser
 	if err := r.MySQLHandler.Conn.QueryRowx(query, userID).StructScan(&user); err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return &user, nil
 }
 
 func (r *UserRepository) GetUser(userID string) (*model.LoginUser, error) {
