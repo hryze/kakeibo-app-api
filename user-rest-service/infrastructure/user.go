@@ -1,6 +1,11 @@
 package infrastructure
 
 import (
+	"database/sql"
+
+	"golang.org/x/xerrors"
+
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/auth/imdb"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
@@ -26,6 +31,10 @@ func (r *UserRepository) FindSignUpUserByUserID(userID string) (*model.SignUpUse
 
 	var user model.SignUpUser
 	if err := r.MySQLHandler.Conn.QueryRowx(query, userID).StructScan(&user); err != nil {
+		if xerrors.Is(err, sql.ErrNoRows) {
+			return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("該当するユーザーが見つかりませんでした。"))
+		}
+
 		return nil, err
 	}
 
