@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -19,6 +18,7 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 )
 
@@ -43,8 +43,10 @@ func validateGroupName(groupName string) error {
 }
 
 func postInitGroupStandardBudgets(groupID int) error {
-	accountHost := os.Getenv("ACCOUNT_HOST")
-	requestURL := fmt.Sprintf("http://%s:8081/groups/%d/standard-budgets", accountHost, groupID)
+	requestURL := fmt.Sprintf(
+		"http://%s:%d/groups/%d/standard-budgets",
+		config.Env.AccountApi.Host, config.Env.AccountApi.Port, groupID,
+	)
 
 	request, err := http.NewRequest(
 		"POST",
