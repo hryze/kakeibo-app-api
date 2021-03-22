@@ -11,12 +11,15 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
 )
 
 type MockGroupRepository struct{}
@@ -42,45 +45,6 @@ func (t MockUserRepositoryForGroup) FindSignUpUserByUserID(userID string) (*mode
 
 func (r MockSqlResult) LastInsertId() (int64, error) {
 	return 1, nil
-}
-
-func (t MockGroupRepository) GetApprovedGroupList(userID string) ([]model.ApprovedGroup, error) {
-	return []model.ApprovedGroup{
-		{GroupID: 1, GroupName: "group1", ApprovedUsersList: make([]model.ApprovedUser, 0), UnapprovedUsersList: make([]model.UnapprovedUser, 0)},
-		{GroupID: 2, GroupName: "group2", ApprovedUsersList: make([]model.ApprovedUser, 0), UnapprovedUsersList: make([]model.UnapprovedUser, 0)},
-		{GroupID: 3, GroupName: "group3", ApprovedUsersList: make([]model.ApprovedUser, 0), UnapprovedUsersList: make([]model.UnapprovedUser, 0)},
-	}, nil
-}
-
-func (t MockGroupRepository) GetUnApprovedGroupList(userID string) ([]model.UnapprovedGroup, error) {
-	return []model.UnapprovedGroup{
-		{GroupID: 4, GroupName: "group4", ApprovedUsersList: make([]model.ApprovedUser, 0), UnapprovedUsersList: make([]model.UnapprovedUser, 0)},
-		{GroupID: 5, GroupName: "group5", ApprovedUsersList: make([]model.ApprovedUser, 0), UnapprovedUsersList: make([]model.UnapprovedUser, 0)},
-	}, nil
-}
-
-func (t MockGroupRepository) GetApprovedUsersList(approvedGroupIDList []interface{}) ([]model.ApprovedUser, error) {
-	return []model.ApprovedUser{
-		{GroupID: 1, UserID: "userID1", UserName: "userName1", ColorCode: "#FF0000"},
-		{GroupID: 1, UserID: "userID2", UserName: "userName2", ColorCode: "#00FFFF"},
-		{GroupID: 2, UserID: "userID1", UserName: "userName1", ColorCode: "#FF0000"},
-		{GroupID: 3, UserID: "userID1", UserName: "userName1", ColorCode: "#FF0000"},
-		{GroupID: 3, UserID: "userID2", UserName: "userName2", ColorCode: "#00FFFF"},
-		{GroupID: 4, UserID: "userID2", UserName: "userName2", ColorCode: "#FF0000"},
-		{GroupID: 4, UserID: "userID4", UserName: "userName4", ColorCode: "#00FFFF"},
-		{GroupID: 5, UserID: "userID4", UserName: "userName4", ColorCode: "#FF0000"},
-	}, nil
-}
-
-func (t MockGroupRepository) GetUnapprovedUsersList(unapprovedGroupIDList []interface{}) ([]model.UnapprovedUser, error) {
-	return []model.UnapprovedUser{
-		{GroupID: 1, UserID: "userID3", UserName: "userName3"},
-		{GroupID: 2, UserID: "userID3", UserName: "userName3"},
-		{GroupID: 2, UserID: "userID4", UserName: "userName4"},
-		{GroupID: 4, UserID: "userID1", UserName: "userName1"},
-		{GroupID: 4, UserID: "userID3", UserName: "userName3"},
-		{GroupID: 5, UserID: "userID1", UserName: "userName1"},
-	}, nil
 }
 
 func (t MockGroupRepository) GetGroup(groupID int) (*model.Group, error) {
@@ -165,29 +129,85 @@ func (t MockGroupRepository) GetGroupUsersList(groupID int) ([]string, error) {
 	return []string{"userID1", "userID4", "userID5", "userID3", "userID2"}, nil
 }
 
-func TestDBHandler_GetGroupList(t *testing.T) {
-	h := DBHandler{
-		AuthRepo:  MockAuthRepository{},
-		GroupRepo: MockGroupRepository{},
-	}
+type mockGroupUsecase struct{}
+
+func (u *mockGroupUsecase) FetchGroupList(in *input.AuthenticatedUser) (*output.GroupList, error) {
+	return &output.GroupList{
+		ApprovedGroupList: []output.ApprovedGroup{
+			{
+				GroupID:   1,
+				GroupName: "group1",
+				ApprovedUsersList: []output.ApprovedUser{
+					{GroupID: 1, UserID: "userID1", UserName: "userName1", ColorCode: "#FF0000"},
+					{GroupID: 1, UserID: "userID2", UserName: "userName2", ColorCode: "#00FFFF"},
+				},
+				UnapprovedUsersList: []output.UnapprovedUser{
+					{GroupID: 1, UserID: "userID3", UserName: "userName3"},
+				},
+			},
+			{
+				GroupID:   2,
+				GroupName: "group2",
+				ApprovedUsersList: []output.ApprovedUser{
+					{GroupID: 2, UserID: "userID1", UserName: "userName1", ColorCode: "#FF0000"},
+				},
+				UnapprovedUsersList: []output.UnapprovedUser{
+					{GroupID: 2, UserID: "userID3", UserName: "userName3"},
+					{GroupID: 2, UserID: "userID4", UserName: "userName4"},
+				},
+			},
+			{
+				GroupID:   3,
+				GroupName: "group3",
+				ApprovedUsersList: []output.ApprovedUser{
+					{GroupID: 3, UserID: "userID1", UserName: "userName1", ColorCode: "#FF0000"},
+					{GroupID: 3, UserID: "userID2", UserName: "userName2", ColorCode: "#00FFFF"},
+				},
+				UnapprovedUsersList: make([]output.UnapprovedUser, 0),
+			},
+		},
+		UnapprovedGroupList: []output.UnapprovedGroup{
+			{
+				GroupID:   4,
+				GroupName: "group4",
+				ApprovedUsersList: []output.ApprovedUser{
+					{GroupID: 4, UserID: "userID2", UserName: "userName2", ColorCode: "#FF0000"},
+					{GroupID: 4, UserID: "userID4", UserName: "userName4", ColorCode: "#00FFFF"},
+				},
+				UnapprovedUsersList: []output.UnapprovedUser{
+					{GroupID: 4, UserID: "userID1", UserName: "userName1"},
+					{GroupID: 4, UserID: "userID3", UserName: "userName3"},
+				},
+			},
+			{
+				GroupID:   5,
+				GroupName: "group5",
+				ApprovedUsersList: []output.ApprovedUser{
+					{GroupID: 5, UserID: "userID4", UserName: "userName4", ColorCode: "#FF0000"},
+				},
+				UnapprovedUsersList: []output.UnapprovedUser{
+					{GroupID: 5, UserID: "userID1", UserName: "userName1"},
+				},
+			},
+		},
+	}, nil
+}
+
+func Test_groupHandler_FetchGroupList(t *testing.T) {
+	h := NewGroupHandler(&mockGroupUsecase{})
 
 	r := httptest.NewRequest("GET", "/groups", nil)
 	w := httptest.NewRecorder()
 
-	cookie := &http.Cookie{
-		Name:  config.Env.Cookie.Name,
-		Value: uuid.New().String(),
-	}
+	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
 
-	r.AddCookie(cookie)
-
-	h.GetGroupList(w, r)
+	h.FetchGroupList(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &model.GroupList{}, &model.GroupList{})
+	testutil.AssertResponseBody(t, res, &output.GroupList{}, &output.GroupList{})
 }
 
 func TestDBHandler_PostGroup(t *testing.T) {

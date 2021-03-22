@@ -20,6 +20,8 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 )
 
 type NoContentMsg struct {
@@ -125,20 +127,6 @@ func validateUserID(userID string) error {
 	return nil
 }
 
-func generateGroupIDList(approvedGroupList []model.ApprovedGroup, unapprovedGroupList []model.UnapprovedGroup) []interface{} {
-	var groupIDList []interface{}
-
-	for _, approvedGroup := range approvedGroupList {
-		groupIDList = append(groupIDList, approvedGroup.GroupID)
-	}
-
-	for _, unapprovedGroup := range unapprovedGroupList {
-		groupIDList = append(groupIDList, unapprovedGroup.GroupID)
-	}
-
-	return groupIDList
-}
-
 func assignColorCodeToUser(groupUserIDList []string) string {
 	const (
 		red                  = "#FF0000"
@@ -201,92 +189,29 @@ func assignColorCodeToUser(groupUserIDList []string) string {
 	return colorCode
 }
 
-func (h *DBHandler) GetGroupList(w http.ResponseWriter, r *http.Request) {
-	userID, err := verifySessionID(h, w, r)
+type groupHandler struct {
+	groupUsecase usecase.GroupUsecase
+}
+
+func NewGroupHandler(groupUsecase usecase.GroupUsecase) *groupHandler {
+	return &groupHandler{
+		groupUsecase: groupUsecase,
+	}
+}
+
+func (h *groupHandler) FetchGroupList(w http.ResponseWriter, r *http.Request) {
+	in, err := getUserIDOfContext(r)
 	if err != nil {
-		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
+		presenter.ErrorJSON(w, err)
 	}
 
-	approvedGroupList, err := h.GroupRepo.GetApprovedGroupList(userID)
+	out, err := h.groupUsecase.FetchGroupList(in)
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		presenter.ErrorJSON(w, err)
 		return
 	}
 
-	unapprovedGroupList, err := h.GroupRepo.GetUnApprovedGroupList(userID)
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	if len(approvedGroupList) == 0 && len(unapprovedGroupList) == 0 {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-
-		if err := json.NewEncoder(w).Encode(&NoContentMsg{"参加しているグループ、招待されているグループはありません。"}); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		return
-	}
-
-	groupIDList := generateGroupIDList(approvedGroupList, unapprovedGroupList)
-
-	approvedUsersList, err := h.GroupRepo.GetApprovedUsersList(groupIDList)
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	unapprovedUsersList, err := h.GroupRepo.GetUnapprovedUsersList(groupIDList)
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	for i := 0; i < len(approvedGroupList); i++ {
-		for _, approvedUser := range approvedUsersList {
-			if approvedGroupList[i].GroupID == approvedUser.GroupID {
-				approvedGroupList[i].ApprovedUsersList = append(approvedGroupList[i].ApprovedUsersList, approvedUser)
-			}
-		}
-
-		for _, unapprovedUser := range unapprovedUsersList {
-			if approvedGroupList[i].GroupID == unapprovedUser.GroupID {
-				approvedGroupList[i].UnapprovedUsersList = append(approvedGroupList[i].UnapprovedUsersList, unapprovedUser)
-			}
-		}
-	}
-
-	for i := 0; i < len(unapprovedGroupList); i++ {
-		for _, approvedUser := range approvedUsersList {
-			if unapprovedGroupList[i].GroupID == approvedUser.GroupID {
-				unapprovedGroupList[i].ApprovedUsersList = append(unapprovedGroupList[i].ApprovedUsersList, approvedUser)
-			}
-		}
-
-		for _, unapprovedUser := range unapprovedUsersList {
-			if unapprovedGroupList[i].GroupID == unapprovedUser.GroupID {
-				unapprovedGroupList[i].UnapprovedUsersList = append(unapprovedGroupList[i].UnapprovedUsersList, unapprovedUser)
-			}
-		}
-	}
-
-	groupList := model.NewGroupList(approvedGroupList, unapprovedGroupList)
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&groupList); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	presenter.JSON(w, http.StatusOK, out)
 }
 
 func (h *DBHandler) PostGroup(w http.ResponseWriter, r *http.Request) {

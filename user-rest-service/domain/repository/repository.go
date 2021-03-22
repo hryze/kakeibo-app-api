@@ -23,10 +23,6 @@ type UserRepository interface {
 }
 
 type GroupRepository interface {
-	GetApprovedGroupList(userID string) ([]model.ApprovedGroup, error)
-	GetUnApprovedGroupList(userID string) ([]model.UnapprovedGroup, error)
-	GetApprovedUsersList(approvedGroupIDList []interface{}) ([]model.ApprovedUser, error)
-	GetUnapprovedUsersList(unapprovedGroupIDList []interface{}) ([]model.UnapprovedUser, error)
 	GetGroup(groupID int) (*model.Group, error)
 	PutGroup(group *model.Group, groupID int) error
 	PostGroupAndApprovedUser(group *model.Group, userID string) (sql.Result, error)
