@@ -41,12 +41,17 @@ func Run() error {
 
 	accountApiHandler := client.NewAccountApiHandler()
 
-	userRepository := persistence.NewUserRepository(mySQLHandler)
-	userQueryService := query.NewUserQueryService(mySQLHandler)
 	sessionStore := auth.NewSessionStore(redisHandler)
 	accountApi := externalapi.NewAccountApi(accountApiHandler)
+
+	userRepository := persistence.NewUserRepository(mySQLHandler)
+	userQueryService := query.NewUserQueryService(mySQLHandler)
 	userUsecase := usecase.NewUserUsecase(userRepository, userQueryService, sessionStore, accountApi)
 	userHandler := handler.NewUserHandler(userUsecase)
+
+	groupQueryService := query.NewGroupQueryServiceImpl(mySQLHandler)
+	groupUsecase := usecase.NewGroupUsecase(groupQueryService)
+	groupHandler := handler.NewGroupHandler(groupUsecase)
 
 	h := injector.InjectDBHandler()
 
@@ -60,7 +65,7 @@ func Run() error {
 	router.HandleFunc("/login", userHandler.Login).Methods(http.MethodPost)
 	router.HandleFunc("/logout", userHandler.Logout).Methods(http.MethodDelete)
 	router.HandleFunc("/user", userHandler.FetchLoginUser).Methods(http.MethodGet)
-	router.HandleFunc("/groups", h.GetGroupList).Methods(http.MethodGet)
+	router.HandleFunc("/groups", groupHandler.FetchGroupList).Methods(http.MethodGet)
 	router.HandleFunc("/groups", h.PostGroup).Methods(http.MethodPost)
 	router.HandleFunc("/groups/{group_id:[0-9]+}", h.PutGroup).Methods(http.MethodPut)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.GetGroupUserIDList).Methods(http.MethodGet)
