@@ -3,14 +3,9 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"net"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	"github.com/garyburd/redigo/redis"
@@ -18,15 +13,11 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 )
-
-type NoContentMsg struct {
-	Message string `json:"message"`
-}
 
 func validateGroupName(groupName string) error {
 	if strings.HasPrefix(groupName, " ") || strings.HasPrefix(groupName, "　") {
@@ -42,53 +33,6 @@ func validateGroupName(groupName string) error {
 	}
 
 	return nil
-}
-
-func postInitGroupStandardBudgets(groupID int) error {
-	requestURL := fmt.Sprintf(
-		"http://%s:%d/groups/%d/standard-budgets",
-		config.Env.AccountApi.Host, config.Env.AccountApi.Port, groupID,
-	)
-
-	request, err := http.NewRequest(
-		"POST",
-		requestURL,
-		nil,
-	)
-	if err != nil {
-		return err
-	}
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).DialContext,
-			MaxIdleConns:          500,
-			MaxIdleConnsPerHost:   100,
-			IdleConnTimeout:       90 * time.Second,
-			ResponseHeaderTimeout: 10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-		},
-		Timeout: 60 * time.Second,
-	}
-
-	response, err := client.Do(request)
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		_, _ = io.Copy(ioutil.Discard, response.Body)
-		response.Body.Close()
-	}()
-
-	if response.StatusCode == http.StatusCreated {
-		return nil
-	}
-
-	return xerrors.New("couldn't create a group standard budget")
 }
 
 func checkForUniqueGroupUser(h *DBHandler, groupID int, userID string) error {
@@ -203,6 +147,7 @@ func (h *groupHandler) FetchGroupList(w http.ResponseWriter, r *http.Request) {
 	in, err := getUserIDOfContext(r)
 	if err != nil {
 		presenter.ErrorJSON(w, err)
+		return
 	}
 
 	out, err := h.groupUsecase.FetchGroupList(in)
@@ -214,63 +159,26 @@ func (h *groupHandler) FetchGroupList(w http.ResponseWriter, r *http.Request) {
 	presenter.JSON(w, http.StatusOK, out)
 }
 
-func (h *DBHandler) PostGroup(w http.ResponseWriter, r *http.Request) {
-	userID, err := verifySessionID(h, w, r)
+func (h *groupHandler) StoreGroup(w http.ResponseWriter, r *http.Request) {
+	authenticatedUser, err := getUserIDOfContext(r)
 	if err != nil {
-		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		presenter.ErrorJSON(w, err)
 		return
 	}
 
-	var group model.Group
+	var group input.Group
 	if err := json.NewDecoder(r.Body).Decode(&group); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		presenter.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("正しいデータを入力してください")))
 		return
 	}
 
-	if err := validateGroupName(group.GroupName); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
-		return
-	}
-
-	result, err := h.GroupRepo.PostGroupAndApprovedUser(&group, userID)
+	out, err := h.groupUsecase.StoreGroup(authenticatedUser, &group)
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		presenter.ErrorJSON(w, err)
 		return
 	}
 
-	groupLastInsertId, err := result.LastInsertId()
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	if err := postInitGroupStandardBudgets(int(groupLastInsertId)); err != nil {
-		if err := h.GroupRepo.DeleteGroupAndApprovedUser(int(groupLastInsertId), userID); err != nil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	dbGroup, err := h.GroupRepo.GetGroup(int(groupLastInsertId))
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(&dbGroup); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	presenter.JSON(w, http.StatusCreated, out)
 }
 
 func (h *DBHandler) PutGroup(w http.ResponseWriter, r *http.Request) {

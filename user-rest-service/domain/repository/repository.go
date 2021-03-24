@@ -25,8 +25,6 @@ type UserRepository interface {
 type GroupRepository interface {
 	GetGroup(groupID int) (*model.Group, error)
 	PutGroup(group *model.Group, groupID int) error
-	PostGroupAndApprovedUser(group *model.Group, userID string) (sql.Result, error)
-	DeleteGroupAndApprovedUser(groupID int, userID string) error
 	PostUnapprovedUser(unapprovedUser *model.UnapprovedUser, groupID int) (sql.Result, error)
 	GetUnapprovedUser(groupUnapprovedUsersID int) (*model.UnapprovedUser, error)
 	FindApprovedUser(groupID int, userID string) error
