@@ -31,3 +31,7 @@ func (g *Group) ID() (GroupID, error) {
 func (g *Group) GroupName() GroupName {
 	return g.groupName
 }
+
+func (g *Group) UpdateGroupName(groupName GroupName) {
+	g.groupName = groupName
+}

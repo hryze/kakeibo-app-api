@@ -68,7 +68,7 @@ func Run() error {
 	router.HandleFunc("/user", userHandler.FetchLoginUser).Methods(http.MethodGet)
 	router.HandleFunc("/groups", groupHandler.FetchGroupList).Methods(http.MethodGet)
 	router.HandleFunc("/groups", groupHandler.StoreGroup).Methods(http.MethodPost)
-	router.HandleFunc("/groups/{group_id:[0-9]+}", h.PutGroup).Methods(http.MethodPut)
+	router.HandleFunc("/groups/{group_id:[0-9]+}", groupHandler.UpdateGroupName).Methods(http.MethodPut)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.GetGroupUserIDList).Methods(http.MethodGet)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.PostGroupUnapprovedUser).Methods(http.MethodPost)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.DeleteGroupApprovedUser).Methods(http.MethodDelete)
