@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
@@ -18,22 +17,6 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 )
-
-func validateGroupName(groupName string) error {
-	if strings.HasPrefix(groupName, " ") || strings.HasPrefix(groupName, "　") {
-		return &BadRequestErrorMsg{"文字列先頭に空白がないか確認してください。"}
-	}
-
-	if strings.HasSuffix(groupName, " ") || strings.HasSuffix(groupName, "　") {
-		return &BadRequestErrorMsg{"文字列末尾に空白がないか確認してください。"}
-	}
-
-	if utf8.RuneCountInString(groupName) == 0 || utf8.RuneCountInString(groupName) > 20 {
-		return &BadRequestErrorMsg{"グループ名は1文字以上、20文字以内で入力してください。"}
-	}
-
-	return nil
-}
 
 func checkForUniqueGroupUser(h *DBHandler, groupID int, userID string) error {
 	if err := h.GroupRepo.FindApprovedUser(groupID, userID); err != sql.ErrNoRows {
@@ -181,57 +164,28 @@ func (h *groupHandler) StoreGroup(w http.ResponseWriter, r *http.Request) {
 	presenter.JSON(w, http.StatusCreated, out)
 }
 
-func (h *DBHandler) PutGroup(w http.ResponseWriter, r *http.Request) {
-	_, err := verifySessionID(h, w, r)
-	if err != nil {
-		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	var group model.Group
+func (h *groupHandler) UpdateGroupName(w http.ResponseWriter, r *http.Request) {
+	var group input.Group
 	if err := json.NewDecoder(r.Body).Decode(&group); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	if err := validateGroupName(group.GroupName); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
+		presenter.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("正しいデータを入力してください")))
 		return
 	}
 
 	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		presenter.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("グループIDを正しく指定してください")))
 		return
 	}
 
-	if err := h.GroupRepo.PutGroup(&group, groupID); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
+	group.GroupID = groupID
 
-	dbGroup, err := h.GroupRepo.GetGroup(groupID)
+	out, err := h.groupUsecase.UpdateGroupName(&group)
 	if err != nil {
-		if xerrors.Is(err, sql.ErrNoRows) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"グループ名を取得できませんでした"}))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		presenter.ErrorJSON(w, err)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&dbGroup); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	presenter.JSON(w, http.StatusOK, out)
 }
 
 func (h *DBHandler) PostGroupUnapprovedUser(w http.ResponseWriter, r *http.Request) {
