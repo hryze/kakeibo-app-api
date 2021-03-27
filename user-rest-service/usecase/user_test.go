@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/groupdomain"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
@@ -65,6 +66,10 @@ func (s *mockSessionStore) FetchUserByUserID(sessionID string) (userdomain.UserI
 type mockAccountApi struct{}
 
 func (a *mockAccountApi) PostInitStandardBudgets(userID userdomain.UserID) error {
+	return nil
+}
+
+func (a *mockAccountApi) PostInitGroupStandardBudgets(groupID groupdomain.GroupID) error {
 	return nil
 }
 

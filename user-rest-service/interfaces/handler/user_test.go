@@ -52,7 +52,7 @@ func (u *mockUserUsecase) FetchLoginUser(in *input.AuthenticatedUser) (*output.L
 func Test_userHandler_SignUp(t *testing.T) {
 	h := NewUserHandler(&mockUserUsecase{})
 
-	r := httptest.NewRequest("POST", "/signup", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest(http.MethodPost, "/signup", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	h.SignUp(w, r)
@@ -67,7 +67,7 @@ func Test_userHandler_SignUp(t *testing.T) {
 func Test_userHandler_Login(t *testing.T) {
 	h := NewUserHandler(&mockUserUsecase{})
 
-	r := httptest.NewRequest("POST", "/login", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	h.Login(w, r)
@@ -83,7 +83,7 @@ func Test_userHandler_Login(t *testing.T) {
 func Test_userHandler_Logout(t *testing.T) {
 	h := NewUserHandler(&mockUserUsecase{})
 
-	r := httptest.NewRequest("DELETE", "/logout", nil)
+	r := httptest.NewRequest(http.MethodDelete, "/logout", nil)
 	w := httptest.NewRecorder()
 
 	cookie := &http.Cookie{
@@ -106,7 +106,7 @@ func Test_userHandler_Logout(t *testing.T) {
 func Test_userHandler_FetchLoginUser(t *testing.T) {
 	h := NewUserHandler(&mockUserUsecase{})
 
-	r := httptest.NewRequest("GET", "/user", nil)
+	r := httptest.NewRequest(http.MethodGet, "/user", nil)
 	w := httptest.NewRecorder()
 
 	context.Set(r, config.Env.RequestCtx.UserID, "testID")

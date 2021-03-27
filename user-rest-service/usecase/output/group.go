@@ -1,5 +1,10 @@
 package output
 
+type Group struct {
+	GroupID   int    `json:"group_id"`
+	GroupName string `json:"group_name"`
+}
+
 type GroupList struct {
 	ApprovedGroupList   []ApprovedGroup   `json:"approved_group_list"`
 	UnapprovedGroupList []UnapprovedGroup `json:"unapproved_group_list"`

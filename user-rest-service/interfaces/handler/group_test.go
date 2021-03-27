@@ -2,10 +2,8 @@ package handler
 
 import (
 	"database/sql"
-	"net"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 
@@ -55,14 +53,6 @@ func (t MockGroupRepository) GetGroup(groupID int) (*model.Group, error) {
 }
 
 func (t MockGroupRepository) PutGroup(group *model.Group, groupID int) error {
-	return nil
-}
-
-func (t MockGroupRepository) PostGroupAndApprovedUser(group *model.Group, userID string) (sql.Result, error) {
-	return MockSqlResult{}, nil
-}
-
-func (t MockGroupRepository) DeleteGroupAndApprovedUser(groupID int, userID string) error {
 	return nil
 }
 
@@ -193,10 +183,17 @@ func (u *mockGroupUsecase) FetchGroupList(in *input.AuthenticatedUser) (*output.
 	}, nil
 }
 
+func (u *mockGroupUsecase) StoreGroup(authenticatedUser *input.AuthenticatedUser, group *input.Group) (*output.Group, error) {
+	return &output.Group{
+		GroupID:   1,
+		GroupName: "group1",
+	}, nil
+}
+
 func Test_groupHandler_FetchGroupList(t *testing.T) {
 	h := NewGroupHandler(&mockGroupUsecase{})
 
-	r := httptest.NewRequest("GET", "/groups", nil)
+	r := httptest.NewRequest(http.MethodGet, "/groups", nil)
 	w := httptest.NewRecorder()
 
 	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
@@ -210,49 +207,21 @@ func Test_groupHandler_FetchGroupList(t *testing.T) {
 	testutil.AssertResponseBody(t, res, &output.GroupList{}, &output.GroupList{})
 }
 
-func TestDBHandler_PostGroup(t *testing.T) {
-	if err := os.Setenv("ACCOUNT_HOST", "localhost"); err != nil {
-		t.Fatalf("unexpected error by os.Setenv() '%#v'", err)
-	}
+func Test_groupHandler_StoreGroup(t *testing.T) {
+	h := NewGroupHandler(&mockGroupUsecase{})
 
-	postInitGroupStandardBudgetsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusCreated)
-	})
-
-	listener, err := net.Listen("tcp", "127.0.0.1:8081")
-	if err != nil {
-		t.Fatalf("unexpected error by net.Listen() '%#v'", err)
-	}
-
-	ts := httptest.Server{
-		Listener: listener,
-		Config:   &http.Server{Handler: postInitGroupStandardBudgetsHandler},
-	}
-	ts.Start()
-	defer ts.Close()
-
-	h := DBHandler{
-		AuthRepo:  MockAuthRepository{},
-		GroupRepo: MockGroupRepository{},
-	}
-
-	r := httptest.NewRequest("POST", "/groups", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest(http.MethodPost, "/groups", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
-	cookie := &http.Cookie{
-		Name:  config.Env.Cookie.Name,
-		Value: uuid.New().String(),
-	}
+	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
 
-	r.AddCookie(cookie)
-
-	h.PostGroup(w, r)
+	h.StoreGroup(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, &model.Group{}, &model.Group{})
+	testutil.AssertResponseBody(t, res, &output.Group{}, &output.Group{})
 }
 
 func TestDBHandler_PutGroup(t *testing.T) {

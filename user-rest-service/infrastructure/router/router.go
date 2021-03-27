@@ -49,8 +49,9 @@ func Run() error {
 	userUsecase := usecase.NewUserUsecase(userRepository, userQueryService, sessionStore, accountApi)
 	userHandler := handler.NewUserHandler(userUsecase)
 
+	groupRepository := persistence.NewGroupRepository(mySQLHandler)
 	groupQueryService := query.NewGroupQueryServiceImpl(mySQLHandler)
-	groupUsecase := usecase.NewGroupUsecase(groupQueryService)
+	groupUsecase := usecase.NewGroupUsecase(groupRepository, groupQueryService, accountApi)
 	groupHandler := handler.NewGroupHandler(groupUsecase)
 
 	h := injector.InjectDBHandler()
@@ -66,7 +67,7 @@ func Run() error {
 	router.HandleFunc("/logout", userHandler.Logout).Methods(http.MethodDelete)
 	router.HandleFunc("/user", userHandler.FetchLoginUser).Methods(http.MethodGet)
 	router.HandleFunc("/groups", groupHandler.FetchGroupList).Methods(http.MethodGet)
-	router.HandleFunc("/groups", h.PostGroup).Methods(http.MethodPost)
+	router.HandleFunc("/groups", groupHandler.StoreGroup).Methods(http.MethodPost)
 	router.HandleFunc("/groups/{group_id:[0-9]+}", h.PutGroup).Methods(http.MethodPut)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.GetGroupUserIDList).Methods(http.MethodGet)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.PostGroupUnapprovedUser).Methods(http.MethodPost)
