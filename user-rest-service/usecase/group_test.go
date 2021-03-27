@@ -24,6 +24,17 @@ func (r *mockGroupRepository) DeleteGroupAndApprovedUser(group *groupdomain.Grou
 	return nil
 }
 
+func (r *mockGroupRepository) UpdateGroupName(group *groupdomain.Group) error {
+	return nil
+}
+
+func (r *mockGroupRepository) FindGroupByID(groupID *groupdomain.GroupID) (*groupdomain.Group, error) {
+	groupName, _ := groupdomain.NewGroupName("group1")
+	group := groupdomain.NewGroup(*groupID, groupName)
+
+	return group, nil
+}
+
 type mockGroupQueryService struct{}
 
 func (u *mockGroupQueryService) FetchGroupList(userID string) (*output.GroupList, error) {
@@ -184,6 +195,29 @@ func Test_groupUsecase_StoreGroup(t *testing.T) {
 	wantOut := &output.Group{
 		GroupID:   1,
 		GroupName: "group1",
+	}
+
+	if diff := cmp.Diff(&wantOut, &gotOut); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
+}
+
+func Test_groupUsecase_UpdateGroupName(t *testing.T) {
+	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{})
+
+	groupInput := input.Group{
+		GroupID:   1,
+		GroupName: "group2",
+	}
+
+	gotOut, err := u.UpdateGroupName(&groupInput)
+	if err != nil {
+		t.Errorf("unexpected error by groupUsecase.UpdateGroupName '%#v'", err)
+	}
+
+	wantOut := &output.Group{
+		GroupID:   1,
+		GroupName: "group2",
 	}
 
 	if diff := cmp.Diff(&wantOut, &gotOut); len(diff) != 0 {

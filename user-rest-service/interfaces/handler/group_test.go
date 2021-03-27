@@ -190,6 +190,13 @@ func (u *mockGroupUsecase) StoreGroup(authenticatedUser *input.AuthenticatedUser
 	}, nil
 }
 
+func (u *mockGroupUsecase) UpdateGroupName(groupInput *input.Group) (*output.Group, error) {
+	return &output.Group{
+		GroupID:   1,
+		GroupName: "group1",
+	}, nil
+}
+
 func Test_groupHandler_FetchGroupList(t *testing.T) {
 	h := NewGroupHandler(&mockGroupUsecase{})
 
@@ -224,11 +231,8 @@ func Test_groupHandler_StoreGroup(t *testing.T) {
 	testutil.AssertResponseBody(t, res, &output.Group{}, &output.Group{})
 }
 
-func TestDBHandler_PutGroup(t *testing.T) {
-	h := DBHandler{
-		AuthRepo:  MockAuthRepository{},
-		GroupRepo: MockGroupRepository{},
-	}
+func Test_groupHandler_UpdateGroupName(t *testing.T) {
+	h := NewGroupHandler(&mockGroupUsecase{})
 
 	r := httptest.NewRequest("PUT", "/groups/1", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
@@ -237,20 +241,15 @@ func TestDBHandler_PutGroup(t *testing.T) {
 		"group_id": "1",
 	})
 
-	cookie := &http.Cookie{
-		Name:  config.Env.Cookie.Name,
-		Value: uuid.New().String(),
-	}
+	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
 
-	r.AddCookie(cookie)
-
-	h.PutGroup(w, r)
+	h.UpdateGroupName(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &model.Group{}, &model.Group{})
+	testutil.AssertResponseBody(t, res, &output.Group{}, &output.Group{})
 }
 
 func TestDBHandler_PostGroupUnapprovedUser(t *testing.T) {
