@@ -17,7 +17,7 @@ func NewGroupRepository(mysqlHandler *rdb.MySQLHandler) *groupRepository {
 	return &groupRepository{mysqlHandler}
 }
 
-func (r *groupRepository) StoreGroupAndApprovedUser(groupName groupdomain.GroupName, userID userdomain.UserID) (*groupdomain.Group, error) {
+func (r *groupRepository) StoreGroupAndApprovedUser(group *groupdomain.Group, userID userdomain.UserID) (*groupdomain.Group, error) {
 	storeGroupQuery := `
         INSERT INTO group_names
             (group_name)
@@ -36,7 +36,7 @@ func (r *groupRepository) StoreGroupAndApprovedUser(groupName groupdomain.GroupN
 	}
 
 	transactions := func(tx *sql.Tx) (int, error) {
-		result, err := tx.Exec(storeGroupQuery, groupName.Value())
+		result, err := tx.Exec(storeGroupQuery, group.GroupName().Value())
 		if err != nil {
 			return 0, err
 		}
@@ -71,25 +71,57 @@ func (r *groupRepository) StoreGroupAndApprovedUser(groupName groupdomain.GroupN
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	group := groupdomain.NewGroup(groupIDVo, groupName)
+	group = groupdomain.NewGroup(groupIDVo, group.GroupName())
 
 	return group, nil
 }
 
-func (r *groupRepository) DeleteGroupAndApprovedUser(groupID groupdomain.GroupID) error {
-	query := `
-	   DELETE
-	       group_users, group_names
-	   FROM
-	       group_users
-	   LEFT JOIN
-	       group_names
-	   ON
-	       group_users.group_id = group_names.id
-	   WHERE
-	       group_users.group_id = ?`
+func (r *groupRepository) DeleteGroupAndApprovedUser(group *groupdomain.Group) error {
+	deleteApprovedUserQuery := `
+        DELETE
+        FROM
+            group_users
+        WHERE
+            group_id = ?`
 
-	if _, err := r.MySQLHandler.Conn.Exec(query, groupID.Value()); err != nil {
+	deleteGroupQuery := `
+        DELETE
+        FROM
+            group_names
+        WHERE
+            id = ?`
+
+	tx, err := r.MySQLHandler.Conn.Begin()
+	if err != nil {
+		return apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	groupID, err := group.ID()
+	if err != nil {
+		return apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	transactions := func(tx *sql.Tx) error {
+		if _, err := tx.Exec(deleteApprovedUserQuery, groupID.Value()); err != nil {
+			return err
+		}
+
+		if _, err := tx.Exec(deleteGroupQuery, groupID.Value()); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	if err := transactions(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+		}
+
+		return apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	if err := tx.Commit(); err != nil {
 		return apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 

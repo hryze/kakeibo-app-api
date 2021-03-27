@@ -64,13 +64,20 @@ func (u *groupUsecase) StoreGroup(authenticatedUser *input.AuthenticatedUser, gr
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
-	group, err := u.groupRepository.StoreGroupAndApprovedUser(groupName, userID)
+	group := groupdomain.NewGroupWithoutID(groupName)
+
+	group, err = u.groupRepository.StoreGroupAndApprovedUser(group, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := u.accountApi.PostInitGroupStandardBudgets(group.ID()); err != nil {
-		if err := u.groupRepository.DeleteGroupAndApprovedUser(group.ID()); err != nil {
+	groupID, err := group.ID()
+	if err != nil {
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	if err := u.accountApi.PostInitGroupStandardBudgets(groupID); err != nil {
+		if err := u.groupRepository.DeleteGroupAndApprovedUser(group); err != nil {
 			return nil, err
 		}
 
@@ -78,7 +85,7 @@ func (u *groupUsecase) StoreGroup(authenticatedUser *input.AuthenticatedUser, gr
 	}
 
 	return &output.Group{
-		GroupID:   group.ID().Value(),
+		GroupID:   groupID.Value(),
 		GroupName: group.GroupName().Value(),
 	}, nil
 }

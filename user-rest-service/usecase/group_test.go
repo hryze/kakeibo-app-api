@@ -13,14 +13,14 @@ import (
 
 type mockGroupRepository struct{}
 
-func (r *mockGroupRepository) StoreGroupAndApprovedUser(groupName groupdomain.GroupName, userID userdomain.UserID) (*groupdomain.Group, error) {
+func (r *mockGroupRepository) StoreGroupAndApprovedUser(group *groupdomain.Group, userID userdomain.UserID) (*groupdomain.Group, error) {
 	groupID, _ := groupdomain.NewGroupID(1)
-	group := groupdomain.NewGroup(groupID, groupName)
+	group = groupdomain.NewGroup(groupID, group.GroupName())
 
 	return group, nil
 }
 
-func (r *mockGroupRepository) DeleteGroupAndApprovedUser(groupID groupdomain.GroupID) error {
+func (r *mockGroupRepository) DeleteGroupAndApprovedUser(group *groupdomain.Group) error {
 	return nil
 }
 
