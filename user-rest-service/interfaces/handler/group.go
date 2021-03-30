@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
@@ -17,42 +16,6 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 )
-
-func checkForUniqueGroupUser(h *DBHandler, groupID int, userID string) error {
-	if err := h.GroupRepo.FindApprovedUser(groupID, userID); err != sql.ErrNoRows {
-		if err == nil {
-			return &ConflictErrorMsg{"こちらのユーザーは既にグループに参加しています。"}
-		}
-
-		return err
-	}
-
-	if err := h.GroupRepo.FindUnapprovedUser(groupID, userID); err != sql.ErrNoRows {
-		if err == nil {
-			return &ConflictErrorMsg{"こちらのユーザーは既にグループに招待しています。"}
-		}
-
-		return err
-	}
-
-	return nil
-}
-
-func validateUserID(userID string) error {
-	if strings.HasPrefix(userID, " ") || strings.HasPrefix(userID, "　") {
-		return &BadRequestErrorMsg{"文字列先頭に空白がないか確認してください。"}
-	}
-
-	if strings.HasSuffix(userID, " ") || strings.HasSuffix(userID, "　") {
-		return &BadRequestErrorMsg{"文字列末尾に空白がないか確認してください。"}
-	}
-
-	if len(userID) == 0 || len(userID) > 10 {
-		return &BadRequestErrorMsg{"ユーザーIDは1文字以上、10文字以内で入力してください。"}
-	}
-
-	return nil
-}
 
 func assignColorCodeToUser(groupUserIDList []string) string {
 	const (
@@ -188,81 +151,29 @@ func (h *groupHandler) UpdateGroupName(w http.ResponseWriter, r *http.Request) {
 	presenter.JSON(w, http.StatusOK, out)
 }
 
-func (h *DBHandler) PostGroupUnapprovedUser(w http.ResponseWriter, r *http.Request) {
-	_, err := verifySessionID(h, w, r)
-	if err != nil {
-		if err == http.ErrNoCookie || err == redis.ErrNil {
-			errorResponseByJSON(w, NewHTTPError(http.StatusUnauthorized, &AuthenticationErrorMsg{"このページを表示するにはログインが必要です。"}))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+func (h *groupHandler) StoreGroupUnapprovedUser(w http.ResponseWriter, r *http.Request) {
+	var unapprovedUser input.UnapprovedUser
+	if err := json.NewDecoder(r.Body).Decode(&unapprovedUser); err != nil {
+		presenter.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("正しいデータを入力してください")))
 		return
 	}
 
-	var groupUnapprovedUser model.UnapprovedUser
-	if err := json.NewDecoder(r.Body).Decode(&groupUnapprovedUser); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	if err := validateUserID(groupUnapprovedUser.UserID); err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, err))
-		return
-	}
-
-	if _, err := h.UserRepo.FindSignUpUserByUserID(groupUnapprovedUser.UserID); err != nil {
-		var notFoundError *apierrors.NotFoundError
-		if xerrors.As(err, &notFoundError) {
-			errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &NotFoundErrorMsg{"該当するユーザーが見つかりませんでした。"}))
-			return
-		}
-
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
+	var group input.Group
 	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusBadRequest, &BadRequestErrorMsg{"group ID を正しく指定してください。"}))
+		presenter.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("グループIDを正しく指定してください")))
 		return
 	}
 
-	if err := checkForUniqueGroupUser(h, groupID, groupUnapprovedUser.UserID); err != nil {
-		groupUserConflictErrorMsg, ok := err.(*ConflictErrorMsg)
-		if !ok {
-			errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-			return
-		}
+	group.GroupID = groupID
 
-		errorResponseByJSON(w, NewHTTPError(http.StatusConflict, groupUserConflictErrorMsg))
-		return
-	}
-
-	result, err := h.GroupRepo.PostUnapprovedUser(&groupUnapprovedUser, groupID)
+	out, err := h.groupUsecase.StoreGroupUnapprovedUser(&unapprovedUser, &group)
 	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
+		presenter.ErrorJSON(w, err)
 		return
 	}
 
-	lastInsertId, err := result.LastInsertId()
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	unapprovedUser, err := h.GroupRepo.GetUnapprovedUser(int(lastInsertId))
-	if err != nil {
-		errorResponseByJSON(w, NewHTTPError(http.StatusInternalServerError, nil))
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(&unapprovedUser); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	presenter.JSON(w, http.StatusCreated, out)
 }
 
 func (h *DBHandler) DeleteGroupApprovedUser(w http.ResponseWriter, r *http.Request) {

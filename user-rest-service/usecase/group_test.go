@@ -28,11 +28,28 @@ func (r *mockGroupRepository) UpdateGroupName(group *groupdomain.Group) error {
 	return nil
 }
 
+func (r *mockGroupRepository) StoreUnapprovedUser(unapprovedUser *groupdomain.UnapprovedUser) error {
+	return nil
+}
+
 func (r *mockGroupRepository) FindGroupByID(groupID *groupdomain.GroupID) (*groupdomain.Group, error) {
 	groupName, _ := groupdomain.NewGroupName("group1")
 	group := groupdomain.NewGroup(*groupID, groupName)
 
 	return group, nil
+}
+
+func (r *mockGroupRepository) FindApprovedUser(groupID groupdomain.GroupID, userID userdomain.UserID) (*groupdomain.ApprovedUser, error) {
+	colorCode, _ := groupdomain.NewColorCode("#FF0000")
+	approvedUser := groupdomain.NewApprovedUser(groupID, userID, colorCode)
+
+	return approvedUser, nil
+}
+
+func (r *mockGroupRepository) FindUnapprovedUser(groupID groupdomain.GroupID, userID userdomain.UserID) (*groupdomain.UnapprovedUser, error) {
+	unapprovedUser := groupdomain.NewUnapprovedUser(groupID, userID)
+
+	return unapprovedUser, nil
 }
 
 type mockGroupQueryService struct{}
@@ -99,8 +116,16 @@ func (u *mockGroupQueryService) FetchGroupList(userID string) (*output.GroupList
 	}, nil
 }
 
+func (u *mockGroupQueryService) FetchUnapprovedUser(groupID int, userID string) (*output.UnapprovedUser, error) {
+	return &output.UnapprovedUser{
+		GroupID:  1,
+		UserID:   "userID1",
+		UserName: "userName1",
+	}, nil
+}
+
 func Test_groupUsecase_FetchGroupList(t *testing.T) {
-	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{})
+	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{}, &mockUserRepository{})
 
 	in := input.AuthenticatedUser{
 		UserID: "userID1",
@@ -177,7 +202,7 @@ func Test_groupUsecase_FetchGroupList(t *testing.T) {
 }
 
 func Test_groupUsecase_StoreGroup(t *testing.T) {
-	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{})
+	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{}, &mockUserRepository{})
 
 	authenticatedUser := input.AuthenticatedUser{
 		UserID: "userID1",
@@ -203,7 +228,7 @@ func Test_groupUsecase_StoreGroup(t *testing.T) {
 }
 
 func Test_groupUsecase_UpdateGroupName(t *testing.T) {
-	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{})
+	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{}, &mockUserRepository{})
 
 	groupInput := input.Group{
 		GroupID:   1,

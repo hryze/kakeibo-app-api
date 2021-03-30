@@ -116,9 +116,16 @@ func (r *userRepository) FindSignUpUserByEmail(email vo.Email) (*userdomain.Sign
 func (r *userRepository) CreateSignUpUser(signUpUser *userdomain.SignUpUser) error {
 	query := `
         INSERT INTO users
-            (user_id, name, email, password)
+        (
+            user_id,
+            name,
+            email,
+            password
+        )
         VALUES
-            (?,?,?,?)`
+        (
+            ?,?,?,?
+        )`
 
 	if _, err := r.MySQLHandler.Conn.Exec(
 		query,
@@ -146,6 +153,58 @@ func (r *userRepository) DeleteSignUpUser(signUpUser *userdomain.SignUpUser) err
 	}
 
 	return nil
+}
+
+func (r *userRepository) FindLoginUserByUserID(userID userdomain.UserID) (*userdomain.LoginUser, error) {
+	query := `
+        SELECT
+            user_id,
+            name,
+            email,
+            password
+        FROM 
+            users
+        WHERE
+            user_id = ?`
+
+	var loginUserDto datasource.LoginUser
+	if err := r.MySQLHandler.Conn.QueryRowx(query, userID.Value()).StructScan(&loginUserDto); err != nil {
+		if xerrors.Is(err, sql.ErrNoRows) {
+			return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("該当するユーザーが見つかりませんでした"))
+		}
+
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	var userValidationError presenter.UserValidationError
+
+	userIDVo, err := userdomain.NewUserID(loginUserDto.UserID)
+	if err != nil {
+		userValidationError.UserID = "ユーザーIDが正しくありません"
+	}
+
+	nameVo, err := userdomain.NewName(loginUserDto.Name)
+	if err != nil {
+		userValidationError.Name = "名前が正しくありません"
+	}
+
+	emailVo, err := vo.NewEmail(loginUserDto.Email)
+	if err != nil {
+		userValidationError.Email = "メールアドレスが正しくありません"
+	}
+
+	passwordVo, err := vo.NewHashPassword(loginUserDto.Password)
+	if err != nil {
+		userValidationError.Password = "パスワードが正しくありません"
+	}
+
+	if !userValidationError.IsEmpty() {
+		return nil, apierrors.NewBadRequestError(&userValidationError)
+	}
+
+	loginUser := userdomain.NewLoginUserWithHashPassword(userIDVo, nameVo, emailVo, passwordVo)
+
+	return loginUser, nil
 }
 
 func (r *userRepository) FindLoginUserByEmail(email vo.Email) (*userdomain.LoginUser, error) {

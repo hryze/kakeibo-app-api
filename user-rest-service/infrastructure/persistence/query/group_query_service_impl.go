@@ -1,7 +1,10 @@
 package query
 
 import (
+	"database/sql"
+
 	"github.com/jmoiron/sqlx"
+	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
@@ -78,6 +81,35 @@ func (r *groupQueryServiceImpl) FetchGroupList(userID string) (*output.GroupList
 		ApprovedGroupList:   approvedGroupList,
 		UnapprovedGroupList: unapprovedGroupList,
 	}, nil
+}
+
+func (r *groupQueryServiceImpl) FetchUnapprovedUser(groupID int, userID string) (*output.UnapprovedUser, error) {
+	query := `
+        SELECT
+            group_unapproved_users.group_id group_id,
+            group_unapproved_users.user_id user_id,
+            users.name user_name
+        FROM
+            group_unapproved_users
+        INNER JOIN
+            users
+        ON
+            group_unapproved_users.user_id = users.user_id
+        WHERE
+            group_unapproved_users.group_id = ?
+        AND
+            group_unapproved_users.user_id = ?`
+
+	var unapprovedUser output.UnapprovedUser
+	if err := r.MySQLHandler.Conn.QueryRowx(query, groupID, userID).StructScan(&unapprovedUser); err != nil {
+		if xerrors.Is(err, sql.ErrNoRows) {
+			return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
+		}
+
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	return &unapprovedUser, nil
 }
 
 func generateGroupIDList(approvedGroupList []output.ApprovedGroup, unapprovedGroupList []output.UnapprovedGroup) []interface{} {
