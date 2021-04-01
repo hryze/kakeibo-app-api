@@ -7,5 +7,6 @@ type Repository interface {
 	FindSignUpUserByEmail(email vo.Email) (*SignUpUser, error)
 	CreateSignUpUser(user *SignUpUser) error
 	DeleteSignUpUser(signUpUser *SignUpUser) error
+	FindLoginUserByUserID(userID UserID) (*LoginUser, error)
 	FindLoginUserByEmail(email vo.Email) (*LoginUser, error)
 }

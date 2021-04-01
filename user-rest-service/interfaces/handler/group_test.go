@@ -14,7 +14,6 @@ import (
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/repository"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
@@ -22,23 +21,8 @@ import (
 
 type MockGroupRepository struct{}
 
-type MockUserRepositoryForGroup struct {
-	repository.UserRepository
-}
-
 type MockSqlResult struct {
 	sql.Result
-}
-
-func (t MockUserRepositoryForGroup) FindSignUpUserByUserID(userID string) (*model.SignUpUser, error) {
-	signUpUser := &model.SignUpUser{
-		ID:       "testID",
-		Name:     "testName",
-		Email:    "test@icloud.com",
-		Password: "$2a$10$teJL.9I0QfBESpaBIwlbl.VkivuHEOKhy674CW6J.4k3AnfEpcYLy",
-	}
-
-	return signUpUser, nil
 }
 
 func (r MockSqlResult) LastInsertId() (int64, error) {
@@ -197,6 +181,14 @@ func (u *mockGroupUsecase) UpdateGroupName(groupInput *input.Group) (*output.Gro
 	}, nil
 }
 
+func (u *mockGroupUsecase) StoreGroupUnapprovedUser(unapprovedUser *input.UnapprovedUser, group *input.Group) (*output.UnapprovedUser, error) {
+	return &output.UnapprovedUser{
+		GroupID:  1,
+		UserID:   "userID1",
+		UserName: "userName1",
+	}, nil
+}
+
 func Test_groupHandler_FetchGroupList(t *testing.T) {
 	h := NewGroupHandler(&mockGroupUsecase{})
 
@@ -252,12 +244,8 @@ func Test_groupHandler_UpdateGroupName(t *testing.T) {
 	testutil.AssertResponseBody(t, res, &output.Group{}, &output.Group{})
 }
 
-func TestDBHandler_PostGroupUnapprovedUser(t *testing.T) {
-	h := DBHandler{
-		AuthRepo:  MockAuthRepository{},
-		UserRepo:  MockUserRepositoryForGroup{},
-		GroupRepo: MockGroupRepository{},
-	}
+func Test_groupHandler_StoreGroupUnapprovedUser(t *testing.T) {
+	h := NewGroupHandler(&mockGroupUsecase{})
 
 	r := httptest.NewRequest("POST", "/groups/1/users", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
@@ -266,20 +254,15 @@ func TestDBHandler_PostGroupUnapprovedUser(t *testing.T) {
 		"group_id": "1",
 	})
 
-	cookie := &http.Cookie{
-		Name:  config.Env.Cookie.Name,
-		Value: uuid.New().String(),
-	}
+	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
 
-	r.AddCookie(cookie)
-
-	h.PostGroupUnapprovedUser(w, r)
+	h.StoreGroupUnapprovedUser(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, &model.UnapprovedUser{}, &model.UnapprovedUser{})
+	testutil.AssertResponseBody(t, res, &output.UnapprovedUser{}, &output.UnapprovedUser{})
 }
 
 func TestDBHandler_DeleteGroupApprovedUser(t *testing.T) {

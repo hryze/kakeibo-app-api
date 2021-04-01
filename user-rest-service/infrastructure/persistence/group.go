@@ -152,6 +152,20 @@ func (r *groupRepository) UpdateGroupName(group *groupdomain.Group) error {
 	return nil
 }
 
+func (r *groupRepository) StoreUnapprovedUser(unapprovedUser *groupdomain.UnapprovedUser) error {
+	query := `
+        INSERT INTO group_unapproved_users
+            (group_id, user_id)
+        VALUES
+            (?, ?)`
+
+	if _, err := r.MySQLHandler.Conn.Exec(query, unapprovedUser.GroupID().Value(), unapprovedUser.UserID().Value()); err != nil {
+		return apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	return nil
+}
+
 func (r *groupRepository) FindGroupByID(groupID *groupdomain.GroupID) (*groupdomain.Group, error) {
 	query := `
         SELECT
@@ -184,4 +198,82 @@ func (r *groupRepository) FindGroupByID(groupID *groupdomain.GroupID) (*groupdom
 	group := groupdomain.NewGroup(groupIDVo, groupNameVo)
 
 	return group, nil
+}
+
+func (r *groupRepository) FindApprovedUser(groupID groupdomain.GroupID, userID userdomain.UserID) (*groupdomain.ApprovedUser, error) {
+	query := `
+        SELECT
+            group_id,
+            user_id,
+            color_code
+        FROM
+            group_users
+        WHERE
+            group_id = ?
+        AND
+            user_id = ?`
+
+	var approvedUserDto datasource.ApprovedUser
+	if err := r.MySQLHandler.Conn.QueryRowx(query, groupID.Value(), userID.Value()).StructScan(&approvedUserDto); err != nil {
+		if xerrors.Is(err, sql.ErrNoRows) {
+			return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
+		}
+
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	groupIDVo, err := groupdomain.NewGroupID(approvedUserDto.GroupID)
+	if err != nil {
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	userIDVo, err := userdomain.NewUserID(approvedUserDto.UserID)
+	if err != nil {
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	colorCodeVo, err := groupdomain.NewColorCode(approvedUserDto.ColorCode)
+	if err != nil {
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	approvedUser := groupdomain.NewApprovedUser(groupIDVo, userIDVo, colorCodeVo)
+
+	return approvedUser, nil
+}
+
+func (r *groupRepository) FindUnapprovedUser(groupID groupdomain.GroupID, userID userdomain.UserID) (*groupdomain.UnapprovedUser, error) {
+	query := `
+        SELECT
+            group_id,
+            user_id
+        FROM
+            group_unapproved_users
+        WHERE
+            group_id = ?
+        AND
+            user_id = ?`
+
+	var unapprovedUserDto datasource.UnapprovedUser
+	if err := r.MySQLHandler.Conn.QueryRowx(query, groupID.Value(), userID.Value()).StructScan(&unapprovedUserDto); err != nil {
+		if xerrors.Is(err, sql.ErrNoRows) {
+			return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
+		}
+
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	groupIDVo, err := groupdomain.NewGroupID(unapprovedUserDto.GroupID)
+	if err != nil {
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	userIDVo, err := userdomain.NewUserID(unapprovedUserDto.UserID)
+	if err != nil {
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	unapprovedUser := groupdomain.NewUnapprovedUser(groupIDVo, userIDVo)
+
+	return unapprovedUser, nil
 }
