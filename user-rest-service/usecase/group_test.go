@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/groupdomain"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
@@ -32,6 +33,10 @@ func (r *mockGroupRepository) StoreUnapprovedUser(unapprovedUser *groupdomain.Un
 	return nil
 }
 
+func (r *mockGroupRepository) DeleteApprovedUser(approvedUser *groupdomain.ApprovedUser) error {
+	return nil
+}
+
 func (r *mockGroupRepository) FindGroupByID(groupID *groupdomain.GroupID) (*groupdomain.Group, error) {
 	groupName, _ := groupdomain.NewGroupName("group1")
 	group := groupdomain.NewGroup(*groupID, groupName)
@@ -40,6 +45,10 @@ func (r *mockGroupRepository) FindGroupByID(groupID *groupdomain.GroupID) (*grou
 }
 
 func (r *mockGroupRepository) FindApprovedUser(groupID groupdomain.GroupID, userID userdomain.UserID) (*groupdomain.ApprovedUser, error) {
+	if groupID.Value() == 1 {
+		return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
+	}
+
 	colorCode, _ := groupdomain.NewColorCode("#FF0000")
 	approvedUser := groupdomain.NewApprovedUser(groupID, userID, colorCode)
 
@@ -47,6 +56,10 @@ func (r *mockGroupRepository) FindApprovedUser(groupID groupdomain.GroupID, user
 }
 
 func (r *mockGroupRepository) FindUnapprovedUser(groupID groupdomain.GroupID, userID userdomain.UserID) (*groupdomain.UnapprovedUser, error) {
+	if groupID.Value() == 1 {
+		return nil, apierrors.NewNotFoundError(apierrors.NewErrorString("ユーザーが存在しません"))
+	}
+
 	unapprovedUser := groupdomain.NewUnapprovedUser(groupID, userID)
 
 	return unapprovedUser, nil
@@ -232,7 +245,7 @@ func Test_groupUsecase_UpdateGroupName(t *testing.T) {
 
 	groupInput := input.Group{
 		GroupID:   1,
-		GroupName: "group2",
+		GroupName: "group1",
 	}
 
 	gotOut, err := u.UpdateGroupName(&groupInput)
@@ -242,10 +255,53 @@ func Test_groupUsecase_UpdateGroupName(t *testing.T) {
 
 	wantOut := &output.Group{
 		GroupID:   1,
-		GroupName: "group2",
+		GroupName: "group1",
 	}
 
 	if diff := cmp.Diff(&wantOut, &gotOut); len(diff) != 0 {
 		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
+}
+
+func Test_groupUsecase_StoreGroupUnapprovedUser(t *testing.T) {
+	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{}, &mockUserRepository{})
+
+	unapprovedUser := input.UnapprovedUser{
+		UserID: "userID1",
+	}
+
+	groupInput := input.Group{
+		GroupID: 1,
+	}
+
+	gotOut, err := u.StoreGroupUnapprovedUser(&unapprovedUser, &groupInput)
+	if err != nil {
+		t.Errorf("unexpected error by groupUsecase.StoreGroupUnapprovedUser '%#v'", err)
+	}
+
+	wantOut := &output.UnapprovedUser{
+		GroupID:  1,
+		UserID:   "userID1",
+		UserName: "userName1",
+	}
+
+	if diff := cmp.Diff(&wantOut, &gotOut); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
+}
+
+func Test_groupUsecase_DeleteGroupApprovedUser(t *testing.T) {
+	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{}, &mockUserRepository{})
+
+	authenticatedUser := input.AuthenticatedUser{
+		UserID: "userID1",
+	}
+
+	groupInput := input.Group{
+		GroupID: 2,
+	}
+
+	if err := u.DeleteGroupApprovedUser(&authenticatedUser, &groupInput); err != nil {
+		t.Errorf("unexpected error by groupUsecase.DeleteGroupApprovedUser '%#v'", err)
 	}
 }

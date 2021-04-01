@@ -166,6 +166,23 @@ func (r *groupRepository) StoreUnapprovedUser(unapprovedUser *groupdomain.Unappr
 	return nil
 }
 
+func (r *groupRepository) DeleteApprovedUser(approvedUser *groupdomain.ApprovedUser) error {
+	query := `
+        DELETE 
+        FROM
+            group_users
+        WHERE
+            group_id = ?
+        AND
+            user_id = ?`
+
+	if _, err := r.MySQLHandler.Conn.Exec(query, approvedUser.GroupID().Value(), approvedUser.UserID().Value()); err != nil {
+		return apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	return nil
+}
+
 func (r *groupRepository) FindGroupByID(groupID *groupdomain.GroupID) (*groupdomain.Group, error) {
 	query := `
         SELECT
