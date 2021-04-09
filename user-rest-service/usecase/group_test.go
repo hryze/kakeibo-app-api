@@ -37,6 +37,10 @@ func (r *mockGroupRepository) DeleteApprovedUser(approvedUser *groupdomain.Appro
 	return nil
 }
 
+func (r *mockGroupRepository) StoreApprovedUser(approvedUser *groupdomain.ApprovedUser) error {
+	return nil
+}
+
 func (r *mockGroupRepository) FindGroupByID(groupID *groupdomain.GroupID) (*groupdomain.Group, error) {
 	groupName, _ := groupdomain.NewGroupName("group1")
 	group := groupdomain.NewGroup(*groupID, groupName)
@@ -63,6 +67,14 @@ func (r *mockGroupRepository) FindUnapprovedUser(groupID groupdomain.GroupID, us
 	unapprovedUser := groupdomain.NewUnapprovedUser(groupID, userID)
 
 	return unapprovedUser, nil
+}
+
+func (r *mockGroupRepository) FetchApprovedUserIDList(groupID groupdomain.GroupID) ([]userdomain.UserID, error) {
+	return []userdomain.UserID{
+		"userID1",
+		"userID2",
+		"userID3",
+	}, nil
 }
 
 type mockGroupQueryService struct{}
@@ -134,6 +146,15 @@ func (u *mockGroupQueryService) FetchUnapprovedUser(groupID int, userID string) 
 		GroupID:  1,
 		UserID:   "userID1",
 		UserName: "userName1",
+	}, nil
+}
+
+func (u *mockGroupQueryService) FetchApprovedUser(groupID int, userID string) (*output.ApprovedUser, error) {
+	return &output.ApprovedUser{
+		GroupID:   2,
+		UserID:    "userID4",
+		UserName:  "userName4",
+		ColorCode: "#8000FF",
 	}, nil
 }
 
@@ -303,5 +324,33 @@ func Test_groupUsecase_DeleteGroupApprovedUser(t *testing.T) {
 
 	if err := u.DeleteGroupApprovedUser(&authenticatedUser, &groupInput); err != nil {
 		t.Errorf("unexpected error by groupUsecase.DeleteGroupApprovedUser '%#v'", err)
+	}
+}
+
+func Test_groupUsecase_StoreGroupApprovedUser(t *testing.T) {
+	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{}, &mockUserRepository{})
+
+	authenticatedUser := input.AuthenticatedUser{
+		UserID: "userID1",
+	}
+
+	groupInput := input.Group{
+		GroupID: 2,
+	}
+
+	gotOut, err := u.StoreGroupApprovedUser(&authenticatedUser, &groupInput)
+	if err != nil {
+		t.Errorf("unexpected error by groupUsecase.StoreGroupApprovedUser '%#v'", err)
+	}
+
+	wantOut := &output.ApprovedUser{
+		GroupID:   2,
+		UserID:    "userID4",
+		UserName:  "userName4",
+		ColorCode: "#8000FF",
+	}
+
+	if diff := cmp.Diff(&wantOut, &gotOut); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
 	}
 }
