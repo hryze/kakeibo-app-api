@@ -194,6 +194,15 @@ func (u *mockGroupUsecase) DeleteGroupApprovedUser(authenticatedUser *input.Auth
 	return nil
 }
 
+func (u *mockGroupUsecase) StoreGroupApprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) (*output.ApprovedUser, error) {
+	return &output.ApprovedUser{
+		GroupID:   1,
+		UserID:    "userID1",
+		UserName:  "userName1",
+		ColorCode: "#FF0000",
+	}, nil
+}
+
 func Test_groupHandler_FetchGroupList(t *testing.T) {
 	h := NewGroupHandler(&mockGroupUsecase{})
 
@@ -291,33 +300,25 @@ func Test_groupHandler_DeleteGroupApprovedUser(t *testing.T) {
 	testutil.AssertResponseBody(t, res, presenter.NewSuccessString(""), presenter.NewSuccessString(""))
 }
 
-func TestDBHandler_PostGroupApprovedUser(t *testing.T) {
-	h := DBHandler{
-		AuthRepo:  MockAuthRepository{},
-		GroupRepo: MockGroupRepository{},
-	}
+func Test_groupHandler_StoreGroupApprovedUser(t *testing.T) {
+	h := NewGroupHandler(&mockGroupUsecase{})
 
-	r := httptest.NewRequest("POST", "/groups/2/users/approved", nil)
+	r := httptest.NewRequest(http.MethodPost, "/groups/1/users/approved", nil)
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
-		"group_id": "2",
+		"group_id": "1",
 	})
 
-	cookie := &http.Cookie{
-		Name:  config.Env.Cookie.Name,
-		Value: uuid.New().String(),
-	}
+	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
 
-	r.AddCookie(cookie)
-
-	h.PostGroupApprovedUser(w, r)
+	h.StoreGroupApprovedUser(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusCreated)
-	testutil.AssertResponseBody(t, res, &model.ApprovedUser{}, &model.ApprovedUser{})
+	testutil.AssertResponseBody(t, res, &output.ApprovedUser{}, &output.ApprovedUser{})
 }
 
 func TestDBHandler_DeleteGroupUnapprovedUser(t *testing.T) {

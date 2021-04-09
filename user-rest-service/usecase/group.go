@@ -18,6 +18,7 @@ type GroupUsecase interface {
 	UpdateGroupName(group *input.Group) (*output.Group, error)
 	StoreGroupUnapprovedUser(unapprovedUser *input.UnapprovedUser, group *input.Group) (*output.UnapprovedUser, error)
 	DeleteGroupApprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) error
+	StoreGroupApprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) (*output.ApprovedUser, error)
 }
 
 type groupUsecase struct {
@@ -197,6 +198,50 @@ func (u *groupUsecase) DeleteGroupApprovedUser(authenticatedUser *input.Authenti
 	}
 
 	return nil
+}
+
+func (u *groupUsecase) StoreGroupApprovedUser(authenticatedUser *input.AuthenticatedUser, groupInput *input.Group) (*output.ApprovedUser, error) {
+	userID, err := userdomain.NewUserID(authenticatedUser.UserID)
+	if err != nil {
+		return nil, apierrors.NewBadRequestError(apierrors.NewErrorString("ユーザーIDを正しく入力してください"))
+	}
+
+	groupID, err := groupdomain.NewGroupID(groupInput.GroupID)
+	if err != nil {
+		return nil, apierrors.NewBadRequestError(apierrors.NewErrorString("グループIDは1以上の整数で指定してください"))
+	}
+
+	if _, err := u.groupRepository.FindUnapprovedUser(groupID, userID); err != nil {
+		var notFoundError *apierrors.NotFoundError
+		if xerrors.As(err, &notFoundError) {
+			return nil, apierrors.NewBadRequestError(apierrors.NewErrorString("こちらのグループには招待されていません"))
+		}
+
+		return nil, err
+	}
+
+	approvedUserIDList, err := u.groupRepository.FetchApprovedUserIDList(groupID)
+	if err != nil {
+		return nil, err
+	}
+
+	colorCode, err := groupdomain.NewColorCodeToUser(approvedUserIDList)
+	if err != nil {
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	approvedUser := groupdomain.NewApprovedUser(groupID, userID, colorCode)
+
+	if err := u.groupRepository.StoreApprovedUser(approvedUser); err != nil {
+		return nil, err
+	}
+
+	approvedUserDto, err := u.groupQueryService.FetchApprovedUser(groupID.Value(), userID.Value())
+	if err != nil {
+		return nil, err
+	}
+
+	return approvedUserDto, nil
 }
 
 func checkForUniqueGroupUser(u *groupUsecase, groupID groupdomain.GroupID, userID userdomain.UserID) error {
