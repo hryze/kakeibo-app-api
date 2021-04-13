@@ -3,9 +3,9 @@ package apperrors
 type level string
 
 const (
-	levelInfo     level = "info"
-	levelError    level = "error"
-	levelCritical level = "critical"
+	levelInfo     level = "INFO"
+	levelError    level = "ERROR"
+	levelCritical level = "CRITICAL"
 )
 
 func (e *appError) LevelInfo() *appError {
