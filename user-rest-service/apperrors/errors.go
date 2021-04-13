@@ -82,6 +82,10 @@ func New(msg string) *appError {
 	return create(msg)
 }
 
+func Errorf(format string, args ...interface{}) *appError {
+	return create(fmt.Sprintf(format, args...))
+}
+
 func Wrap(err error, msg ...string) *appError {
 	if err == nil {
 		return nil
