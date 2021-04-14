@@ -11,7 +11,7 @@ import (
 )
 
 func getUserIDOfContext(r *http.Request) (*input.AuthenticatedUser, error) {
-	ctx, ok := context.GetOk(r, config.Env.RequestCtx.UserID)
+	ctx, ok := context.GetOk(r, config.Env.ContextKey.UserID)
 	if !ok {
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}

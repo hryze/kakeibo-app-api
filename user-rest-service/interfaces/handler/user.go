@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/context"
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
@@ -87,21 +86,13 @@ func (h *userHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *userHandler) FetchLoginUser(w http.ResponseWriter, r *http.Request) {
-	ctx, ok := context.GetOk(r, config.Env.RequestCtx.UserID)
-	if !ok {
-		presenter.ErrorJSON(w, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error")))
+	authenticatedUser, err := getUserIDOfContext(r)
+	if err != nil {
+		presenter.ErrorJSON(w, err)
 		return
 	}
 
-	ctxUserID, ok := ctx.(string)
-	if !ok {
-		presenter.ErrorJSON(w, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error")))
-		return
-	}
-
-	in := input.AuthenticatedUser{UserID: ctxUserID}
-
-	out, err := h.userUsecase.FetchLoginUser(&in)
+	out, err := h.userUsecase.FetchLoginUser(authenticatedUser)
 	if err != nil {
 		presenter.ErrorJSON(w, err)
 		return

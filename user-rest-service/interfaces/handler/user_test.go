@@ -109,7 +109,7 @@ func Test_userHandler_FetchLoginUser(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/user", nil)
 	w := httptest.NewRecorder()
 
-	context.Set(r, config.Env.RequestCtx.UserID, "testID")
+	context.Set(r, config.Env.ContextKey.UserID, "testID")
 
 	h.FetchLoginUser(w, r)
 

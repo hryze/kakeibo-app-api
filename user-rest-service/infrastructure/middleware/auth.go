@@ -34,7 +34,7 @@ func NewAuthMiddlewareFunc(sessionStore sessionstore.SessionStore) func(http.Han
 				return
 			}
 
-			context.Set(r, config.Env.RequestCtx.UserID, userID.Value())
+			context.Set(r, config.Env.ContextKey.UserID, userID.Value())
 
 			next.ServeHTTP(w, r)
 		})

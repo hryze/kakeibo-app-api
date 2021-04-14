@@ -58,8 +58,9 @@ func Run() error {
 
 	router := mux.NewRouter()
 
-	// Register auth middleware.
+	// Register middlewares.
 	router.Use(middleware.NewAuthMiddlewareFunc(sessionStore))
+	router.Use(middleware.NewLoggingMiddlewareFunc())
 
 	router.HandleFunc("/readyz", h.Readyz).Methods(http.MethodGet)
 	router.HandleFunc("/signup", userHandler.SignUp).Methods(http.MethodPost)

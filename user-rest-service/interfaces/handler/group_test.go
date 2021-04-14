@@ -209,7 +209,7 @@ func Test_groupHandler_FetchGroupList(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/groups", nil)
 	w := httptest.NewRecorder()
 
-	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
+	context.Set(r, config.Env.ContextKey.UserID, "userID1")
 
 	h.FetchGroupList(w, r)
 
@@ -226,7 +226,7 @@ func Test_groupHandler_StoreGroup(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPost, "/groups", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
-	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
+	context.Set(r, config.Env.ContextKey.UserID, "userID1")
 
 	h.StoreGroup(w, r)
 
@@ -247,7 +247,7 @@ func Test_groupHandler_UpdateGroupName(t *testing.T) {
 		"group_id": "1",
 	})
 
-	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
+	context.Set(r, config.Env.ContextKey.UserID, "userID1")
 
 	h.UpdateGroupName(w, r)
 
@@ -268,7 +268,7 @@ func Test_groupHandler_StoreGroupUnapprovedUser(t *testing.T) {
 		"group_id": "1",
 	})
 
-	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
+	context.Set(r, config.Env.ContextKey.UserID, "userID1")
 
 	h.StoreGroupUnapprovedUser(w, r)
 
@@ -289,7 +289,7 @@ func Test_groupHandler_DeleteGroupApprovedUser(t *testing.T) {
 		"group_id": "1",
 	})
 
-	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
+	context.Set(r, config.Env.ContextKey.UserID, "userID1")
 
 	h.DeleteGroupApprovedUser(w, r)
 
@@ -310,7 +310,7 @@ func Test_groupHandler_StoreGroupApprovedUser(t *testing.T) {
 		"group_id": "1",
 	})
 
-	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
+	context.Set(r, config.Env.ContextKey.UserID, "userID1")
 
 	h.StoreGroupApprovedUser(w, r)
 

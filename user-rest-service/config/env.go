@@ -22,11 +22,12 @@ func init() {
 type ENV struct {
 	Server
 	Cors
-	RequestCtx
+	ContextKey
 	Cookie
 	MySQL
 	Redis
 	AccountApi
+	Log
 }
 
 type Server struct {
@@ -37,8 +38,9 @@ type Cors struct {
 	AllowedOrigins []string `envconfig:"CORS_ALLOWED_ORIGINS" required:"true"`
 }
 
-type RequestCtx struct {
-	UserID string `envconfig:"REQUEST_CONTEXT_USER_ID" default:"userID"`
+type ContextKey struct {
+	UserID   string `envconfig:"CONTEXT_USER_ID"   default:"userID"`
+	AppError string `envconfig:"CONTEXT_APP_ERROR" default:"appError"`
 }
 
 type Cookie struct {
@@ -65,4 +67,8 @@ type Redis struct {
 type AccountApi struct {
 	Host string `envconfig:"ACCOUNT_HOST" required:"true"`
 	Port int    `envconfig:"ACCOUNT_PORT" required:"true"`
+}
+
+type Log struct {
+	Debug bool `envconfig:"LOG_DEBUG" default:"false"`
 }
