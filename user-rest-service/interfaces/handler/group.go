@@ -28,7 +28,7 @@ func NewGroupHandler(groupUsecase usecase.GroupUsecase) *groupHandler {
 }
 
 func (h *groupHandler) FetchGroupList(w http.ResponseWriter, r *http.Request) {
-	in, err := getUserIDOfContext(r)
+	in, err := getUserIDForContext(r)
 	if err != nil {
 		presenter.ErrorJSON(w, err)
 		return
@@ -44,7 +44,7 @@ func (h *groupHandler) FetchGroupList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *groupHandler) StoreGroup(w http.ResponseWriter, r *http.Request) {
-	authenticatedUser, err := getUserIDOfContext(r)
+	authenticatedUser, err := getUserIDForContext(r)
 	if err != nil {
 		presenter.ErrorJSON(w, err)
 		return
@@ -115,7 +115,7 @@ func (h *groupHandler) StoreGroupUnapprovedUser(w http.ResponseWriter, r *http.R
 }
 
 func (h *groupHandler) DeleteGroupApprovedUser(w http.ResponseWriter, r *http.Request) {
-	authenticatedUser, err := getUserIDOfContext(r)
+	authenticatedUser, err := getUserIDForContext(r)
 	if err != nil {
 		presenter.ErrorJSON(w, err)
 		return
@@ -138,7 +138,7 @@ func (h *groupHandler) DeleteGroupApprovedUser(w http.ResponseWriter, r *http.Re
 }
 
 func (h *groupHandler) StoreGroupApprovedUser(w http.ResponseWriter, r *http.Request) {
-	authenticatedUser, err := getUserIDOfContext(r)
+	authenticatedUser, err := getUserIDForContext(r)
 	if err != nil {
 		presenter.ErrorJSON(w, err)
 		return

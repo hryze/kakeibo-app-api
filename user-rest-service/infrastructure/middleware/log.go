@@ -4,8 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/context"
-
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/appcontext"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apperrors"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 )
@@ -15,15 +14,9 @@ func NewLoggingMiddlewareFunc() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			next.ServeHTTP(w, r)
 
-			ctx, ok := context.GetOk(r, config.Env.ContextKey.AppError)
+			err, ok := appcontext.GetAppError(r.Context())
 			if !ok {
 				// Successfully processed
-				return
-			}
-
-			err, ok := ctx.(error)
-			if !ok {
-				log.Print("failed to type assertion for error context")
 				return
 			}
 

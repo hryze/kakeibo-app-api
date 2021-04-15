@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/gorilla/context"
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/appcontext"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/sessionstore"
@@ -34,9 +34,9 @@ func NewAuthMiddlewareFunc(sessionStore sessionstore.SessionStore) func(http.Han
 				return
 			}
 
-			context.Set(r, config.Env.ContextKey.UserID, userID.Value())
+			ctx := appcontext.SetUserID(r.Context(), userID.Value())
 
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }

@@ -86,7 +86,7 @@ func (h *userHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *userHandler) FetchLoginUser(w http.ResponseWriter, r *http.Request) {
-	authenticatedUser, err := getUserIDOfContext(r)
+	authenticatedUser, err := getUserIDForContext(r)
 	if err != nil {
 		presenter.ErrorJSON(w, err)
 		return
