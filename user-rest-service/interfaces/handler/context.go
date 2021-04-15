@@ -3,25 +3,23 @@ package handler
 import (
 	"net/http"
 
-	"github.com/gorilla/context"
-
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/appcontext"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 )
 
-func getUserIDOfContext(r *http.Request) (*input.AuthenticatedUser, error) {
-	ctx, ok := context.GetOk(r, config.Env.RequestCtx.UserID)
-	if !ok {
-		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
-	}
-
-	ctxUserID, ok := ctx.(string)
+func getUserIDForContext(r *http.Request) (*input.AuthenticatedUser, error) {
+	userID, ok := appcontext.GetUserID(r.Context())
 	if !ok {
 		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
 	}
 
 	return &input.AuthenticatedUser{
-		UserID: ctxUserID,
+		UserID: userID,
 	}, nil
+}
+
+func setAppErrorToContext(r *http.Request, appErr error) { //nolint // To be used in the next implementation
+	ctx := appcontext.SetAppError(r.Context(), appErr)
+	*r = *r.WithContext(ctx)
 }

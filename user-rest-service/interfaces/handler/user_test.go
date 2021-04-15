@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/gorilla/context"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/appcontext"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
@@ -109,9 +109,9 @@ func Test_userHandler_FetchLoginUser(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/user", nil)
 	w := httptest.NewRecorder()
 
-	context.Set(r, config.Env.RequestCtx.UserID, "testID")
+	ctx := appcontext.SetUserID(r.Context(), "userID1")
 
-	h.FetchLoginUser(w, r)
+	h.FetchLoginUser(w, r.WithContext(ctx))
 
 	res := w.Result()
 	defer res.Body.Close()

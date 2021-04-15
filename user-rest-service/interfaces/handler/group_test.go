@@ -9,9 +9,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/appcontext"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
@@ -209,9 +209,9 @@ func Test_groupHandler_FetchGroupList(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/groups", nil)
 	w := httptest.NewRecorder()
 
-	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
+	ctx := appcontext.SetUserID(r.Context(), "userID1")
 
-	h.FetchGroupList(w, r)
+	h.FetchGroupList(w, r.WithContext(ctx))
 
 	res := w.Result()
 	defer res.Body.Close()
@@ -226,9 +226,9 @@ func Test_groupHandler_StoreGroup(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPost, "/groups", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
-	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
+	ctx := appcontext.SetUserID(r.Context(), "userID1")
 
-	h.StoreGroup(w, r)
+	h.StoreGroup(w, r.WithContext(ctx))
 
 	res := w.Result()
 	defer res.Body.Close()
@@ -247,9 +247,9 @@ func Test_groupHandler_UpdateGroupName(t *testing.T) {
 		"group_id": "1",
 	})
 
-	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
+	ctx := appcontext.SetUserID(r.Context(), "userID1")
 
-	h.UpdateGroupName(w, r)
+	h.UpdateGroupName(w, r.WithContext(ctx))
 
 	res := w.Result()
 	defer res.Body.Close()
@@ -268,9 +268,9 @@ func Test_groupHandler_StoreGroupUnapprovedUser(t *testing.T) {
 		"group_id": "1",
 	})
 
-	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
+	ctx := appcontext.SetUserID(r.Context(), "userID1")
 
-	h.StoreGroupUnapprovedUser(w, r)
+	h.StoreGroupUnapprovedUser(w, r.WithContext(ctx))
 
 	res := w.Result()
 	defer res.Body.Close()
@@ -289,9 +289,9 @@ func Test_groupHandler_DeleteGroupApprovedUser(t *testing.T) {
 		"group_id": "1",
 	})
 
-	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
+	ctx := appcontext.SetUserID(r.Context(), "userID1")
 
-	h.DeleteGroupApprovedUser(w, r)
+	h.DeleteGroupApprovedUser(w, r.WithContext(ctx))
 
 	res := w.Result()
 	defer res.Body.Close()
@@ -310,9 +310,9 @@ func Test_groupHandler_StoreGroupApprovedUser(t *testing.T) {
 		"group_id": "1",
 	})
 
-	context.Set(r, config.Env.RequestCtx.UserID, "userID1")
+	ctx := appcontext.SetUserID(r.Context(), "userID1")
 
-	h.StoreGroupApprovedUser(w, r)
+	h.StoreGroupApprovedUser(w, r.WithContext(ctx))
 
 	res := w.Result()
 	defer res.Body.Close()
