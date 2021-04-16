@@ -73,8 +73,8 @@ func Run() error {
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users", groupHandler.StoreGroupUnapprovedUser).Methods(http.MethodPost)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users", groupHandler.DeleteGroupApprovedUser).Methods(http.MethodDelete)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users/approved", groupHandler.StoreGroupApprovedUser).Methods(http.MethodPost)
+	router.HandleFunc("/groups/{group_id:[0-9]+}/users/unapproved", groupHandler.DeleteGroupUnapprovedUser).Methods(http.MethodDelete)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users", h.GetGroupUserIDList).Methods(http.MethodGet)
-	router.HandleFunc("/groups/{group_id:[0-9]+}/users/unapproved", h.DeleteGroupUnapprovedUser).Methods(http.MethodDelete)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users/{user_id:[\\S]{1,10}}/verify", h.VerifyGroupAffiliation).Methods(http.MethodGet)
 	router.HandleFunc("/groups/{group_id:[0-9]+}/users/verify", h.VerifyGroupAffiliationOfUsersList).Methods(http.MethodGet)
 

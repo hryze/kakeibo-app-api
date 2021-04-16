@@ -8,11 +8,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/appcontext"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
@@ -203,6 +201,10 @@ func (u *mockGroupUsecase) StoreGroupApprovedUser(authenticatedUser *input.Authe
 	}, nil
 }
 
+func (u *mockGroupUsecase) DeleteGroupUnapprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) error {
+	return nil
+}
+
 func Test_groupHandler_FetchGroupList(t *testing.T) {
 	h := NewGroupHandler(&mockGroupUsecase{})
 
@@ -321,33 +323,25 @@ func Test_groupHandler_StoreGroupApprovedUser(t *testing.T) {
 	testutil.AssertResponseBody(t, res, &output.ApprovedUser{}, &output.ApprovedUser{})
 }
 
-func TestDBHandler_DeleteGroupUnapprovedUser(t *testing.T) {
-	h := DBHandler{
-		AuthRepo:  MockAuthRepository{},
-		GroupRepo: MockGroupRepository{},
-	}
+func Test_groupHandler_DeleteGroupUnapprovedUser(t *testing.T) {
+	h := NewGroupHandler(&mockGroupUsecase{})
 
 	r := httptest.NewRequest("DELETE", "/groups/2/users/unapproved", nil)
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
-		"group_id": "2",
+		"group_id": "1",
 	})
 
-	cookie := &http.Cookie{
-		Name:  config.Env.Cookie.Name,
-		Value: uuid.New().String(),
-	}
+	ctx := appcontext.SetUserID(r.Context(), "userID1")
 
-	r.AddCookie(cookie)
-
-	h.DeleteGroupUnapprovedUser(w, r)
+	h.DeleteGroupUnapprovedUser(w, r.WithContext(ctx))
 
 	res := w.Result()
 	defer res.Body.Close()
 
 	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &DeleteContentMsg{}, &DeleteContentMsg{})
+	testutil.AssertResponseBody(t, res, presenter.NewSuccessString(""), presenter.NewSuccessString(""))
 }
 
 func TestDBHandler_VerifyGroupAffiliation(t *testing.T) {

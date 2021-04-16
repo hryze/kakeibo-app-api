@@ -19,6 +19,7 @@ type GroupUsecase interface {
 	StoreGroupUnapprovedUser(unapprovedUser *input.UnapprovedUser, group *input.Group) (*output.UnapprovedUser, error)
 	DeleteGroupApprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) error
 	StoreGroupApprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) (*output.ApprovedUser, error)
+	DeleteGroupUnapprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) error
 }
 
 type groupUsecase struct {
@@ -242,6 +243,34 @@ func (u *groupUsecase) StoreGroupApprovedUser(authenticatedUser *input.Authentic
 	}
 
 	return approvedUserDto, nil
+}
+
+func (u *groupUsecase) DeleteGroupUnapprovedUser(authenticatedUser *input.AuthenticatedUser, groupInput *input.Group) error {
+	userID, err := userdomain.NewUserID(authenticatedUser.UserID)
+	if err != nil {
+		return apierrors.NewBadRequestError(apierrors.NewErrorString("ユーザーIDを正しく入力してください"))
+	}
+
+	groupID, err := groupdomain.NewGroupID(groupInput.GroupID)
+	if err != nil {
+		return apierrors.NewBadRequestError(apierrors.NewErrorString("グループIDは1以上の整数で指定してください"))
+	}
+
+	unapprovedUser, err := u.groupRepository.FindUnapprovedUser(groupID, userID)
+	if err != nil {
+		var notFoundError *apierrors.NotFoundError
+		if xerrors.As(err, &notFoundError) {
+			return apierrors.NewBadRequestError(apierrors.NewErrorString("こちらのグループには招待されていません"))
+		}
+
+		return err
+	}
+
+	if err := u.groupRepository.DeleteUnapprovedUser(unapprovedUser); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func checkForUniqueGroupUser(u *groupUsecase, groupID groupdomain.GroupID, userID userdomain.UserID) error {
