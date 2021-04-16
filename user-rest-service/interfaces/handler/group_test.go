@@ -205,6 +205,10 @@ func (u *mockGroupUsecase) DeleteGroupUnapprovedUser(authenticatedUser *input.Au
 	return nil
 }
 
+func (u *mockGroupUsecase) VerifyGroupAffiliation(authenticatedUser *input.AuthenticatedUser, group *input.Group) error {
+	return nil
+}
+
 func Test_groupHandler_FetchGroupList(t *testing.T) {
 	h := NewGroupHandler(&mockGroupUsecase{})
 
@@ -326,7 +330,7 @@ func Test_groupHandler_StoreGroupApprovedUser(t *testing.T) {
 func Test_groupHandler_DeleteGroupUnapprovedUser(t *testing.T) {
 	h := NewGroupHandler(&mockGroupUsecase{})
 
-	r := httptest.NewRequest("DELETE", "/groups/2/users/unapproved", nil)
+	r := httptest.NewRequest(http.MethodDelete, "/groups/1/users/unapproved", nil)
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
@@ -344,16 +348,14 @@ func Test_groupHandler_DeleteGroupUnapprovedUser(t *testing.T) {
 	testutil.AssertResponseBody(t, res, presenter.NewSuccessString(""), presenter.NewSuccessString(""))
 }
 
-func TestDBHandler_VerifyGroupAffiliation(t *testing.T) {
-	h := DBHandler{
-		GroupRepo: MockGroupRepository{},
-	}
+func Test_groupHandler_VerifyGroupAffiliation(t *testing.T) {
+	h := NewGroupHandler(&mockGroupUsecase{})
 
-	r := httptest.NewRequest("GET", "/groups/2/users/userID1/verify", nil)
+	r := httptest.NewRequest(http.MethodGet, "/groups/1/users/userID1/verify", nil)
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
-		"group_id": "2",
+		"group_id": "1",
 		"user_id":  "userID1",
 	})
 
