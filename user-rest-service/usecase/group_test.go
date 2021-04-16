@@ -41,6 +41,10 @@ func (r *mockGroupRepository) StoreApprovedUser(approvedUser *groupdomain.Approv
 	return nil
 }
 
+func (r *mockGroupRepository) DeleteUnapprovedUser(unapprovedUser *groupdomain.UnapprovedUser) error {
+	return nil
+}
+
 func (r *mockGroupRepository) FindGroupByID(groupID *groupdomain.GroupID) (*groupdomain.Group, error) {
 	groupName, _ := groupdomain.NewGroupName("group1")
 	group := groupdomain.NewGroup(*groupID, groupName)
@@ -352,5 +356,21 @@ func Test_groupUsecase_StoreGroupApprovedUser(t *testing.T) {
 
 	if diff := cmp.Diff(&wantOut, &gotOut); len(diff) != 0 {
 		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
+}
+
+func Test_groupUsecase_DeleteGroupUnapprovedUser(t *testing.T) {
+	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{}, &mockUserRepository{})
+
+	authenticatedUser := input.AuthenticatedUser{
+		UserID: "userID1",
+	}
+
+	groupInput := input.Group{
+		GroupID: 2,
+	}
+
+	if err := u.DeleteGroupUnapprovedUser(&authenticatedUser, &groupInput); err != nil {
+		t.Errorf("unexpected error by groupUsecase.DeleteGroupApprovedUser '%#v'", err)
 	}
 }
