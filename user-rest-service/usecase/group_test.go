@@ -371,6 +371,22 @@ func Test_groupUsecase_DeleteGroupUnapprovedUser(t *testing.T) {
 	}
 
 	if err := u.DeleteGroupUnapprovedUser(&authenticatedUser, &groupInput); err != nil {
-		t.Errorf("unexpected error by groupUsecase.DeleteGroupApprovedUser '%#v'", err)
+		t.Errorf("unexpected error by groupUsecase.DeleteGroupUnapprovedUser '%#v'", err)
+	}
+}
+
+func Test_groupUsecase_VerifyGroupAffiliation(t *testing.T) {
+	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{}, &mockUserRepository{})
+
+	authenticatedUser := input.AuthenticatedUser{
+		UserID: "userID1",
+	}
+
+	groupInput := input.Group{
+		GroupID: 2,
+	}
+
+	if err := u.VerifyGroupAffiliation(&authenticatedUser, &groupInput); err != nil {
+		t.Errorf("unexpected error by groupUsecase.VerifyGroupAffiliation '%#v'", err)
 	}
 }
