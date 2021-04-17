@@ -50,7 +50,7 @@ func (r *GroupBudgetsRepository) GetGroupStandardBudgets(groupID int) (*model.Gr
             group_standard_budgets.budget budget
         FROM
             group_standard_budgets
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             group_standard_budgets.big_category_id = big_categories.id
@@ -133,7 +133,7 @@ func (r *GroupBudgetsRepository) GetGroupCustomBudgets(yearMonth time.Time, grou
             group_custom_budgets.budget budget
         FROM
             group_custom_budgets
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             group_custom_budgets.big_category_id = big_categories.id

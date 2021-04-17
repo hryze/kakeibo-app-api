@@ -249,7 +249,7 @@ func (r *GroupCategoriesRepository) GetGroupCategoriesName(categoriesID model.Ca
                 medium_categories.category_name medium_category_name
             FROM
                 medium_categories
-            LEFT JOIN
+            INNER JOIN
                 big_categories
             ON
                 medium_categories.big_category_id = big_categories.id
@@ -264,7 +264,7 @@ func (r *GroupCategoriesRepository) GetGroupCategoriesName(categoriesID model.Ca
                 group_custom_categories.category_name custom_category_name
             FROM
                 group_custom_categories
-            LEFT JOIN
+            INNER JOIN
                 big_categories
             ON
                 group_custom_categories.big_category_id = big_categories.id
@@ -294,7 +294,7 @@ func (r *GroupCategoriesRepository) GetGroupCategoriesNameList(categoriesIDList 
                 NULL custom_category_name
             FROM
                 medium_categories
-            LEFT JOIN
+            INNER JOIN
                 big_categories
             ON
                 medium_categories.big_category_id = big_categories.id
@@ -310,7 +310,7 @@ func (r *GroupCategoriesRepository) GetGroupCategoriesNameList(categoriesIDList 
                 group_custom_categories.category_name custom_category_name
             FROM
                 group_custom_categories
-            LEFT JOIN
+            INNER JOIN
                 big_categories
             ON
                 group_custom_categories.big_category_id = big_categories.id
