@@ -234,7 +234,7 @@ func (r *CategoriesRepository) GetCategoriesName(categoriesID model.CategoriesID
                 medium_categories.category_name medium_category_name
             FROM
                 medium_categories
-            LEFT JOIN
+            INNER JOIN
                 big_categories
             ON
                 medium_categories.big_category_id = big_categories.id
@@ -249,7 +249,7 @@ func (r *CategoriesRepository) GetCategoriesName(categoriesID model.CategoriesID
                 custom_categories.category_name custom_category_name
             FROM
                 custom_categories
-            LEFT JOIN
+            INNER JOIN
                 big_categories
             ON
                 custom_categories.big_category_id = big_categories.id
@@ -279,7 +279,7 @@ func (r *CategoriesRepository) GetCategoriesNameList(categoriesIDList []model.Ca
                 NULL custom_category_name
             FROM
                 medium_categories
-            LEFT JOIN
+            INNER JOIN
                 big_categories
             ON
                 medium_categories.big_category_id = big_categories.id
@@ -295,7 +295,7 @@ func (r *CategoriesRepository) GetCategoriesNameList(categoriesIDList []model.Ca
                 custom_categories.category_name custom_category_name
             FROM
                 custom_categories
-            LEFT JOIN
+            INNER JOIN
                 big_categories
             ON
                 custom_categories.big_category_id = big_categories.id

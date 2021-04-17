@@ -90,7 +90,7 @@ func generateGroupTransactionsSqlQuery(searchQuery GroupTransactionsSearchQuery)
             group_custom_categories.category_name custom_category_name
         FROM
             group_transactions
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             group_transactions.big_category_id = big_categories.id

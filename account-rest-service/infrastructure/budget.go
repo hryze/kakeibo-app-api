@@ -50,7 +50,7 @@ func (r *BudgetsRepository) GetStandardBudgets(userID string) (*model.StandardBu
             standard_budgets.budget budget
         FROM
             standard_budgets
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             standard_budgets.big_category_id = big_categories.id
@@ -133,7 +133,7 @@ func (r *BudgetsRepository) GetCustomBudgets(yearMonth time.Time, userID string)
             custom_budgets.budget budget
         FROM
             custom_budgets
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             custom_budgets.big_category_id = big_categories.id

@@ -261,7 +261,7 @@ func generateTransactionsSqlQuery(searchQuery TransactionsSearchQuery) (string, 
             custom_categories.category_name custom_category_name
         FROM
             transactions
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             transactions.big_category_id = big_categories.id

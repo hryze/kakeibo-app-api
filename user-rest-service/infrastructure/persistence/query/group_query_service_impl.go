@@ -163,7 +163,7 @@ func (r *groupQueryServiceImpl) fetchApprovedGroupList(userID string) ([]output.
             group_names.group_name group_name
         FROM
             group_users
-        LEFT JOIN
+        INNER JOIN
             group_names
         ON
             group_users.group_id = group_names.id
@@ -204,7 +204,7 @@ func (r *groupQueryServiceImpl) fetchUnApprovedGroupList(userID string) ([]outpu
             group_names.group_name group_name
         FROM
             group_unapproved_users
-        LEFT JOIN
+        INNER JOIN
             group_names
         ON
             group_unapproved_users.group_id = group_names.id
@@ -247,7 +247,7 @@ func (r *groupQueryServiceImpl) fetchApprovedUsersList(groupIDList []interface{}
             group_users.color_code color_code
         FROM
             group_users
-        LEFT JOIN
+        INNER JOIN
             users
         ON
             group_users.user_id = users.user_id
@@ -290,7 +290,7 @@ func (r *groupQueryServiceImpl) fetchUnapprovedUsersList(groupIDList []interface
             users.name user_name
         FROM
             group_unapproved_users
-        LEFT JOIN
+        INNER JOIN
             users
         ON
             group_unapproved_users.user_id = users.user_id

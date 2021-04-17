@@ -38,7 +38,7 @@ func (r *GroupTransactionsRepository) GetMonthlyGroupTransactionsList(groupID in
             group_custom_categories.category_name custom_category_name
         FROM
             group_transactions
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             group_transactions.big_category_id = big_categories.id
@@ -104,7 +104,7 @@ func (r *GroupTransactionsRepository) Get10LatestGroupTransactionsList(groupID i
             group_custom_categories.category_name custom_category_name
         FROM
             group_transactions
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             group_transactions.big_category_id = big_categories.id
@@ -170,7 +170,7 @@ func (r *GroupTransactionsRepository) GetGroupTransaction(groupTransactionID int
             group_custom_categories.category_name custom_category_name
         FROM
             group_transactions
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             group_transactions.big_category_id = big_categories.id
@@ -291,7 +291,7 @@ func (r *GroupTransactionsRepository) GetGroupShoppingItemRelatedTransactionData
             group_custom_categories.category_name custom_category_name
         FROM
             group_transactions
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             group_transactions.big_category_id = big_categories.id

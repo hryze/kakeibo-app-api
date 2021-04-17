@@ -35,7 +35,7 @@ func (r *TransactionsRepository) GetMonthlyTransactionsList(userID string, first
             custom_categories.category_name custom_category_name
         FROM
             transactions
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             transactions.big_category_id = big_categories.id
@@ -98,7 +98,7 @@ func (r *TransactionsRepository) Get10LatestTransactionsList(userID string) (*mo
             custom_categories.category_name custom_category_name
         FROM
             transactions
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             transactions.big_category_id = big_categories.id
@@ -161,7 +161,7 @@ func (r *TransactionsRepository) GetTransaction(transactionSender *model.Transac
             custom_categories.category_name custom_category_name
         FROM
             transactions
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             transactions.big_category_id = big_categories.id
@@ -276,7 +276,7 @@ func (r *TransactionsRepository) GetShoppingItemRelatedTransactionDataList(trans
             custom_categories.category_name custom_category_name
         FROM
             transactions
-        LEFT JOIN
+        INNER JOIN
             big_categories
         ON
             transactions.big_category_id = big_categories.id
