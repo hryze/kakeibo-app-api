@@ -8,3 +8,7 @@ type Group struct {
 type UnapprovedUser struct {
 	UserID string `json:"user_id"`
 }
+
+type ApprovedUsersList struct {
+	UserIDList []string `json:"users_list"`
+}

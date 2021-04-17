@@ -21,6 +21,7 @@ type GroupUsecase interface {
 	StoreGroupApprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) (*output.ApprovedUser, error)
 	DeleteGroupUnapprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) error
 	VerifyGroupAffiliation(authenticatedUser *input.AuthenticatedUser, group *input.Group) error
+	VerifyGroupAffiliationForUsersList(approvedUsersList *input.ApprovedUsersList, group *input.Group) error
 }
 
 type groupUsecase struct {
@@ -292,6 +293,29 @@ func (u *groupUsecase) VerifyGroupAffiliation(authenticatedUser *input.Authentic
 		}
 
 		return err
+	}
+
+	return nil
+}
+
+func (u *groupUsecase) VerifyGroupAffiliationForUsersList(approvedUsersListInput *input.ApprovedUsersList, groupInput *input.Group) error {
+	userIDList, err := userdomain.NewUserIDList(approvedUsersListInput.UserIDList)
+	if err != nil {
+		return apierrors.NewBadRequestError(apierrors.NewErrorString("ユーザーIDを正しく入力してください"))
+	}
+
+	groupID, err := groupdomain.NewGroupID(groupInput.GroupID)
+	if err != nil {
+		return apierrors.NewBadRequestError(apierrors.NewErrorString("グループIDは1以上の整数で指定してください"))
+	}
+
+	approvedUsersList, err := u.groupRepository.FindApprovedUsersList(groupID, userIDList)
+	if err != nil {
+		return err
+	}
+
+	if len(approvedUsersListInput.UserIDList) != len(approvedUsersList) {
+		return apierrors.NewBadRequestError(apierrors.NewErrorString("こちらのグループには、指定されたユーザーは所属していません"))
 	}
 
 	return nil

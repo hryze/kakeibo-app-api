@@ -209,6 +209,10 @@ func (u *mockGroupUsecase) VerifyGroupAffiliation(authenticatedUser *input.Authe
 	return nil
 }
 
+func (u *mockGroupUsecase) VerifyGroupAffiliationForUsersList(approvedUsersList *input.ApprovedUsersList, group *input.Group) error {
+	return nil
+}
+
 func Test_groupHandler_FetchGroupList(t *testing.T) {
 	h := NewGroupHandler(&mockGroupUsecase{})
 
@@ -369,19 +373,17 @@ func Test_groupHandler_VerifyGroupAffiliation(t *testing.T) {
 	}
 }
 
-func TestDBHandler_VerifyGroupAffiliationOfUsersList(t *testing.T) {
-	h := DBHandler{
-		GroupRepo: MockGroupRepository{},
-	}
+func Test_groupHandler_VerifyGroupAffiliationForUsersList(t *testing.T) {
+	h := NewGroupHandler(&mockGroupUsecase{})
 
-	r := httptest.NewRequest("GET", "/groups/2/users/verify", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
+	r := httptest.NewRequest(http.MethodGet, "/groups/1/users/verify", strings.NewReader(testutil.GetRequestJsonFromTestData(t)))
 	w := httptest.NewRecorder()
 
 	r = mux.SetURLVars(r, map[string]string{
-		"group_id": "2",
+		"group_id": "1",
 	})
 
-	h.VerifyGroupAffiliationOfUsersList(w, r)
+	h.VerifyGroupAffiliationForUsersList(w, r)
 
 	res := w.Result()
 	defer res.Body.Close()

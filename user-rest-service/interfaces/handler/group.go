@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
@@ -200,27 +199,23 @@ func (h *groupHandler) VerifyGroupAffiliation(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *DBHandler) VerifyGroupAffiliationOfUsersList(w http.ResponseWriter, r *http.Request) {
+func (h *groupHandler) VerifyGroupAffiliationForUsersList(w http.ResponseWriter, r *http.Request) {
 	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		presenter.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("グループIDを正しく指定してください")))
 		return
 	}
 
-	var groupUsersList model.GroupTasksUsersListReceiver
-	if err := json.NewDecoder(r.Body).Decode(&groupUsersList); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+	group := &input.Group{GroupID: groupID}
+
+	var approvedUsersList input.ApprovedUsersList
+	if err := json.NewDecoder(r.Body).Decode(&approvedUsersList); err != nil {
+		presenter.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("ユーザーIDを正しく入力してください")))
 		return
 	}
 
-	dbGroupUsersList, err := h.GroupRepo.FindApprovedUsersList(groupID, groupUsersList.GroupUsersList)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	if len(groupUsersList.GroupUsersList) != len(dbGroupUsersList.GroupUsersList) {
-		w.WriteHeader(http.StatusBadRequest)
+	if err := h.groupUsecase.VerifyGroupAffiliationForUsersList(&approvedUsersList, group); err != nil {
+		presenter.ErrorJSON(w, err)
 		return
 	}
 
