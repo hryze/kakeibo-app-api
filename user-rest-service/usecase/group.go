@@ -20,6 +20,7 @@ type GroupUsecase interface {
 	DeleteGroupApprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) error
 	StoreGroupApprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) (*output.ApprovedUser, error)
 	DeleteGroupUnapprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) error
+	FetchApprovedUserIDList(group *input.Group) (*output.ApprovedUserIDList, error)
 	VerifyGroupAffiliation(authenticatedUser *input.AuthenticatedUser, group *input.Group) error
 	VerifyGroupAffiliationForUsersList(approvedUsersList *input.ApprovedUsersList, group *input.Group) error
 }
@@ -273,6 +274,29 @@ func (u *groupUsecase) DeleteGroupUnapprovedUser(authenticatedUser *input.Authen
 	}
 
 	return nil
+}
+
+func (u *groupUsecase) FetchApprovedUserIDList(groupInput *input.Group) (*output.ApprovedUserIDList, error) {
+	groupID, err := groupdomain.NewGroupID(groupInput.GroupID)
+	if err != nil {
+		return nil, apierrors.NewBadRequestError(apierrors.NewErrorString("グループIDは1以上の整数で指定してください"))
+	}
+
+	approvedUserIDList, err := u.groupRepository.FetchApprovedUserIDList(groupID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(approvedUserIDList) == 0 {
+		return nil, apierrors.NewBadRequestError(apierrors.NewErrorString("指定されたグループには、ユーザーは所属していません"))
+	}
+
+	approvedUserIDListDto := make(output.ApprovedUserIDList, len(approvedUserIDList))
+	for i, userIDVo := range approvedUserIDList {
+		approvedUserIDListDto[i] = string(userIDVo)
+	}
+
+	return &approvedUserIDListDto, nil
 }
 
 func (u *groupUsecase) VerifyGroupAffiliation(authenticatedUser *input.AuthenticatedUser, groupInput *input.Group) error {
