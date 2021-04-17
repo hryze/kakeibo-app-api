@@ -391,6 +391,29 @@ func Test_groupUsecase_DeleteGroupUnapprovedUser(t *testing.T) {
 	}
 }
 
+func Test_groupUsecase_FetchApprovedUserIDList(t *testing.T) {
+	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{}, &mockUserRepository{})
+
+	groupInput := input.Group{
+		GroupID: 2,
+	}
+
+	gotOut, err := u.FetchApprovedUserIDList(&groupInput)
+	if err != nil {
+		t.Errorf("unexpected error by groupUsecase.FetchApprovedUserIDList '%#v'", err)
+	}
+
+	wantOut := &output.ApprovedUserIDList{
+		"userID1",
+		"userID2",
+		"userID3",
+	}
+
+	if diff := cmp.Diff(&wantOut, &gotOut); len(diff) != 0 {
+		t.Errorf("differs: (-want +got)\n%s", diff)
+	}
+}
+
 func Test_groupUsecase_VerifyGroupAffiliation(t *testing.T) {
 	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{}, &mockUserRepository{})
 

@@ -180,6 +180,24 @@ func (h *groupHandler) DeleteGroupUnapprovedUser(w http.ResponseWriter, r *http.
 	presenter.JSON(w, http.StatusOK, presenter.NewSuccessString("グループ招待を拒否しました"))
 }
 
+func (h *groupHandler) FetchApprovedUserIDList(w http.ResponseWriter, r *http.Request) {
+	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
+	if err != nil {
+		presenter.ErrorJSON(w, apierrors.NewBadRequestError(apierrors.NewErrorString("グループIDを正しく指定してください")))
+		return
+	}
+
+	group := &input.Group{GroupID: groupID}
+
+	out, err := h.groupUsecase.FetchApprovedUserIDList(group)
+	if err != nil {
+		presenter.ErrorJSON(w, err)
+		return
+	}
+
+	presenter.JSON(w, http.StatusOK, out)
+}
+
 func (h *groupHandler) VerifyGroupAffiliation(w http.ResponseWriter, r *http.Request) {
 	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
 	if err != nil {
@@ -220,30 +238,4 @@ func (h *groupHandler) VerifyGroupAffiliationForUsersList(w http.ResponseWriter,
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func (h *DBHandler) GetGroupUserIDList(w http.ResponseWriter, r *http.Request) {
-	groupID, err := strconv.Atoi(mux.Vars(r)["group_id"])
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	groupUserIDList, err := h.GroupRepo.GetGroupUsersList(groupID)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	if len(groupUserIDList) == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&groupUserIDList); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 }

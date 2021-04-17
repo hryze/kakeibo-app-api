@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"database/sql"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -11,96 +10,11 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/appcontext"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/model"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
 )
-
-type MockGroupRepository struct{}
-
-type MockSqlResult struct {
-	sql.Result
-}
-
-func (r MockSqlResult) LastInsertId() (int64, error) {
-	return 1, nil
-}
-
-func (t MockGroupRepository) GetGroup(groupID int) (*model.Group, error) {
-	return &model.Group{
-		GroupID:   1,
-		GroupName: "group1",
-	}, nil
-}
-
-func (t MockGroupRepository) PutGroup(group *model.Group, groupID int) error {
-	return nil
-}
-
-func (t MockGroupRepository) PostUnapprovedUser(unapprovedUser *model.UnapprovedUser, groupID int) (sql.Result, error) {
-	return MockSqlResult{}, nil
-}
-
-func (t MockGroupRepository) GetUnapprovedUser(groupUnapprovedUsersID int) (*model.UnapprovedUser, error) {
-	return &model.UnapprovedUser{
-		GroupID:  1,
-		UserID:   "userID2",
-		UserName: "userName2",
-	}, nil
-}
-
-func (t MockGroupRepository) FindApprovedUser(groupID int, userID string) error {
-	if groupID == 1 {
-		return sql.ErrNoRows
-	}
-
-	return nil
-}
-
-func (t MockGroupRepository) FindUnapprovedUser(groupID int, userID string) error {
-	if groupID == 1 {
-		return sql.ErrNoRows
-	}
-
-	return nil
-}
-
-func (t MockGroupRepository) PostGroupApprovedUserAndDeleteGroupUnapprovedUser(groupID int, userID string, colorCode string) (sql.Result, error) {
-	return MockSqlResult{}, nil
-}
-
-func (t MockGroupRepository) GetApprovedUser(approvedUsersID int) (*model.ApprovedUser, error) {
-	return &model.ApprovedUser{
-		GroupID:   2,
-		UserID:    "userID1",
-		UserName:  "userName1",
-		ColorCode: "#FF0000",
-	}, nil
-}
-
-func (t MockGroupRepository) DeleteGroupApprovedUser(groupID int, userID string) error {
-	return nil
-}
-
-func (t MockGroupRepository) DeleteGroupUnapprovedUser(groupID int, userID string) error {
-	return nil
-}
-
-func (t MockGroupRepository) FindApprovedUsersList(groupID int, groupUsersList []string) (model.GroupTasksUsersListReceiver, error) {
-	return model.GroupTasksUsersListReceiver{
-		GroupUsersList: []string{
-			"userID4",
-			"userID5",
-			"userID6",
-		},
-	}, nil
-}
-
-func (t MockGroupRepository) GetGroupUsersList(groupID int) ([]string, error) {
-	return []string{"userID1", "userID4", "userID5", "userID3", "userID2"}, nil
-}
 
 type mockGroupUsecase struct{}
 
@@ -203,6 +117,14 @@ func (u *mockGroupUsecase) StoreGroupApprovedUser(authenticatedUser *input.Authe
 
 func (u *mockGroupUsecase) DeleteGroupUnapprovedUser(authenticatedUser *input.AuthenticatedUser, group *input.Group) error {
 	return nil
+}
+
+func (u *mockGroupUsecase) FetchApprovedUserIDList(group *input.Group) (*output.ApprovedUserIDList, error) {
+	return &output.ApprovedUserIDList{
+		"userID1",
+		"userID2",
+		"userID3",
+	}, nil
 }
 
 func (u *mockGroupUsecase) VerifyGroupAffiliation(authenticatedUser *input.AuthenticatedUser, group *input.Group) error {
@@ -352,6 +274,25 @@ func Test_groupHandler_DeleteGroupUnapprovedUser(t *testing.T) {
 	testutil.AssertResponseBody(t, res, presenter.NewSuccessString(""), presenter.NewSuccessString(""))
 }
 
+func Test_groupHandler_FetchApprovedUserIDList(t *testing.T) {
+	h := NewGroupHandler(&mockGroupUsecase{})
+
+	r := httptest.NewRequest(http.MethodGet, "/groups/1/users", nil)
+	w := httptest.NewRecorder()
+
+	r = mux.SetURLVars(r, map[string]string{
+		"group_id": "1",
+	})
+
+	h.FetchApprovedUserIDList(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	testutil.AssertResponseHeader(t, res, http.StatusOK)
+	testutil.AssertResponseBody(t, res, &output.ApprovedUserIDList{}, &output.ApprovedUserIDList{})
+}
+
 func Test_groupHandler_VerifyGroupAffiliation(t *testing.T) {
 	h := NewGroupHandler(&mockGroupUsecase{})
 
@@ -391,25 +332,4 @@ func Test_groupHandler_VerifyGroupAffiliationForUsersList(t *testing.T) {
 	if diff := cmp.Diff(http.StatusOK, res.StatusCode); len(diff) != 0 {
 		t.Errorf("differs: (-want +got)\n%s", diff)
 	}
-}
-
-func TestDBHandler_GetGroupUserIDList(t *testing.T) {
-	h := DBHandler{
-		GroupRepo: MockGroupRepository{},
-	}
-
-	r := httptest.NewRequest("GET", "/groups/2/users", nil)
-	w := httptest.NewRecorder()
-
-	r = mux.SetURLVars(r, map[string]string{
-		"group_id": "2",
-	})
-
-	h.GetGroupUserIDList(w, r)
-
-	res := w.Result()
-	defer res.Body.Close()
-
-	testutil.AssertResponseHeader(t, res, http.StatusOK)
-	testutil.AssertResponseBody(t, res, &[]string{}, &[]string{})
 }
