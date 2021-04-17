@@ -270,6 +270,12 @@ https://www.shakepiper.com
 
 ## 課題と今後実装したい機能
 
+- DDDを適用。
+- [x] user-rest-service
+- [ ] account-rest-service
+- [ ] todo-rest-service
+
+
 - コードの品質保証ができていない。
 - [ ] バリデーション処理や複雑な処理をしている部分等を優先にテストを充実させていく。
 
