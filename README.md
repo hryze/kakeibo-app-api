@@ -71,7 +71,7 @@ https://www.shakepiper.com
 
 **<ins>Language</ins>**
 
-- Go v1.16.2
+- Go v1.16.3
 
 ### 【 _Infrastructure_ 】
 
