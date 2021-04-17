@@ -3,6 +3,7 @@ package persistence
 import (
 	"database/sql"
 
+	"github.com/jmoiron/sqlx"
 	"golang.org/x/xerrors"
 
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
@@ -463,6 +464,64 @@ func (r *groupRepository) FindUnapprovedUser(groupID groupdomain.GroupID, userID
 	unapprovedUser := groupdomain.NewUnapprovedUser(groupIDVo, userIDVo)
 
 	return unapprovedUser, nil
+}
+
+func (r *groupRepository) FindApprovedUsersList(groupID groupdomain.GroupID, userIDList userdomain.UserIDList) ([]groupdomain.ApprovedUser, error) {
+	query := `
+        SELECT
+            group_id,
+            user_id,
+            color_code
+        FROM
+            group_users
+        WHERE
+            group_id = ?
+        AND
+            user_id IN (?)`
+
+	query, queryArgs, err := sqlx.In(query, groupID.Value(), userIDList.Value())
+	if err != nil {
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error1"))
+	}
+
+	rows, err := r.MySQLHandler.Conn.Queryx(query, queryArgs...)
+	if err != nil {
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+	defer rows.Close()
+
+	var approvedUsersList []groupdomain.ApprovedUser
+	for rows.Next() {
+		var approvedUserDto datasource.ApprovedUser
+		if err := rows.StructScan(&approvedUserDto); err != nil {
+			return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+		}
+
+		groupIDVo, err := groupdomain.NewGroupID(approvedUserDto.GroupID)
+		if err != nil {
+			return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+		}
+
+		userIDVo, err := userdomain.NewUserID(approvedUserDto.UserID)
+		if err != nil {
+			return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+		}
+
+		colorCodeVo, err := groupdomain.NewColorCode(approvedUserDto.ColorCode)
+		if err != nil {
+			return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+		}
+
+		approvedUser := groupdomain.NewApprovedUser(groupIDVo, userIDVo, colorCodeVo)
+
+		approvedUsersList = append(approvedUsersList, *approvedUser)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, apierrors.NewInternalServerError(apierrors.NewErrorString("Internal Server Error"))
+	}
+
+	return approvedUsersList, nil
 }
 
 func (r *groupRepository) FetchApprovedUserIDList(groupID groupdomain.GroupID) ([]userdomain.UserID, error) {

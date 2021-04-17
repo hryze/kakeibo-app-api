@@ -38,3 +38,28 @@ func NewUserID(userID string) (UserID, error) {
 func (i UserID) Value() string {
 	return string(i)
 }
+
+type UserIDList []UserID
+
+func NewUserIDList(userIDList []string) (UserIDList, error) {
+	userIDListVo := make(UserIDList, len(userIDList))
+	for i, userID := range userIDList {
+		userIDVo, err := NewUserID(userID)
+		if err != nil {
+			return nil, err
+		}
+
+		userIDListVo[i] = userIDVo
+	}
+
+	return userIDListVo, nil
+}
+
+func (il UserIDList) Value() []string {
+	userIDList := make([]string, len(il))
+	for i, userIDVo := range il {
+		userIDList[i] = string(userIDVo)
+	}
+
+	return userIDList
+}

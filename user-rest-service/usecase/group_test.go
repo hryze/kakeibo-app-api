@@ -73,6 +73,22 @@ func (r *mockGroupRepository) FindUnapprovedUser(groupID groupdomain.GroupID, us
 	return unapprovedUser, nil
 }
 
+func (r *mockGroupRepository) FindApprovedUsersList(groupID groupdomain.GroupID, userIDList userdomain.UserIDList) ([]groupdomain.ApprovedUser, error) {
+	approvedUserList := make([]groupdomain.ApprovedUser, len(userIDList))
+	for i, userID := range userIDList {
+		if i == 0 {
+			colorCode, _ := groupdomain.NewColorCode("#FF0000")
+			approvedUserList[i] = *groupdomain.NewApprovedUser(groupID, userID, colorCode)
+			continue
+		}
+
+		colorCode, _ := groupdomain.NewColorCodeToUser(userIDList[:i])
+		approvedUserList[i] = *groupdomain.NewApprovedUser(groupID, userID, colorCode)
+	}
+
+	return approvedUserList, nil
+}
+
 func (r *mockGroupRepository) FetchApprovedUserIDList(groupID groupdomain.GroupID) ([]userdomain.UserID, error) {
 	return []userdomain.UserID{
 		"userID1",
@@ -388,5 +404,25 @@ func Test_groupUsecase_VerifyGroupAffiliation(t *testing.T) {
 
 	if err := u.VerifyGroupAffiliation(&authenticatedUser, &groupInput); err != nil {
 		t.Errorf("unexpected error by groupUsecase.VerifyGroupAffiliation '%#v'", err)
+	}
+}
+
+func Test_groupUsecase_VerifyGroupAffiliationForUsersList(t *testing.T) {
+	u := NewGroupUsecase(&mockGroupRepository{}, &mockGroupQueryService{}, &mockAccountApi{}, &mockUserRepository{})
+
+	authenticatedUser := input.ApprovedUsersList{
+		UserIDList: []string{
+			"userID1",
+			"userID2",
+			"userID3",
+		},
+	}
+
+	groupInput := input.Group{
+		GroupID: 1,
+	}
+
+	if err := u.VerifyGroupAffiliationForUsersList(&authenticatedUser, &groupInput); err != nil {
+		t.Errorf("unexpected error by groupUsecase.VerifyGroupAffiliationForUsersList '%#v'", err)
 	}
 }

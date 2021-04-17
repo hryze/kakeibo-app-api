@@ -13,5 +13,6 @@ type Repository interface {
 	FindGroupByID(groupID *GroupID) (*Group, error)
 	FindApprovedUser(groupID GroupID, userID userdomain.UserID) (*ApprovedUser, error)
 	FindUnapprovedUser(groupID GroupID, userID userdomain.UserID) (*UnapprovedUser, error)
+	FindApprovedUsersList(groupID GroupID, userIDList userdomain.UserIDList) ([]ApprovedUser, error)
 	FetchApprovedUserIDList(groupID GroupID) ([]userdomain.UserID, error)
 }
