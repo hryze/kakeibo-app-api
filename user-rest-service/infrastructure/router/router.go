@@ -21,7 +21,6 @@ import (
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/query"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/injector"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/handler"
 	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
 )
@@ -44,6 +43,10 @@ func Run() error {
 	sessionStore := auth.NewSessionStore(redisHandler)
 	accountApi := externalapi.NewAccountApi(accountApiHandler)
 
+	healthRepository := persistence.NewHealthRepository(mySQLHandler)
+	healthUsecase := usecase.NewHealthUsecase(healthRepository, sessionStore)
+	healthHandler := handler.NewHealthHandler(healthUsecase)
+
 	userRepository := persistence.NewUserRepository(mySQLHandler)
 	userQueryService := query.NewUserQueryService(mySQLHandler)
 	userUsecase := usecase.NewUserUsecase(userRepository, userQueryService, sessionStore, accountApi)
@@ -54,15 +57,13 @@ func Run() error {
 	groupUsecase := usecase.NewGroupUsecase(groupRepository, groupQueryService, accountApi, userRepository)
 	groupHandler := handler.NewGroupHandler(groupUsecase)
 
-	h := injector.InjectDBHandler()
-
 	router := mux.NewRouter()
 
 	// Register middlewares.
 	router.Use(middleware.NewAuthMiddlewareFunc(sessionStore))
 	router.Use(middleware.NewLoggingMiddlewareFunc())
 
-	router.HandleFunc("/readyz", h.Readyz).Methods(http.MethodGet)
+	router.HandleFunc("/readyz", healthHandler.Readyz).Methods(http.MethodGet)
 	router.HandleFunc("/signup", userHandler.SignUp).Methods(http.MethodPost)
 	router.HandleFunc("/login", userHandler.Login).Methods(http.MethodPost)
 	router.HandleFunc("/logout", userHandler.Logout).Methods(http.MethodDelete)

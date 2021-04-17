@@ -19,6 +19,17 @@ func NewSessionStore(redisHandler *imdb.RedisHandler) *sessionStore {
 	return &sessionStore{redisHandler}
 }
 
+func (s *sessionStore) PingSessionStore() error {
+	conn := s.RedisHandler.Pool.Get()
+	defer conn.Close()
+
+	if _, err := conn.Do("PING"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *sessionStore) StoreUserBySessionID(sessionID string, userID userdomain.UserID) error {
 	conn := s.RedisHandler.Pool.Get()
 	defer conn.Close()

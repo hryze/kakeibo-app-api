@@ -1,15 +1,26 @@
 package handler
 
-import "net/http"
+import (
+	"net/http"
 
-func (h *DBHandler) Readyz(w http.ResponseWriter, r *http.Request) {
-	if err := h.HealthRepo.PingMySQL(); err != nil {
+	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
+)
+
+type healthHandler struct {
+	healthUsecase usecase.HealthUsecase
+}
+
+func NewHealthHandler(healthUsecase usecase.HealthUsecase) *healthHandler {
+	return &healthHandler{
+		healthUsecase: healthUsecase,
+	}
+}
+
+func (h *healthHandler) Readyz(w http.ResponseWriter, r *http.Request) {
+	if err := h.healthUsecase.Readyz(); err != nil {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
 
-	if err := h.HealthRepo.PingRedis(); err != nil {
-		w.WriteHeader(http.StatusServiceUnavailable)
-		return
-	}
+	w.WriteHeader(http.StatusOK)
 }

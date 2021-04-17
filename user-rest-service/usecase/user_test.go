@@ -55,6 +55,10 @@ func (q *mockUserQueryService) FindLoginUserByUserID(userID userdomain.UserID) (
 
 type mockSessionStore struct{}
 
+func (s *mockSessionStore) PingSessionStore() error {
+	return nil
+}
+
 func (s *mockSessionStore) StoreUserBySessionID(sessionID string, loginUserID userdomain.UserID) error {
 	return nil
 }
