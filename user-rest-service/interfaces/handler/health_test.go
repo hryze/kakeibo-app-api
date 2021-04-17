@@ -8,22 +8,16 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-type MockHealthRepository struct{}
+type mockHealthUsecase struct{}
 
-func (m MockHealthRepository) PingMySQL() error {
+func (u *mockHealthUsecase) Readyz() error {
 	return nil
 }
 
-func (m MockHealthRepository) PingRedis() error {
-	return nil
-}
+func Test_healthHandler_Readyz(t *testing.T) {
+	h := NewHealthHandler(&mockHealthUsecase{})
 
-func TestDBHandler_Readyz(t *testing.T) {
-	h := DBHandler{
-		HealthRepo: MockHealthRepository{},
-	}
-
-	r := httptest.NewRequest("GET", "/readyz", nil)
+	r := httptest.NewRequest(http.MethodGet, "/readyz", nil)
 	w := httptest.NewRecorder()
 
 	h.Readyz(w, r)
