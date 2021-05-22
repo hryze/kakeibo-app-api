@@ -1,6 +1,6 @@
 package groupdomain
 
-import "github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
+import "github.com/hryze/kakeibo-app-api/user-rest-service/domain/userdomain"
 
 type ApprovedUser struct {
 	groupID   GroupID

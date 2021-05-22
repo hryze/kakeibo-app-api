@@ -3,9 +3,9 @@ package handler
 import (
 	"net/http"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/appcontext"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/appcontext"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/input"
 )
 
 func getUserIDForContext(r *http.Request) (*input.AuthenticatedUser, error) {

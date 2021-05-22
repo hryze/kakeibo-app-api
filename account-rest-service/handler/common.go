@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/config"
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/repository"
+	"github.com/hryze/kakeibo-app-api/account-rest-service/config"
+	"github.com/hryze/kakeibo-app-api/account-rest-service/domain/repository"
 )
 
 type DBHandler struct {

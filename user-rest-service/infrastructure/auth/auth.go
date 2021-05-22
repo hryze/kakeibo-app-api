@@ -4,11 +4,11 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"golang.org/x/xerrors"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/auth/imdb"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/config"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/domain/userdomain"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/auth/imdb"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/interfaces/presenter"
 )
 
 type sessionStore struct {

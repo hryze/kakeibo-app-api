@@ -19,7 +19,7 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
 
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
+	"github.com/hryze/kakeibo-app-api/account-rest-service/domain/model"
 )
 
 type TransactionReceivers interface {

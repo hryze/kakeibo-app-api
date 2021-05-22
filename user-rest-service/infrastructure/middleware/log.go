@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/appcontext"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apperrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/appcontext"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/apperrors"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/config"
 )
 
 func NewLoggingMiddlewareFunc() func(http.Handler) http.Handler {

@@ -13,8 +13,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/config"
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/injector"
+	"github.com/hryze/kakeibo-app-api/account-rest-service/config"
+	"github.com/hryze/kakeibo-app-api/account-rest-service/injector"
 )
 
 func Run() error {

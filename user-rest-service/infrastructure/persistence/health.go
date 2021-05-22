@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
 )
 
 type healthRepository struct {

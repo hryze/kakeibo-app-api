@@ -1,4 +1,4 @@
-module github.com/paypay3/kakeibo-app-api/todo-rest-service
+module github.com/hryze/kakeibo-app-api/todo-rest-service
 
 go 1.16
 

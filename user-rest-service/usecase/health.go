@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/healthdomain"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/sessionstore"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/domain/healthdomain"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/sessionstore"
 )
 
 type HealthUsecase interface {

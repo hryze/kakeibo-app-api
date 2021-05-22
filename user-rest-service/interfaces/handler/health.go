@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase"
 )
 
 type healthHandler struct {

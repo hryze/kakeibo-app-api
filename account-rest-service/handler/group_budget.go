@@ -9,7 +9,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
+	"github.com/hryze/kakeibo-app-api/account-rest-service/domain/model"
 )
 
 func (h *DBHandler) PostInitGroupStandardBudgets(w http.ResponseWriter, r *http.Request) {

@@ -11,9 +11,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/config"
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/testutil"
+	"github.com/hryze/kakeibo-app-api/account-rest-service/config"
+	"github.com/hryze/kakeibo-app-api/account-rest-service/domain/model"
+	"github.com/hryze/kakeibo-app-api/account-rest-service/testutil"
 )
 
 type MockBudgetsRepository struct{}

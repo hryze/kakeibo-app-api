@@ -12,9 +12,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
-	"github.com/paypay3/kakeibo-app-api/todo-rest-service/config"
-	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
-	"github.com/paypay3/kakeibo-app-api/todo-rest-service/testutil"
+	"github.com/hryze/kakeibo-app-api/todo-rest-service/config"
+	"github.com/hryze/kakeibo-app-api/todo-rest-service/domain/model"
+	"github.com/hryze/kakeibo-app-api/todo-rest-service/testutil"
 )
 
 type MockGroupTasksRepository struct{}

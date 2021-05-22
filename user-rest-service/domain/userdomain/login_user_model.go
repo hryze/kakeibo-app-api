@@ -1,6 +1,6 @@
 package userdomain
 
-import "github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
+import "github.com/hryze/kakeibo-app-api/user-rest-service/domain/vo"
 
 type LoginUser struct {
 	userID   UserID

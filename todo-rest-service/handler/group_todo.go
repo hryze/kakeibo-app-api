@@ -12,7 +12,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 
-	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
+	"github.com/hryze/kakeibo-app-api/todo-rest-service/domain/model"
 )
 
 type GroupTodoSearchQuery struct {
