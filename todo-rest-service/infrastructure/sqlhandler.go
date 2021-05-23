@@ -5,7 +5,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 
-	"github.com/paypay3/kakeibo-app-api/todo-rest-service/config"
+	"github.com/hryze/kakeibo-app-api/todo-rest-service/config"
 )
 
 type MySQLHandler struct {

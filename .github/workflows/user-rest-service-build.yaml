@@ -19,7 +19,7 @@ jobs:
       IMAGE_TAG: release.${{ github.sha }}
       GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
     steps:
-      - name: Checkout paypay3/kakeibo-app-api code
+      - name: Checkout hryze/kakeibo-app-api code
         uses: actions/checkout@v2
 
       - name: Setup Go
@@ -66,10 +66,10 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest &
           wait
 
-      - name: Checkout paypay3/kakeibo-app-kubernetes code
+      - name: Checkout hryze/kakeibo-app-kubernetes code
         uses: actions/checkout@v2
         with:
-          repository: paypay3/kakeibo-app-kubernetes
+          repository: hryze/kakeibo-app-kubernetes
 
       - name: Kustomize edit set image tag
         run: |
@@ -83,7 +83,7 @@ jobs:
           git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | xargs -L1 git config --unset-all
           git config --global user.name $GITHUB_USER
           git config --global user.email $GITHUB_EMAIL
-          git remote set-url origin https://paypay3:$GITHUB_PASSWORD@github.com/paypay3/kakeibo-app-kubernetes.git
+          git remote set-url origin https://hryze:$GITHUB_PASSWORD@github.com/hryze/kakeibo-app-kubernetes.git
           git checkout -b $RELEASE_BRANCH
 
           git add -A

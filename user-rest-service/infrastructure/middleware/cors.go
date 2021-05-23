@@ -5,7 +5,7 @@ import (
 
 	"github.com/rs/cors"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/config"
 )
 
 func NewCorsMiddlewareFunc() func(http.Handler) http.Handler {

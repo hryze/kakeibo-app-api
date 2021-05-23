@@ -1,4 +1,4 @@
-module github.com/paypay3/kakeibo-app-api/account-rest-service
+module github.com/hryze/kakeibo-app-api/account-rest-service
 
 go 1.16
 

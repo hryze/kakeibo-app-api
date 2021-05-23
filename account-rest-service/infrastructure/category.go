@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
+	"github.com/hryze/kakeibo-app-api/account-rest-service/domain/model"
 )
 
 type CategoriesRepository struct {

@@ -3,7 +3,7 @@ package handler
 import (
 	"testing"
 
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/testutil"
+	"github.com/hryze/kakeibo-app-api/account-rest-service/testutil"
 )
 
 func TestMain(m *testing.M) { //nolint:staticcheck

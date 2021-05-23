@@ -12,17 +12,17 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/auth"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/auth/imdb"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/externalapi"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/externalapi/client"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/middleware"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/query"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/handler"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/config"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/auth"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/auth/imdb"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/externalapi"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/externalapi/client"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/middleware"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/persistence"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/persistence/query"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/interfaces/handler"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase"
 )
 
 func Run() error {

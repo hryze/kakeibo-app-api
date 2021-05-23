@@ -9,11 +9,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/gorilla/mux"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/appcontext"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/testutil"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/appcontext"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/interfaces/presenter"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/testutil"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/input"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/output"
 )
 
 type mockGroupUsecase struct{}

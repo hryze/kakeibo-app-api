@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apperrors"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/apperrors"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/apierrors"
 )
 
 type httpError struct {

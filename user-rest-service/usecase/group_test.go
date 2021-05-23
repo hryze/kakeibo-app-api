@@ -5,11 +5,11 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/groupdomain"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/domain/groupdomain"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/domain/userdomain"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/input"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/output"
 )
 
 type mockGroupRepository struct{}

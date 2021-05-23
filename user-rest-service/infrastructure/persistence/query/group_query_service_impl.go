@@ -6,9 +6,9 @@ import (
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/xerrors"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/output"
 )
 
 type groupQueryServiceImpl struct {

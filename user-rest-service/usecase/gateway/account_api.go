@@ -1,8 +1,8 @@
 package gateway
 
 import (
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/groupdomain"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/domain/groupdomain"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/domain/userdomain"
 )
 
 type AccountApi interface {

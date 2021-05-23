@@ -32,13 +32,13 @@ https://www.shakepiper.com
 **<ins>制作物 / 担当</ins>**
 
 - API / 平 侑祐  
-  https://github.com/paypay3/kakeibo-app-api
+  https://github.com/hryze/kakeibo-app-api
 
 - Terraform / 平 侑祐  
-  https://github.com/paypay3/kakeibo-app-terraform
+  https://github.com/hryze/kakeibo-app-terraform
 
 - Kubernetes / 平 侑祐  
-  https://github.com/paypay3/kakeibo-app-kubernetes
+  https://github.com/hryze/kakeibo-app-kubernetes
 
 - Frontend / 安樂 亮佑（共同開発者）, 古澤 宏弥（共同開発者）, 伊藤 稜悟（共同開発者）  
   https://github.com/ryo-wens/kakeibo-front

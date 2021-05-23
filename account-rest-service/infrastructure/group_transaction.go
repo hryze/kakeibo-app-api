@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/paypay3/kakeibo-app-api/account-rest-service/domain/model"
+	"github.com/hryze/kakeibo-app-api/account-rest-service/domain/model"
 )
 
 type GroupTransactionsRepository struct {

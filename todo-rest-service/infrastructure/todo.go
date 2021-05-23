@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/paypay3/kakeibo-app-api/todo-rest-service/domain/model"
+	"github.com/hryze/kakeibo-app-api/todo-rest-service/domain/model"
 )
 
 type TodoRepository struct {

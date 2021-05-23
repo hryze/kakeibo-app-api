@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/xerrors"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/domain/userdomain"
 )
 
 type ColorCode string

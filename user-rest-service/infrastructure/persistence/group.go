@@ -6,11 +6,11 @@ import (
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/xerrors"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/groupdomain"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/datasource"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/domain/groupdomain"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/domain/userdomain"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/persistence/datasource"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/infrastructure/persistence/rdb"
 )
 
 type groupRepository struct {

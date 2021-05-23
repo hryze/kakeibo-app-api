@@ -3,7 +3,7 @@ package imdb
 import (
 	"github.com/garyburd/redigo/redis"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/config"
 )
 
 type RedisHandler struct {

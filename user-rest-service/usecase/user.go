@@ -4,15 +4,15 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/xerrors"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/userdomain"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/domain/vo"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/gateway"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/output"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/queryservice"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/sessionstore"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/domain/userdomain"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/domain/vo"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/interfaces/presenter"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/gateway"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/input"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/output"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/queryservice"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/sessionstore"
 )
 
 type UserUsecase interface {

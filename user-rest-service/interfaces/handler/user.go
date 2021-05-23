@@ -7,11 +7,11 @@ import (
 
 	"golang.org/x/xerrors"
 
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/apierrors"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/config"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/interfaces/presenter"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase"
-	"github.com/paypay3/kakeibo-app-api/user-rest-service/usecase/input"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/apierrors"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/config"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/interfaces/presenter"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase"
+	"github.com/hryze/kakeibo-app-api/user-rest-service/usecase/input"
 )
 
 type userHandler struct {
