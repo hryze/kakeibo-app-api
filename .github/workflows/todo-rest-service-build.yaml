@@ -97,7 +97,7 @@ jobs:
           --base main \
           --head $RELEASE_BRANCH \
           --assignee $ASSIGNEES \
-          --title "Update docker image tag for api" \
+          --title "Update docker image tag for todo api" \
           --body "$PR_COMMENT" || \
           gh pr review \
           --comment \
